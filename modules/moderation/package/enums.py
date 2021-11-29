@@ -5,7 +5,8 @@ class ModFormat(Enum):
     logs        = "logs"
     mod_logs    = "mod-logs"
     channel     = "logs-channel"
-
+    temp_mute   = "active-temp-mutes"
+    temp_ban    = "active-temp-bans"
 
 class CaseFormat(Enum):
     case_id     = "case_id"
@@ -14,4 +15,3 @@ class CaseFormat(Enum):
     time        = "time"
     moderator   = "moderator"
     duration    = "duration"
-    

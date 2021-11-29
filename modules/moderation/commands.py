@@ -1,16 +1,20 @@
+import typing
 import discord
+
 from discord.ext import commands
 
+from modules.package.enums import *
 from modules.moderation.package.exceptions import *
 import modules.moderation.package.functions as functions
 
 
-class Moderation(commands.Cog):
+class ModerationGeneralCommands(commands.Cog):
     
     def __init__(self, bot):
         self.bot = bot
 
 
+    # LOGS
     @commands.command()
     async def modlogs(self, ctx, user : discord.User, page = 1):
 
@@ -20,13 +24,42 @@ class Moderation(commands.Cog):
             await ctx.send("Something went wrong...")
 
 
+    # STATS
+    @commands.command()
+    async def modstats(self, ctx, user : discord.User):
+
+        try:
+            await ctx.send(embed = await functions.generate_modstats(ctx.guild, user, self.bot))
+        except:
+            await ctx.send("Something went wrong...")
+
+
+    # DELETE CASE
+    @commands.command()
+    async def deletecase(self, ctx, case_id : int):
+            
+        try:
+            await functions.deletecase(ctx.guild, case_id)
+
+            await ctx.channel.send(embed = discord.Embed(
+                color = Colors.green.value,
+                description = f"Case {case_id} deleted!"
+            ))
+
+        except CaseException as error:
+            await ctx.send(error)
+        except:
+            await ctx.send("Something went wrong...")
+
+
+    # WARN
     @commands.command()
     async def warn(self, ctx, user : discord.User, *, reason = ""):
 
         if functions.user_in_guild(ctx.guild, user):
 
             try:
-                await functions.handle_case(self.bot, ctx, user, 'warn', reason, 0)
+                await functions.handle_case(self.bot, ctx.guild, ctx.channel, ctx.author, user, 'warn', reason, 0)
             except DMException:
                 pass
             except MmeberNotFoundException as error:
@@ -38,6 +71,7 @@ class Moderation(commands.Cog):
             await ctx.send("The user is not in this server!")
 
 
+    # KICK
     @commands.command()
     async def kick(self, ctx, user : discord.User, *, reason = ""):
         
@@ -45,7 +79,7 @@ class Moderation(commands.Cog):
 
             try:
                 
-                await functions.handle_case(self.bot, ctx, user, 'kick', reason, 0)
+                await functions.handle_case(self.bot, ctx.guild, ctx.channel, ctx.author, user, 'kick', reason, 0)
             except DMException:
                 pass
             except MmeberNotFoundException as error:
@@ -61,14 +95,15 @@ class Moderation(commands.Cog):
         else:
             await ctx.send("The user is not in this server!")
 
-       
+
+    # BAN       
     @commands.command()
     async def ban(self, ctx, user : discord.User, *, reason = ""):
         
         if functions.user_in_guild(ctx.guild, user):
 
             try:
-                await functions.handle_case(self.bot, ctx, user, 'ban', reason, 0)
+                await functions.handle_case(self.bot, ctx.guild, ctx.channel, ctx.author, user, 'ban', reason, 0)
             except DMException:
                 pass
             except:
@@ -90,9 +125,11 @@ class Moderation(commands.Cog):
         if functions.user_in_guild(ctx.guild, user):
 
             try:
-                await functions.handle_case(self.bot, ctx, user, 'ban', reason, duration)
+                await functions.handle_case(self.bot, ctx.guild, ctx.channel, ctx.author, user, 'ban', reason, duration)
             except DMException:
                 pass
+            except TimeException as error:
+                await ctx.send(error)
             except:
                 await ctx.send("Something went wrong...")
 
@@ -110,8 +147,8 @@ class Moderation(commands.Cog):
     async def unban(self, ctx, user : discord.User, *, reason = ""):
         
         try:
-            await functions.handle_unban(ctx, user, reason)
-            await functions.handle_case(self.bot, ctx, user, 'unban', reason, 0)
+            await functions.handle_unban(ctx.guild, user, reason)
+            await functions.handle_case(self.bot, ctx.guild, ctx.channel, ctx.author, user, 'unban', reason, 0)
         except DMException:
             pass
         except MemberNotAffectedByModeration as error:
@@ -120,5 +157,79 @@ class Moderation(commands.Cog):
             await ctx.send("Something went wrong...")
 
 
+    # MUTE
+    @commands.command()
+    async def mute(self, ctx, user : discord.User, *, reason = ""):
+        
+        try:
+            await functions.handle_case(self.bot, ctx.guild, ctx.channel, ctx.author, user, 'mute', reason, 0)
+        except DMException:
+            pass
+        except:
+            await ctx.send("Something went wrong...")
+            
+
+        try:
+            await functions.mute(ctx.guild, user, reason)
+        except:
+            await ctx.send("Something went wrong...")
+        
+
+    @commands.command()
+    async def tempmute(self, ctx, user : discord.User, duration, *, reason = ""):
+        
+        try:
+            await functions.handle_case(self.bot, ctx.guild, ctx.channel, ctx.author, user, 'mute', reason, duration)
+        except DMException:
+            pass
+        except TimeException as error:
+            await ctx.send(error)
+        except:
+            await ctx.send("2Something went wrong...")
+
+        # try:
+        await functions.mute(ctx.guild, user, reason)
+        # except:
+        #     await ctx.send("1Something went wrong...")
+
+
+    @commands.command()
+    async def unmute(self, ctx, user : discord.User, *, reason = ""):
+        
+        try:
+            await functions.handle_case(self.bot, ctx.guild, ctx.channel, ctx.author, user, 'unmute', reason, 0)
+        except DMException:
+            pass
+        except:
+            await ctx.send("Something went wrong...")
+
+        try:
+            await functions.unmute(ctx.guild, user, reason)
+        except:
+            await ctx.send("Something went wrong...")
+
+
+    # PURGE
+    @commands.command()
+    async def purge(self, ctx, amount_of_messages : int, user :  typing.Optional[discord.User]):
+            
+        try:
+            await functions.handle_purge(ctx, amount_of_messages, user)
+        except:
+            await ctx.send("Something went wrong...")
+    
+
+    # SLOWMODE
+    @commands.command()
+    async def slowmode(self, ctx, channel : typing.Optional[discord.TextChannel], slowmode_time):
+            
+        try:
+            await functions.handle_slowmode(ctx, channel, slowmode_time)
+        except TimeException as error:
+            await ctx.send(error)
+        except:
+            await ctx.send("Something went wrong...")
+
+
 def setup(bot):
-    bot.add_cog(Moderation(bot))
+    bot.add_cog(ModerationGeneralCommands(bot))
