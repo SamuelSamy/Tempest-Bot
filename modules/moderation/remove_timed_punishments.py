@@ -4,7 +4,7 @@ from discord.ext import commands, tasks
 from modules.moderation.package.enums import CaseFormat, ModFormat
 
 from modules.package.enums import *
-from modules.moderation.package.exceptions import *
+from modules.package.exceptions import *
 import modules.moderation.package.commands_functions as functions
 
 

@@ -4,7 +4,7 @@ import io
 from discord.ext import commands
 
 from modules.package.enums import *
-from modules.moderation.package.exceptions import *
+from modules.package.exceptions import *
 import modules.moderation.package.punish_functions as functions
 
 

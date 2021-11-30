@@ -2,10 +2,12 @@ import typing
 import discord
 
 from discord.ext import commands
+from modules.moderation.package.enums import Permissions
 
 from modules.package.enums import *
-from modules.moderation.package.exceptions import *
+from modules.package.exceptions import *
 import modules.moderation.package.commands_functions as functions
+import modules.moderation.package.utility_functions as utils
 
 class ModerationGeneralCommands(commands.Cog):
     
@@ -18,7 +20,10 @@ class ModerationGeneralCommands(commands.Cog):
     async def modlogs(self, ctx, user : discord.User, page = 1):
 
         try:
-            await ctx.send(embed = functions.generate_modlogs(ctx.guild, user, page))
+            if utils.has_permissions_to_use_command(ctx.guild, ctx.author, Permissions.mod_logs.value):
+                await ctx.send(embed = functions.generate_modlogs(ctx.guild, user, page))
+            else:
+                await ctx.send(f"{Emotes.red_tick.value} <@{ctx.author.id}> you do not have permissions to use that command!")
         except:
             await ctx.send("Something went wrong...")
 
@@ -27,7 +32,10 @@ class ModerationGeneralCommands(commands.Cog):
     async def warns(self, ctx, user : discord.User, page = 1):
 
         try:
-            await ctx.send(embed = functions.generate_modlogs(ctx.guild, user, page, True))
+            if utils.has_permissions_to_use_command(ctx.guild, ctx.author, Permissions.mod_logs.value):
+                await ctx.send(embed = functions.generate_modlogs(ctx.guild, user, page, True))
+            else:
+                await ctx.send(f"{Emotes.red_tick.value} <@{ctx.author.id}> you do not have permissions to use that command!")       
         except:
             await ctx.send("Something went wrong...")
 
@@ -37,7 +45,10 @@ class ModerationGeneralCommands(commands.Cog):
     async def modstats(self, ctx, user : discord.User):
 
         try:
-            await ctx.send(embed = await functions.generate_modstats(ctx.guild, user, self.bot))
+            if utils.has_permissions_to_use_command(ctx.guild, ctx.author, Permissions.mod_stats.value):
+                await ctx.send(embed = await functions.generate_modstats(ctx.guild, user, self.bot))
+            else:
+                await ctx.send(f"{Emotes.red_tick.value} <@{ctx.author.id}> you do not have permissions to use that command!")   
         except:
             await ctx.send("Something went wrong...")
 
@@ -45,14 +56,18 @@ class ModerationGeneralCommands(commands.Cog):
     # DELETE CASE
     @commands.command()
     async def deletecase(self, ctx, case_id : int):
-            
+        
         try:
-            await functions.deletecase(ctx.guild, case_id)
 
-            await ctx.channel.send(embed = discord.Embed(
-                color = Colors.green.value,
-                description = f"Case {case_id} deleted!"
-            ))
+            if ctx.author.guild_permissions.administrator:
+                await functions.deletecase(ctx.guild, case_id)
+
+                await ctx.channel.send(embed = discord.Embed(
+                    color = Colors.green.value,
+                    description = f"Case {case_id} deleted!"
+                ))
+            else:
+                await ctx.send(f"{Emotes.red_tick.value} <@{ctx.author.id}> you do not have permissions to use that command!")
 
         except CaseException as error:
             await ctx.send(error)
@@ -65,7 +80,12 @@ class ModerationGeneralCommands(commands.Cog):
     async def warn(self, ctx, user : discord.User, *, reason = ""):
 
         try:
-            await functions.handle_case(self.bot, ctx.guild, ctx.channel, ctx.author, user, 'warn', reason, 0)
+
+            if utils.has_permissions_to_use_command(ctx.guild, ctx.author, Permissions.warn.value):
+                await functions.handle_case(self.bot, ctx.guild, ctx.channel, ctx.author, user, 'warn', reason, 0)
+            else:
+                await ctx.send(f"{Emotes.red_tick.value} <@{ctx.author.id}> you do not have permissions to use that command!")
+
         except DMException:
             pass
         except MmeberNotFoundException as error:
@@ -79,8 +99,12 @@ class ModerationGeneralCommands(commands.Cog):
     async def kick(self, ctx, user : discord.User, *, reason = ""):
         
         try:
-            
-            await functions.handle_case(self.bot, ctx.guild, ctx.channel, ctx.author, user, 'kick', reason, 0)
+
+            if utils.has_permissions_to_use_command(ctx.guild, ctx.author, Permissions.kick.value):
+                await functions.handle_case(self.bot, ctx.guild, ctx.channel, ctx.author, user, 'kick', reason, 0)
+            else:
+                await ctx.send(f"{Emotes.red_tick.value} <@{ctx.author.id}> you do not have permissions to use that command!")
+
         except DMException:
             pass
         except MmeberNotFoundException as error:
@@ -94,7 +118,10 @@ class ModerationGeneralCommands(commands.Cog):
     async def ban(self, ctx, user : discord.User, *, reason = ""):
         
         try:
-            await functions.handle_case(self.bot, ctx.guild, ctx.channel, ctx.author, user, 'ban', reason, 0)
+            if utils.has_permissions_to_use_command(ctx.guild, ctx.author, Permissions.ban.value):
+                await functions.handle_case(self.bot, ctx.guild, ctx.channel, ctx.author, user, 'ban', reason, 0)
+            else:
+                await ctx.send(f"{Emotes.red_tick.value} <@{ctx.author.id}> you do not have permissions to use that command!")
         except DMException:
             pass
         except MmeberNotFoundException as error:
@@ -107,7 +134,10 @@ class ModerationGeneralCommands(commands.Cog):
     async def tempban(self, ctx, user : discord.User, duration, *, reason = ""):
     
         try:
-            await functions.handle_case(self.bot, ctx.guild, ctx.channel, ctx.author, user, 'ban', reason, duration)
+            if utils.has_permissions_to_use_command(ctx.guild, ctx.author, Permissions.ban.value):
+                await functions.handle_case(self.bot, ctx.guild, ctx.channel, ctx.author, user, 'ban', reason, duration)
+            else:
+                await ctx.send(f"{Emotes.red_tick.value} <@{ctx.author.id}> you do not have permissions to use that command!")
         except DMException:
             pass
         except TimeException as error:
@@ -122,7 +152,10 @@ class ModerationGeneralCommands(commands.Cog):
     async def unban(self, ctx, user : discord.User, *, reason = ""):
         
         try:
-            await functions.handle_case(self.bot, ctx.guild, ctx.channel, ctx.author, user, 'unban', reason, 0)
+            if utils.has_permissions_to_use_command(ctx.guild, ctx.author, Permissions.ban.value):
+                await functions.handle_case(self.bot, ctx.guild, ctx.channel, ctx.author, user, 'unban', reason, 0)
+            else:
+                await ctx.send(f"{Emotes.red_tick.value} <@{ctx.author.id}> you do not have permissions to use that command!")
         except DMException:
             pass
         except MemberNotAffectedByModeration as error:
@@ -136,7 +169,10 @@ class ModerationGeneralCommands(commands.Cog):
     async def mute(self, ctx, user : discord.User, *, reason = ""):
         
         try:
-            await functions.handle_case(self.bot, ctx.guild, ctx.channel, ctx.author, user, 'mute', reason, 0)
+            if utils.has_permissions_to_use_command(ctx.guild, ctx.author, Permissions.mute.value):
+                await functions.handle_case(self.bot, ctx.guild, ctx.channel, ctx.author, user, 'mute', reason, 0)
+            else:
+                await ctx.send(f"{Emotes.red_tick.value} <@{ctx.author.id}> you do not have permissions to use that command!")
         except DMException:
             pass
         except MmeberNotFoundException as error:
@@ -149,7 +185,10 @@ class ModerationGeneralCommands(commands.Cog):
     async def tempmute(self, ctx, user : discord.User, duration, *, reason = ""):
         
         try:
-            await functions.handle_case(self.bot, ctx.guild, ctx.channel, ctx.author, user, 'mute', reason, duration)
+            if utils.has_permissions_to_use_command(ctx.guild, ctx.author, Permissions.mute.value):
+                await functions.handle_case(self.bot, ctx.guild, ctx.channel, ctx.author, user, 'mute', reason, duration)
+            else:
+                await ctx.send(f"{Emotes.red_tick.value} <@{ctx.author.id}> you do not have permissions to use that command!")
         except DMException:
             pass
         except TimeException as error:
@@ -165,7 +204,10 @@ class ModerationGeneralCommands(commands.Cog):
     async def unmute(self, ctx, user : discord.User, *, reason = ""):
         
         try:
-            await functions.handle_case(self.bot, ctx.guild, ctx.channel, ctx.author, user, 'unmute', reason, 0)
+            if utils.has_permissions_to_use_command(ctx.guild, ctx.author, Permissions.mute.value):
+                await functions.handle_case(self.bot, ctx.guild, ctx.channel, ctx.author, user, 'unmute', reason, 0)
+            else:
+                await ctx.send(f"{Emotes.red_tick.value} <@{ctx.author.id}> you do not have permissions to use that command!")
         except DMException:
             pass
         except MmeberNotFoundException as error:
@@ -179,7 +221,10 @@ class ModerationGeneralCommands(commands.Cog):
     async def purge(self, ctx, amount_of_messages : int, user :  typing.Optional[discord.User]):
             
         try:
-            await functions.handle_purge(ctx, amount_of_messages, user)
+            if utils.has_permissions_to_use_command(ctx.guild, ctx.author, Permissions.purge.value):
+                await functions.handle_purge(ctx, amount_of_messages, user)
+            else:
+                await ctx.send(f"{Emotes.red_tick.value} <@{ctx.author.id}> you do not have permissions to use that command!")
         except:
             await ctx.send("Something went wrong...")
     
@@ -189,7 +234,10 @@ class ModerationGeneralCommands(commands.Cog):
     async def slowmode(self, ctx, channel : typing.Optional[discord.TextChannel], slowmode_time):
             
         try:
-            await functions.handle_slowmode(ctx, channel, slowmode_time)
+            if utils.has_permissions_to_use_command(ctx.guild, ctx.author, Permissions.slowmode.value):
+                await functions.handle_slowmode(ctx, channel, slowmode_time)
+            else:
+                await ctx.send(f"{Emotes.red_tick.value} <@{ctx.author.id}> you do not have permissions to use that command!")
         except TimeException as error:
             await ctx.send(error)
         except:

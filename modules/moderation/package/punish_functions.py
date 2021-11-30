@@ -1,8 +1,9 @@
 import time
 
 import  modules.moderation.package.commands_functions as c_functions
-from modules.moderation.package.utility_functions import *
-from modules.moderation.package.exceptions import *
+from modules.package.utils import *
+from modules.moderation.package.enums import *
+from modules.package.exceptions import *
 
 
 def add_punishment(guild, warns, time, _type, duration):
@@ -126,5 +127,5 @@ async def apply_punishments(bot, channel, guild, user):
             if warns >= p_warns:
                 _type = punishment[AutoPunishment.flag.value][AutoPunishment.flag_type.value]
                 _duration = punishment[AutoPunishment.flag.value][AutoPunishment.flag_duration.value]
-                await c_functions.handle_case(bot, guild, channel, bot.user, user, _type, f"Too many warns! ({p_warns})", _duration)
+                await c_functions.handle_case(bot, guild, channel, bot.user, user, _type, f"Too many warns! ({warns})", _duration)
                 break

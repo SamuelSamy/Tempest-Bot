@@ -5,26 +5,8 @@ import math
 
 from modules.package.enums import *
 from modules.moderation.package.enums import *
-from modules.moderation.package.exceptions import *
-
-
-def open_json(file_path):
-
-    with open(file_path) as file:
-        json_file = json.load(file)
-        file.close()
-
-    return json_file
-
-
-def save_json(json_file, file_path):
-
-    with open(file_path, "w") as f:
-        json.dump(json_file, f)
-
-
-def user_in_guild(guild, user):
-    return (guild.get_member(user.id) is not None)
+from modules.package.exceptions import *
+from modules.package.utils import *
 
 
 def create_message(guild, case_type, reason, duration, user = None):
@@ -327,58 +309,28 @@ def compute_case_details(case):
 
     return message
 
-
-def get_string_from_seconds(seconds):
-
-    format = ""
-
-    hours = seconds // 3600
-    seconds = seconds % 3600
-
-    minutes = seconds // 60
-    seconds = seconds % 60
-
-    if hours > 0:
-        if hours == 1:
-            format += f"{hours} hour "
-        else:
-            format += f"{hours} hours "
-
-
-    if minutes > 0:
-        if minutes == 1:
-            format += f"{minutes} minute "
-        else:
-            format += f"{minutes} minutes "
-
-    if seconds > 0:
-        if seconds == 1:
-            format += f"{seconds} second "
-        else:
-            format += f"{seconds} second "
-
-    return format
-
-
-def compute_seconds(time):
+def has_permissions_to_use_command(guild, user, command_type):
     
-    time_units = ['s', 'm', 'h', 'd']
+    # try:
+    
+    member = guild.get_member(user.id)
 
-    time_dict = {
-        's' : 1,
-        'm' : 60,
-        'h' : 60 * 60,
-        'd' : 60 * 60 * 24
-    }
+    if member.guild_permissions.administrator:
+        return True
 
-    time_unit = time[-1]
+    guild_id = str(guild.id)
 
-    if time_unit not in time_units:
-        raise TimeException("Time must be either: `s`, `m`, `h` or `d`")
+    mod_json = open_json("data/moderation.json")
 
-    try:
-        actual_time = int(time[:-1])
-    except:
-        raise TimeException("Time must be an integer")
+    allowed_roles = mod_json[guild_id][ModFormat.permissions.value][command_type]
 
-    return actual_time * time_dict[time_unit]
+    for role_id in allowed_roles:
+        actual_role = guild.get_role(role_id)
+
+        if actual_role in member.roles:
+            return True
+
+    return False
+
+    # except:
+    #     return False

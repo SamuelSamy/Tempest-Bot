@@ -10,6 +10,7 @@ class ModFormat(Enum):
     temp_ban        = "active-temp-bans"
     a_punish        = "auto-punishments"
     a_punish_id     = "next-auto-punishment-id"
+    permissions     = "permissions"
 
 
 class CaseFormat(Enum):
@@ -28,3 +29,14 @@ class AutoPunishment(Enum):
     flag            = "flag"
     flag_type       = "type"
     flag_duration   = "duration"
+
+
+class Permissions(Enum):
+    warn        = "warn"
+    ban         = "ban"
+    kick        = "kick"
+    mute        = "warn"
+    purge       = "purge"
+    slowmode    = "slowmode"
+    mod_logs    = "mod-logs"
+    mod_stats   = "mod-stats"

@@ -4,7 +4,7 @@ import asyncio
 
 import modules.moderation.package.punish_functions as punish_funcs
 
-from modules.moderation.package.exceptions import *
+from modules.package.exceptions import *
 from modules.moderation.package.enums import CaseFormat, ModFormat
 from modules.package.enums import *
 from modules.moderation.package.utility_functions import *
@@ -15,82 +15,88 @@ from modules.moderation.package.utility_functions import *
 async def handle_case(bot, guild, channel, moderator, user, case_type, reason, duration):
 
     if user_in_guild(guild, user) or case_type == 'unban':
-        case_type = case_type.lower()
-        reason = reason.strip()
+
+        if user.id == moderator.id:
+            await channel.send(f"{Emotes.red_tick.value} You can not use that command on yourself!")
+        elif is_staff(guild, user):
+            await channel.send(f"{Emotes.red_tick.value} You can not use that command on a staff member!")
+        else:
+            case_type = case_type.lower()
+            reason = reason.strip()
 
 
-        if not isinstance(duration, int):
-            duration = compute_seconds(duration)
+            if not isinstance(duration, int):
+                duration = compute_seconds(duration)
 
-        if case_type not in ['warn', 'ban', 'kick', 'mute', 'unban', 'unmute']:
-            raise TypeException("Invalid case type")
-        
-        json_file = open_json("data/moderation.json")
-
-        try:
-            guild_id = str(guild.id)
-            user_id = str(user.id)
-            moderator_id = str(moderator.id)
-            case_id = int(json_file[guild_id][ModFormat.next_id.value])
-            case = {
-                CaseFormat.case_id.value: case_id,
-                CaseFormat._type.value: case_type,
-                CaseFormat.reason.value: reason,
-                CaseFormat.time.value: round(time.time()),
-                CaseFormat.duration.value: duration,
-                CaseFormat.moderator.value: moderator_id
-            }
-
-            if user_id not in json_file[guild_id][ModFormat.logs.value].keys():
-                json_file[guild_id][ModFormat.logs.value][user_id] = []
-
-            json_file[guild_id][ModFormat.logs.value][user_id].append(case)
+            if case_type not in ['warn', 'ban', 'kick', 'mute', 'unban', 'unmute']:
+                raise TypeException("Invalid case type")
             
+            json_file = open_json("data/moderation.json")
 
-            if moderator_id not in json_file[guild_id][ModFormat.mod_logs.value].keys():
-                json_file[guild_id][ModFormat.mod_logs.value][moderator_id] = []
+            try:
+                guild_id = str(guild.id)
+                user_id = str(user.id)
+                moderator_id = str(moderator.id)
+                case_id = int(json_file[guild_id][ModFormat.next_id.value])
+                case = {
+                    CaseFormat.case_id.value: case_id,
+                    CaseFormat._type.value: case_type,
+                    CaseFormat.reason.value: reason,
+                    CaseFormat.time.value: round(time.time()),
+                    CaseFormat.duration.value: duration,
+                    CaseFormat.moderator.value: moderator_id
+                }
 
-            json_file[guild_id][ModFormat.mod_logs.value][moderator_id].append(case_id)
+                if user_id not in json_file[guild_id][ModFormat.logs.value].keys():
+                    json_file[guild_id][ModFormat.logs.value][user_id] = []
 
-            json_file[guild_id][ModFormat.next_id.value] += 1
-
-
-            if duration != 0:
-
-                if case_type == 'ban':
-                    json_file[guild_id][ModFormat.temp_ban.value].append(case_id)
-                elif case_type == 'mute':
-                    json_file[guild_id][ModFormat.temp_mute.value].append(case_id)
-
-
-            save_json(json_file, "data/moderation.json")
-
-            if channel is not None:
-                await channel.send(embed = create_message(guild, case_type, reason, duration, user))
+                json_file[guild_id][ModFormat.logs.value][user_id].append(case)
                 
-            await send_to_logs(bot, json_file, guild, case, user)
-            
-            if case_type != 'unban':
-                try:
-                    await user.send(embed = create_message(guild, case_type, reason, duration))
-                except:
-                    raise DMException("DMs closed")
 
-        except:
-            raise UnexpectedError("UnexpectedError occured when logging case")
+                if moderator_id not in json_file[guild_id][ModFormat.mod_logs.value].keys():
+                    json_file[guild_id][ModFormat.mod_logs.value][moderator_id] = []
 
-        if case_type == 'warn':
-            await punish_funcs.apply_punishments(bot, channel, guild, user)
-        elif case_type == 'ban':
-            await handle_ban(guild, user, reason)
-        elif case_type == 'unban':
-            await handle_unban(guild, user, reason)
-        elif case_type == 'kick':
-            await handle_kick(guild, user, reason)
-        elif case_type == 'mute':
-            await handle_mute(guild, user, reason)
-        elif case_type == 'unmute':
-            await handle_unmute(guild, user, reason)
+                json_file[guild_id][ModFormat.mod_logs.value][moderator_id].append(case_id)
+
+                json_file[guild_id][ModFormat.next_id.value] += 1
+
+
+                if duration != 0:
+
+                    if case_type == 'ban':
+                        json_file[guild_id][ModFormat.temp_ban.value].append(case_id)
+                    elif case_type == 'mute':
+                        json_file[guild_id][ModFormat.temp_mute.value].append(case_id)
+
+
+                save_json(json_file, "data/moderation.json")
+
+                if channel is not None:
+                    await channel.send(embed = create_message(guild, case_type, reason, duration, user))
+                    
+                await send_to_logs(bot, json_file, guild, case, user)
+                
+                if case_type != 'unban':
+                    try:
+                        await user.send(embed = create_message(guild, case_type, reason, duration))
+                    except:
+                        raise DMException("DMs closed")
+
+            except:
+                raise UnexpectedError("UnexpectedError occured when logging case")
+
+            if case_type == 'warn':
+                await punish_funcs.apply_punishments(bot, channel, guild, user)
+            elif case_type == 'ban':
+                await handle_ban(guild, user, reason)
+            elif case_type == 'unban':
+                await handle_unban(guild, user, reason)
+            elif case_type == 'kick':
+                await handle_kick(guild, user, reason)
+            elif case_type == 'mute':
+                await handle_mute(guild, user, reason)
+            elif case_type == 'unmute':
+                await handle_unmute(guild, user, reason)
     else:
         raise MmeberNotFoundException("The specified user is not in this guild")
 
