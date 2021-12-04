@@ -308,29 +308,3 @@ def compute_case_details(case):
     message += f"\n**Time:** <t:{(case[CaseFormat.time.value])}> (<t:{(case[CaseFormat.time.value])}:R>)"
 
     return message
-
-def has_permissions_to_use_command(guild, user, command_type):
-    
-    # try:
-    
-    member = guild.get_member(user.id)
-
-    if member.guild_permissions.administrator:
-        return True
-
-    guild_id = str(guild.id)
-
-    mod_json = open_json("data/moderation.json")
-
-    allowed_roles = mod_json[guild_id][ModFormat.permissions.value][command_type]
-
-    for role_id in allowed_roles:
-        actual_role = guild.get_role(role_id)
-
-        if actual_role in member.roles:
-            return True
-
-    return False
-
-    # except:
-    #     return False

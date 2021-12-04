@@ -37,10 +37,10 @@ class ModerationGeneralCommands(commands.Cog):
                 if case[CaseFormat.time.value] + case[CaseFormat.duration.value] < round(time.time()):
                     ids_to_be_removed.append(case_id)
                     
-                    # try:
-                    await functions.handle_case(self.bot, guild, None, self.bot.user, user, 'unmute', "Mute was temporary", 0)
-                    # except:
-                    #     print(f"Error while unmutting {user.id}")
+                    try:
+                        await functions.handle_case(self.bot, guild, None, self.bot.user, user, 'unmute', "Mute was temporary", 0)
+                    except:
+                        print(f"Error while unmutting {user.id}")
 
             for id in ids_to_be_removed:
                 moderation_logs[guild_id][ModFormat.temp_mute.value].remove(id)
@@ -67,10 +67,10 @@ class ModerationGeneralCommands(commands.Cog):
                 
                     ids_to_be_removed.append(case_id)
 
-                    # try:
-                    await functions.handle_case(self.bot, guild, None, self.bot.user, user, 'unban', "Ban was temporary", 0)
-                    # except:
-                    #     print(f"Error while unbanning {user.id}")
+                    try:
+                        await functions.handle_case(self.bot, guild, None, self.bot.user, user, 'unban', "Ban was temporary", 0)
+                    except:
+                        print(f"Error while unbanning {user.id}")
 
             for id in ids_to_be_removed:
                 moderation_logs[guild_id][ModFormat.temp_ban.value].remove(id)

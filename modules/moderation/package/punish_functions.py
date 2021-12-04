@@ -28,7 +28,7 @@ def add_punishment(guild, warns, time, _type, duration):
     punishment = {
         AutoPunishment.time.value: time_in_seconds,
         AutoPunishment.warns.value: warns,
-        AutoPunishment.flag.value: {
+        AutoPunishment.flags.value: {
             AutoPunishment.flag_type.value: _type,
             AutoPunishment.flag_duration.value: c_functions.compute_seconds(duration)
         } 
