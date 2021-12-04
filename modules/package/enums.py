@@ -30,7 +30,11 @@ class Colors(Enum):
 
 
 class Emotes(Enum):
-    red_tick    = "<:redTick:915333183715815444>"
-    green_tick  = "<:greenTick:915333220726374461>"
-    loading     = "<a:loading:915333280633598052>"
-    orange_flag = "<:OrangeFlag:915333566366367784>"
+    red_tick        = "<:redTick:915333183715815444>"
+    green_tick      = "<:greenTick:915333220726374461>"
+    warn            = "⚠️"
+    loading         = "<a:loading:915333280633598052>"
+    orange_flag     = "<:OrangeFlag:915333566366367784>"
+    no_entry        = "⛔"
+    wrong           = "️️⁉️"
+    not_found       = "💢"
