@@ -12,7 +12,7 @@ from modules.moderation.package.utility_functions import *
 
 # General
 
-async def handle_case(bot, guild, channel, moderator, user, case_type, reason, duration):
+async def handle_case(bot, guild, channel, moderator, user, case_type, reason, duration, message = None):
 
     if user_in_guild(guild, user) or case_type == 'unban':
 
@@ -72,15 +72,16 @@ async def handle_case(bot, guild, channel, moderator, user, case_type, reason, d
                 save_json(json_file, "data/moderation.json")
 
                 if channel is not None:
-                    await channel.send(embed = create_message(guild, case_type, reason, duration, user))
+                    await channel.send(embed = create_message(guild, case_type, reason, duration, user, message))
                     
-                await send_to_logs(bot, json_file, guild, case, user)
+                await send_to_logs(bot, json_file, guild, case, user, message)
                 
                 if case_type != 'unban':
-                    try:
-                        await user.send(embed = create_message(guild, case_type, reason, duration))
-                    except:
-                        raise DMException("DMs closed")
+
+                    # try:
+                    await user.send(embed = create_message(guild, case_type, reason, duration, _message = message))
+                    # except:
+                    #     print ("This user was not DMed")
 
             except:
                 raise UnexpectedError("UnexpectedError occured when logging case")
@@ -101,7 +102,7 @@ async def handle_case(bot, guild, channel, moderator, user, case_type, reason, d
         raise MmeberNotFoundException("The specified user is not in this guild")
 
 
-async def send_to_logs(bot, json_file, guild, case, user):
+async def send_to_logs(bot, json_file, guild, case, user, message):
     
     guild_id = str(guild.id)
     channel = bot.get_channel(int(json_file[guild_id][ModFormat.channel.value]))
@@ -146,7 +147,13 @@ async def send_to_logs(bot, json_file, guild, case, user):
         embed.add_field(
             name = "Duration",
             value = get_string_from_seconds(case[CaseFormat.duration.value])
-        )          
+        )     
+
+    if message is not None:
+        embed.add_field(
+            name = "Message",
+            value = message
+        )   
 
     await channel.send(embed = embed)
 

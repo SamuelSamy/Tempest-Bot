@@ -5,7 +5,7 @@ from discord.ext import commands
 
 from modules.package.enums import *
 from modules.package.exceptions import *
-import modules.moderation.package.auto_mod_utils as functions
+import modules.moderation.package.auto_mod_command_utils as functions
 
 
 class AutoPunishmentsModule(commands.Cog):
@@ -13,6 +13,7 @@ class AutoPunishmentsModule(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
+    
 
     @commands.command()
     @commands.has_permissions(administrator = True)
@@ -50,45 +51,13 @@ class AutoPunishmentsModule(commands.Cog):
 
     @commands.command()
     @commands.has_permissions(administrator = True)
-    async def protectrole(self, ctx, word_id, role : discord.Role):
-        
-        # try:
-        functions.protect_role(ctx.guild, word_id, role)
-        await ctx.reply("The role was successfully protected")
-        # except Exception as error:
-            # print(error)
+    async def notifychannel(self, ctx, word_id, channel : discord.TextChannel = None):
 
-    @commands.command()
-    @commands.has_permissions(administrator = True)
-    async def unprotectrole(self, ctx, word_id, role : discord.Role):
-        
-        # try:
-        functions.unprotect_role(ctx.guild, word_id, role)
-        await ctx.reply("The role was successfully protected")
-        # except Exception as error:
-            # print(error)
-
-
-    @commands.command()
-    @commands.has_permissions(administrator = True)
-    async def protectchannel(self, ctx, word_id, channel : discord.TextChannel):
-        
-        # try:
-        functions.protect_channel(ctx.guild, word_id, channel)
-        await ctx.reply("The role was successfully protected")
-        # except Exception as error:
-            # print(error)
-
-    
-    @commands.command()
-    @commands.has_permissions(administrator = True)
-    async def unprotectchannel(self, ctx, word_id, channel : discord.TextChannel):
-        
-        # try:
-        functions.unprotect_channel(ctx.guild, word_id, channel)
-        await ctx.reply("The role was successfully protected")
-        # except Exception as error:
-            # print(error)
+        functions.notify_channel(ctx.guild, word_id, channel)
+        if channel is not None:
+            await ctx.reply("Channel successfully set as a notify channel for the specified word!")
+        else:
+            await ctx.reply("Successfully removed the notify channel for the specified word!")
 
 
 

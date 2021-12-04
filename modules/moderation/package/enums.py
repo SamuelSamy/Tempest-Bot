@@ -49,6 +49,4 @@ class BannedWord(Enum):
     flags               = "flags"
     flag_type           = "type"
     flag_duration       = "duration"
-    flag_p_roles        = "protected-roles"
-    flag_p_channels     = "protected-channels"
     flag_notify_channel = "notify-channel"

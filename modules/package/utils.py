@@ -82,8 +82,12 @@ def compute_seconds(time):
 def is_staff(guild, user):
     
     try:
-        member = guild.get_member(user.id) 
 
+        member = guild.get_member(user.id) 
+        
+        if member.guild_permissions.administrator:
+            return True
+        
         settings_file = open_json("data/settings.json")
         
         guild_id = str(guild.id)

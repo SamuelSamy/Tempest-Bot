@@ -9,7 +9,7 @@ from modules.package.exceptions import *
 from modules.package.utils import *
 
 
-def create_message(guild, case_type, reason, duration, user = None):
+def create_message(guild, case_type, reason, duration, user = None, _message = None):
 
     _color = Colors.red.value
     message = f"You have been **"
@@ -46,6 +46,9 @@ def create_message(guild, case_type, reason, duration, user = None):
 
     if reason != "":
         message += f"\n**Reason:** {reason}"
+
+    if message is not None:
+        message += f"\n**Message:** {_message}"
 
     if duration != 0:
 

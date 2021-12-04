@@ -1,140 +1,61 @@
-from os import remove
+from typing import no_type_check
 from modules.moderation.package.enums import BannedWord, ModFormat
-from modules.package.exceptions import TypeException
 from modules.package.enums import *
 from modules.package.utils import *
+from modules.moderation.package.commands_functions import handle_case
 
-
-def add_banned_word(guild, word, _type, duration):
-    
-    if _type not in ['mute', 'ban', 'kick']:
-        raise TypeException("Auto-punishment type must be `mute`, `kick` or `ban`")
-
-    if _type == 'kick' or duration == "":
-        duration = "0s"
+async def check_for_banned_words(bot, guild, member, message):
     
     json_file = open_json("data/moderation.json")
 
     guild_id = str(guild.id)
-    next_id = json_file[guild_id][ModFormat.next_bw_id.value]
+    member = guild.get_member(member.id)
 
-    banned_word = {
-        BannedWord.word.value: word,
-        BannedWord.flags.value: {
-            BannedWord.flag_type.value: _type,
-            BannedWord.flag_duration.value: compute_seconds(duration),
-            BannedWord.flag_p_roles.value: [],
-            BannedWord.flag_p_channels.value: [],
-            BannedWord.flag_notify_channel.value: 0
-        } 
-    }
-
-    json_file[guild_id][ModFormat.next_bw_id.value] += 1
-    json_file[guild_id][ModFormat.banned_words.value][str(next_id)] = banned_word
-
-    save_json(json_file, "data/moderation.json")
+    punishments = []
 
 
-def remove_banned_word(guild, word_id):
-    removed = False
-    json_file = open_json("data/moderation.json")
+    for entry in json_file[guild_id][ModFormat.banned_words.value].values():
+        word = entry[BannedWord.word.value]
 
-    guild_id = str(guild.id)
-
-    if word_id in json_file[guild_id][ModFormat.banned_words.value].keys():
-        del json_file[guild_id][ModFormat.banned_words.value][str(word_id)]
-        removed = True
-    
-    save_json(json_file, "data/moderation.json")
-    
-    if not removed:
-        raise UnexpectedError("No word entry found with the specified ID")
+        if word in message.content.lower():
+            punishments.append(entry)
 
 
-def list_banned_words(guild):
-    
-    json_file = open_json("data/moderation.json")
+    if len(punishments) != 0:
 
-    guild_id = str(guild.id)
+        await message.delete()
 
-    punishments_dict = json_file[guild_id][ModFormat.banned_words.value]
-
-    json_object = json.dumps(punishments_dict, indent = 4)
-
-    return json_object
-
-
-def protect_role(guild, word_id, role):
-
-    protected = False
-
-    json_file = open_json("data/moderation.json")
-
-    guild_id = str(guild.id)
-
-    if word_id in json_file[guild_id][ModFormat.banned_words.value].keys():
+        punishments.sort(key = lambda punishment: punishment[BannedWord.flags.value][BannedWord.flag_type.value])
         
-        if role.id not in json_file[guild_id][ModFormat.banned_words.value][str(word_id)][BannedWord.flags.value][BannedWord.flag_p_roles.value]:
-            json_file[guild_id][ModFormat.banned_words.value][str(word_id)][BannedWord.flags.value][BannedWord.flag_p_roles.value].append(role.id)
-            protected = True
+        highest_punishments = [punishments[0]]
+        highest_punishment = punishments[0]
 
-    save_json(json_file, "data/moderation.json")
-    if not protected:
-        raise UnexpectedError("Unable to protect the specified role")
+        index = 1
+        while index < len(punishments) \
+            and highest_punishment[BannedWord.flags.value][BannedWord.flag_type.value] == punishments[index][BannedWord.flags.value][BannedWord.flag_type.value]:
+            highest_punishments.append(punishments[index])
+            index += 1
 
-
-def unprotect_role(guild, word_id, role):
-
-    unprotected = False
-
-    json_file = open_json("data/moderation.json")
-
-    guild_id = str(guild.id)
-
-    if word_id in json_file[guild_id][ModFormat.banned_words.value].keys():
+        highest_punishments.sort(
+            key = lambda punishment: punishment[BannedWord.flags.value][BannedWord.flag_duration.value], 
+            reverse = highest_punishment[BannedWord.flags.value][BannedWord.flag_type.value] == 'mute'
+        )
         
-        if role.id in json_file[guild_id][ModFormat.banned_words.value][str(word_id)][BannedWord.flags.value][BannedWord.flag_p_roles.value]:
-            json_file[guild_id][ModFormat.banned_words.value][str(word_id)][BannedWord.flags.value][BannedWord.flag_p_roles.value].remove(role.id)
-            unprotected = True
+        punishment_to_apply = highest_punishments[0]
+        notify_channel = None
 
-    save_json(json_file, "data/moderation.json")
-    if not unprotected:
-        raise UnexpectedError("Unable to unprotect the specified role")
+        if punishment_to_apply[BannedWord.flags.value][BannedWord.flag_notify_channel.value] != 0:
+            notify_channel = bot.get_channel(punishment_to_apply[BannedWord.flags.value][BannedWord.flag_notify_channel.value])
 
 
-def protect_channel(guild, word_id, channel):
-
-    protected = False
-
-    json_file = open_json("data/moderation.json")
-
-    guild_id = str(guild.id)
-
-    if word_id in json_file[guild_id][ModFormat.banned_words.value].keys():
-        
-        if channel.id not in json_file[guild_id][ModFormat.banned_words.value][str(word_id)][BannedWord.flags.value][BannedWord.flag_p_channels.value]:
-            json_file[guild_id][ModFormat.banned_words.value][str(word_id)][BannedWord.flags.value][BannedWord.flag_p_channels.value].append(channel.id)
-            protected = True
-
-    save_json(json_file, "data/moderation.json")
-    if not protected:
-        raise UnexpectedError("Unable to protect the specified channel")
-
-
-def unprotect_channel(guild, word_id, channel):
-
-    unprotected = False
-
-    json_file = open_json("data/moderation.json")
-
-    guild_id = str(guild.id)
-
-    if word_id in json_file[guild_id][ModFormat.banned_words.value].keys():
-        
-        if channel.id in json_file[guild_id][ModFormat.banned_words.value][str(word_id)][BannedWord.flags.value][BannedWord.flag_p_channels.value]:
-            json_file[guild_id][ModFormat.banned_words.value][str(word_id)][BannedWord.flags.value][BannedWord.flag_p_channels.value].remove(channel.id)
-            unprotected = True
-
-    save_json(json_file, "data/moderation.json")
-    if not unprotected:
-        raise UnexpectedError("Unable to unprotect the specified channel")
+        await handle_case(
+            bot = bot,
+            guild = guild, 
+            channel = notify_channel,
+            moderator = bot.user,
+            user = member,
+            case_type = punishment_to_apply[BannedWord.flags.value][BannedWord.flag_type.value],
+            reason = f"Usage of banned word **({punishment_to_apply[BannedWord.word.value]})**",
+            duration = punishment_to_apply[BannedWord.flags.value][BannedWord.flag_duration.value],
+            message = message.content
+        )
