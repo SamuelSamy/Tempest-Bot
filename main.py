@@ -10,7 +10,7 @@ config = get_json_file('data/config.json')
 files = []
 init_files('./modules', files)
 
-bot = commands.Bot(intents = discord.Intents.all(), command_prefix = config['prefix'])
+bot = commands.Bot(intents = discord.Intents.all(), command_prefix = commands.when_mentioned_or(config['prefix']))
 
 load_packages(files, bot)
 
@@ -56,5 +56,4 @@ bot.help_command = NewHelpName()
 
 # Run
 
-bot.run(config['token'])    
-
+bot.run(config['token'])
