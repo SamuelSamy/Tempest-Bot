@@ -12,7 +12,7 @@ from modules.moderation.package.utility_functions import *
 
 # General
 
-async def handle_case(bot, guild, channel, moderator, user, case_type, reason, duration, message = None):
+async def handle_case(bot, guild, channel, moderator, user, case_type, reason, duration = 0, message = None):
 
     if user_in_guild(guild, user) or case_type == 'unban':
 
@@ -23,7 +23,6 @@ async def handle_case(bot, guild, channel, moderator, user, case_type, reason, d
         else:
             case_type = case_type.lower()
             reason = reason.strip()
-
 
             if not isinstance(duration, int):
                 duration = compute_seconds(duration)
@@ -78,10 +77,10 @@ async def handle_case(bot, guild, channel, moderator, user, case_type, reason, d
                 
                 if case_type != 'unban':
 
-                    # try:
-                    await user.send(embed = create_message(guild, case_type, reason, duration, _message = message))
-                    # except:
-                    #     print ("This user was not DMed")
+                    try:
+                        await user.send(embed = create_message(guild, case_type, reason, duration, _message = message))
+                    except:
+                        pass
 
             except:
                 raise UnexpectedError("UnexpectedError occured when logging case")

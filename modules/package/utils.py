@@ -104,3 +104,7 @@ def is_staff(guild, user):
         return False
 
     return False
+
+def get_prefix():
+    json_file = open_json("data/config.json")
+    return json_file["prefix"]

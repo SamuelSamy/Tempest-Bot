@@ -9,7 +9,7 @@ from modules.package.exceptions import *
 import modules.moderation.package.punish_functions as functions
 
 
-class AutoPunishmentsModule(commands.Cog):
+class AutoPunishments(commands.Cog):
     
     def __init__(self, bot):
         self.bot = bot
@@ -53,4 +53,4 @@ class AutoPunishmentsModule(commands.Cog):
 
 
 def setup(bot):
-    bot.add_cog(AutoPunishmentsModule(bot))
+    bot.add_cog(AutoPunishments(bot))

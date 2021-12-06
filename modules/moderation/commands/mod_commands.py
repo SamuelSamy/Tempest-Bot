@@ -12,7 +12,7 @@ from modules.package.commands_checks import *
 import modules.moderation.package.commands_functions as functions
 import modules.moderation.package.utility_functions as utils
 
-class ModerationGeneralCommands(commands.Cog):
+class Moderation(commands.Cog):
     
     def __init__(self, bot):
         self.bot = bot
@@ -181,4 +181,4 @@ class ModerationGeneralCommands(commands.Cog):
 
 
 def setup(bot):
-    bot.add_cog(ModerationGeneralCommands(bot))
+    bot.add_cog(Moderation(bot))

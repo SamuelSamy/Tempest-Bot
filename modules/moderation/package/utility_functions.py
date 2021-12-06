@@ -47,7 +47,7 @@ def create_message(guild, case_type, reason, duration, user = None, _message = N
     if reason != "":
         message += f"\n**Reason:** {reason}"
 
-    if message is not None:
+    if _message is not None:
         message += f"\n**Message:** {_message}"
 
     if duration != 0:

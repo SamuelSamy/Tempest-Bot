@@ -13,6 +13,7 @@ class ModFormat(Enum):
     permissions     = "permissions"
     banned_words    = "banned_words"
     next_bw_id      = "next-bannedowrd-id"
+    links           = "external_links"
 
 
 class CaseFormat(Enum):
@@ -28,7 +29,7 @@ class AutoPunishment(Enum):
     id              = "id"
     time            = "time"
     warns           = "warns"
-    flags           = "flag"
+    flags           = "flags"
     flag_type       = "type"
     flag_duration   = "duration"
 
@@ -50,3 +51,8 @@ class BannedWord(Enum):
     flag_type           = "type"
     flag_duration       = "duration"
     flag_notify_channel = "notify-channel"
+
+
+class ExternalLinks(Enum):
+    protected_roles     = "protected_roles"
+    protected_channels  = "protected_channels"

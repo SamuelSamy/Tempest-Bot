@@ -125,7 +125,7 @@ async def apply_punishments(bot, channel, guild, user):
         for punishment in auto_punishments:
             p_warns = punishment[AutoPunishment.warns.value]
             if warns >= p_warns:
-                _type = punishment[AutoPunishment.flag.value][AutoPunishment.flag_type.value]
-                _duration = punishment[AutoPunishment.flag.value][AutoPunishment.flag_duration.value]
+                _type = punishment[AutoPunishment.flags.value][AutoPunishment.flag_type.value]
+                _duration = punishment[AutoPunishment.flags.value][AutoPunishment.flag_duration.value]
                 await c_functions.handle_case(bot, guild, channel, bot.user, user, _type, f"Too many warns! ({warns})", _duration)
                 break

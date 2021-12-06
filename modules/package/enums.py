@@ -38,3 +38,4 @@ class Emotes(Enum):
     no_entry        = "⛔"
     wrong           = "️️⁉️"
     not_found       = "💢"
+    reply           = "<:reply:917177348988760095>"

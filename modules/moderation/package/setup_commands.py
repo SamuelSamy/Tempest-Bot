@@ -45,7 +45,7 @@ async def list_permissions(guild, channel):
         permission_string += f"{permission}: ["
 
         roles = permissions[permission]
-
+        
         for role in roles:
             actual_role = guild.get_role(role)
             permission_string += f"{actual_role.name}, "
