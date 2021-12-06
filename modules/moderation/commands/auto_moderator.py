@@ -6,6 +6,7 @@ from discord.ext import commands
 from modules.package.enums import *
 from modules.package.exceptions import *
 import modules.moderation.package.auto_mod_command_utils as functions
+from modules.package.utils import get_prefix
 
 
 class AutoModerator(commands.Cog):
@@ -15,7 +16,10 @@ class AutoModerator(commands.Cog):
 
     
 
-    @commands.command()
+    @commands.command(
+        usage = f"{get_prefix()}banword [word] [warn/kick/ban] (optional time)",
+        description = "Marks a word as a bannedword and sets a punishment when members use the word. *The time must be a number ending in 's'/'m'/'h'/'d'*"
+    )
     @commands.has_permissions(administrator = True)
     async def banword(self, ctx, word,  punishment, duration = ""):
         
@@ -28,7 +32,10 @@ class AutoModerator(commands.Cog):
             await ctx.reply(error)
 
 
-    @commands.command()
+    @commands.command(
+        usage = f"{get_prefix()}unbanword [word_id]",
+        description = "Removes the ban word entry with the specified ID"
+    )
     @commands.has_permissions(administrator = True)
     async def unbanword(self, ctx, id):
 
@@ -39,7 +46,10 @@ class AutoModerator(commands.Cog):
             await ctx.reply(error)
 
 
-    @commands.command()
+    @commands.command(
+        usage = f"{get_prefix()}bannedwords",
+        description = "Displays a list of banned words and their punishments"
+    )
     @commands.has_permissions(administrator = True)
     async def bannedwords(self, ctx):
         
@@ -49,7 +59,10 @@ class AutoModerator(commands.Cog):
         await ctx.send(content = "**Banned Words**", file = discord.File(fp = _fp, filename =_filename ))
 
 
-    @commands.command()
+    @commands.command(
+        usage = f"{get_prefix()}notifychannel [word_id] [channel]",
+        description = "When members use the specified banned word a message will be sent in the mentioned channel"
+    )
     @commands.has_permissions(administrator = True)
     async def notifychannel(self, ctx, word_id, channel : discord.TextChannel = None):
 

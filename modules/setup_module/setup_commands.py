@@ -74,5 +74,25 @@ class Configure(commands.Cog):
         await ctx.send(answer)
 
 
+    @commands.command(
+        usage = f"{get_prefix()}muterole [role]",
+        description = "Sets the muted role"
+    )
+    @has_permissions(administrator = True)
+    async def muterole(self, ctx, role : discord.Role):
+        answer = setup_commands.set_mute_role(ctx.guild, role)
+        await ctx.send(answer)
+
+
+    @commands.command(
+        usage = f"{get_prefix()}logchannel [channel]",
+        description = "Sets the moderator log channel"
+    )
+    @has_permissions(administrator = True)
+    async def logchannel(self, ctx, channel : discord.TextChannel):
+        answer = setup_commands.set_log_role(ctx.guild, channel)
+        await ctx.send(answer)
+
+
 def setup(bot):
     bot.add_cog(Configure(bot))

@@ -58,3 +58,10 @@ async def list_permissions(guild, channel):
     permission_string += "```*Note: Administrators can use any of the above commands, regradless of their roles!*"
     await channel.send(permission_string)
     
+
+async def set_log_role(guild, channel):
+    pass
+
+
+async def set_mmod_channel(guild, channel):
+    pass

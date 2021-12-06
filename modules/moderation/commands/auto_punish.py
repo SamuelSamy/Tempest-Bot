@@ -7,6 +7,7 @@ from discord.ext.commands.core import has_permissions
 from modules.package.enums import *
 from modules.package.exceptions import *
 import modules.moderation.package.punish_functions as functions
+from modules.package.utils import get_prefix
 
 
 class AutoPunishments(commands.Cog):
@@ -15,7 +16,10 @@ class AutoPunishments(commands.Cog):
         self.bot = bot
 
 
-    @commands.command()
+    @commands.command(
+        usage = f"{get_prefix()}addpunishment [amount of warns] [time] [mute/kick/ban] (duration)",
+        description = "Adds an auto-punishment"
+    )
     @has_permissions(administrator = True)
     async def addpunishment(self, ctx, warns,  time, _type, duration = ""):
         
@@ -31,7 +35,10 @@ class AutoPunishments(commands.Cog):
             await ctx.send(error)
 
     
-    @commands.command()
+    @commands.command(
+        usage = f"{get_prefix()}removepunishment [punishment id]",
+        description = "Removes the punishment entry with the specified ID"
+    )
     @has_permissions(administrator = True)
     async def removepunishment(self, ctx, punishment_id):
         
@@ -42,7 +49,10 @@ class AutoPunishments(commands.Cog):
             await ctx.send(error)
 
 
-    @commands.command()
+    @commands.command(
+        usage = f"{get_prefix()}listpunishments",
+        description = "Displays a list of auto-punishments"
+    )
     @has_permissions(administrator = True)
     async def listpunishments(self, ctx):
         

@@ -19,27 +19,39 @@ class Moderation(commands.Cog):
 
 
     # LOGS
-    @commands.command()
+    @commands.command(
+        usage = f"{get_prefix()}modlogs [user] (optional page)",
+        description = "Displays the moderation logs of a user"
+    )
     @has_command_permissions(command = Permissions.mod_logs.value)
     async def modlogs(self, ctx, user : discord.User, page = 1):
         await ctx.send(embed = functions.generate_modlogs(ctx.guild, user, page))
 
 
     # Warns
-    @commands.command()
+    @commands.command(
+        usage = f"{get_prefix()}warns [user] (optional page)",
+        description = "Displays a user's warnings"
+    )
     @has_command_permissions(command = Permissions.mod_logs.value)
     async def warns(self, ctx, user : discord.User, page = 1):
         await ctx.send(embed = functions.generate_modlogs(ctx.guild, user, page, True))
 
     # STATS
-    @commands.command()
+    @commands.command(
+        usage = f"{get_prefix()}modstats [user]",
+        description = "Displays a moderator stats"
+    )
     @has_command_permissions(command = Permissions.mod_stats.value)
     async def modstats(self, ctx, user : discord.User):
         await ctx.send(embed = await functions.generate_modstats(ctx.guild, user, self.bot))
 
 
     # DELETE CASE
-    @commands.command()
+    @commands.command(
+        usage = f"{get_prefix()}deletecase [case id]",
+        description = "Deltes the specified case"
+    )
     @commands.has_permissions(administrator = True)
     async def deletecase(self, ctx, case_id : int):
         
@@ -56,7 +68,10 @@ class Moderation(commands.Cog):
 
 
     # WARN
-    @commands.command()
+    @commands.command(
+        usage = f"{get_prefix()}warn [user] (optional reason)",
+        description = "Warns the specified user"
+    )
     @has_command_permissions(command = Permissions.warn.value)
     async def warn(self, ctx, user : discord.User, *, reason = ""):
 
@@ -69,7 +84,10 @@ class Moderation(commands.Cog):
 
 
     # KICK
-    @commands.command()
+    @commands.command(
+        usage = f"{get_prefix()}kick [user] (optional reason)",
+        description = "Kicks the specified user"
+    )
     @has_command_permissions(command = Permissions.kick.value)
     async def kick(self, ctx, user : discord.User, *, reason = ""):
         
@@ -82,7 +100,10 @@ class Moderation(commands.Cog):
 
 
     # BAN       
-    @commands.command()
+    @commands.command(
+        usage = f"{get_prefix()}ban [user] (optioanl reason)",
+        description = "Bans the specified user"
+    )
     @has_command_permissions(command = Permissions.ban.value)
     async def ban(self, ctx, user : discord.User, *, reason = ""):
         
@@ -94,7 +115,10 @@ class Moderation(commands.Cog):
             await ctx.send(error)
 
 
-    @commands.command()
+    @commands.command(
+        usage = f"{get_prefix()}tempban [user] [duration] (optioanl reason)",
+        description = "Temporarily bans the specified user"
+    )
     @has_command_permissions(command = Permissions.ban.value)
     async def tempban(self, ctx, user : discord.User, duration, *, reason = ""):
     
@@ -109,7 +133,10 @@ class Moderation(commands.Cog):
 
 
 
-    @commands.command()
+    @commands.command(
+        usage = f"{get_prefix()}unban [user] (optioanl reason)",
+        description = "Removes the ban for specified user"
+    )
     @has_command_permissions(command = Permissions.ban.value)
     async def unban(self, ctx, user : discord.User, *, reason = ""):
         
@@ -123,7 +150,10 @@ class Moderation(commands.Cog):
 
 
     # MUTE
-    @commands.command()
+    @commands.command(
+        usage = f"{get_prefix()}mute [user] (optioanl reason)",
+        description = "Mutes the specified user"
+    )
     @has_command_permissions(command = Permissions.mute.value)
     async def mute(self, ctx, user : discord.User, *, reason = ""):
         
@@ -135,7 +165,10 @@ class Moderation(commands.Cog):
             await ctx.send(error)
         
 
-    @commands.command()
+    @commands.command(
+        usage = f"{get_prefix()}tempmute [user] [duration] (optioanl reason)",
+        description = "Temporarily mutes the specified user"
+    )
     @has_command_permissions(command = Permissions.mute.value)
     async def tempmute(self, ctx, user : discord.User, duration, *, reason = ""):
         
@@ -150,7 +183,10 @@ class Moderation(commands.Cog):
 
 
 
-    @commands.command()
+    @commands.command(
+        usage = f"{get_prefix()}unmute [user] (optioanl reason)",
+        description = "Unmutes the specified user"
+    )
     @has_command_permissions(command = Permissions.mute.value)
     async def unmute(self, ctx, user : discord.User, *, reason = ""):
         
@@ -163,19 +199,25 @@ class Moderation(commands.Cog):
 
 
     # PURGE
-    @commands.command()
+    @commands.command(
+        usage = f"{get_prefix()}purge [amount of messages] (optioanl user)",
+        description = "Deletes the messages in the current channel"
+    )
     @has_command_permissions(command = Permissions.purge.value)
     async def purge(self, ctx, amount_of_messages : int, user :  typing.Optional[discord.User]):            
         await functions.handle_purge(ctx, amount_of_messages, user)
     
 
     # SLOWMODE
-    @commands.command()
+    @commands.command(
+         usage = f"{get_prefix()}slowmode (channel) [slowmode]",
+        description = "Sets the slowmode of the specified channel. If no channel is specified the current channel will be affected"
+    )
     @has_command_permissions(command = Permissions.slowmode.value)
     async def slowmode(self, ctx, channel : typing.Optional[discord.TextChannel], slowmode_time):
         
         try:
-                await functions.handle_slowmode(ctx, channel, slowmode_time)
+            await functions.handle_slowmode(ctx, channel, slowmode_time)
         except TimeException as error:
             await ctx.send(error)
 
