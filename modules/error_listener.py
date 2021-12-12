@@ -58,11 +58,14 @@ class CommandErrorHandler(commands.Cog):
         elif isinstance(error, commands.MissingRequiredArgument):
             await ctx.reply(f"{Emotes.not_found.value} Missing required arguments!\n> Use `{ctx.prefix}help {ctx.command}` for aditional help!")
 
+        elif isinstance(error, commands.BadUnionArgument):
+            await ctx.reply(f"{Emotes.not_found.value} Invalid argument!\n> Use `{ctx.prefix}help {ctx.command}` for aditional help!")
+        
         else:
             # All other Errors not returned come here. And we can just print the default TraceBack.
             await ctx.reply(f'{Emotes.wrong.value} Something went wrong.')
             
-            print('Ignoring exception in command {}:'.format(ctx.command), file=sys.stderr)
+            print(f'Ignoring exception in command {ctx.command}:', file=sys.stderr)
             traceback.print_exception(type(error), error, error.__traceback__, file=sys.stderr)
 
 
