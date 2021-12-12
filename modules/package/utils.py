@@ -8,7 +8,6 @@ def open_json(file_path):
 
     with open(file_path) as file:
         json_file = json.load(file)
-        file.close()
 
     return json_file
 
