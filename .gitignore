@@ -2,3 +2,6 @@ srdata
 **/__pycache__/**
 .vscode
 data
+Testing
+sql
+backup_data
