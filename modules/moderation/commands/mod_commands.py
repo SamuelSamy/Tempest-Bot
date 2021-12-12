@@ -2,7 +2,6 @@ import typing
 import discord
 
 from discord.ext import commands
-from discord.ext.commands.core import check
 from modules.moderation.package.enums import Permissions
 
 from modules.package.enums import *
@@ -10,7 +9,7 @@ from modules.package.exceptions import *
 from modules.package.commands_checks import *
 
 import modules.moderation.package.commands_functions as functions
-import modules.moderation.package.utility_functions as utils
+
 
 class Moderation(commands.Cog):
     
@@ -180,7 +179,6 @@ class Moderation(commands.Cog):
             await ctx.send(error)
         except MmeberNotFoundException as error:
                 await ctx.send(error)
-
 
 
     @commands.command(

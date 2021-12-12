@@ -1,7 +1,8 @@
 import discord
 import io
-
+import typing
 from discord.ext import commands
+from discord.ext.commands.errors import MissingRequiredArgument
 
 from modules.package.enums import *
 from modules.package.exceptions import *
@@ -18,7 +19,7 @@ class AutoModerator(commands.Cog):
 
     @commands.command(
         usage = f"{get_prefix()}banword [word] [warn/kick/ban] (optional time)",
-        description = "Marks a word as a bannedword and sets a punishment when members use the word. *The time must be a number ending in 's'/'m'/'h'/'d'*"
+        description = "Bans the specified word and sets a punishment when members use the word. *The time must be a number ending in 's'/'m'/'h'/'d'*"
     )
     @commands.has_permissions(administrator = True)
     async def banword(self, ctx, word,  punishment, duration = ""):
@@ -72,6 +73,26 @@ class AutoModerator(commands.Cog):
         else:
             await ctx.reply("Successfully removed the notify channel for the specified word!")
 
+
+
+    @commands.command(
+        usage = f"{get_prefix()}linkblock [channel / role]",
+        description = "Removes the specified role / channel from the blacklist"
+    )
+    @commands.has_permissions(administrator = True)
+    async def linkblock(self, ctx, _object : typing.Union[discord.TextChannel, discord.Role]):
+        message = functions.change_link_perms(ctx.guild, _object, False)
+        await ctx.reply(message)
+
+
+    @commands.command(
+        usage = f"{get_prefix()}linkallow [channel / role]",
+        description = "Allows the specified role / channel to send external links"
+    )
+    @commands.has_permissions(administrator = True)
+    async def linkallow(self, ctx, _object : typing.Union[discord.TextChannel, discord.Role]):
+        message = functions.change_link_perms(ctx.guild, _object, True)
+        await ctx.reply(message)
 
 
 def setup(bot):

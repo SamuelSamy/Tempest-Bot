@@ -1,11 +1,15 @@
 import time
+import sqlite3
 
 from discord.ext import commands, tasks
-from modules.moderation.package.enums import CaseFormat, ModFormat
+from modules.moderation.package.enums import ModFormat
+from modules.moderation.package.classes import Case
+from modules.moderation.package.utility_functions import get_case_by_entry
 
 from modules.package.enums import *
 from modules.package.exceptions import *
 import modules.moderation.package.commands_functions as functions
+import modules.moderation.package.utility_functions as utils
 
 
 class ModerationGeneralCommands(commands.Cog):
@@ -15,68 +19,58 @@ class ModerationGeneralCommands(commands.Cog):
 
     @commands.Cog.listener("on_ready")
     async def open_listeners(self):
-
         self.remove_mute.start()
         self.remove_bans.start()
 
 
     @tasks.loop(seconds = 5) # TODO: 1 min
     async def remove_mute(self):
+        
+        path = "data/database.db"
+        table = "moderation_cases"
 
-        moderation_logs = functions.open_json("data/moderation.json")
+        connection = sqlite3.connect(path)
+        connection.row_factory = sqlite3.Row
+        cursor = connection.cursor()
+        cursor.execute(f"select * from {table} where time + duration <= ? and duration != 0 and type = 'mute' and expired = 0", (int(round(time.time())),))
+        data = cursor.fetchall()
+        connection.close()
 
-        for guild_id in moderation_logs:
-            guild = self.bot.get_guild(int(guild_id))
+        for entry in data:
+            case = get_case_by_entry(entry)
+            guild = self.bot.get_guild(case.guild)
+            user = guild.get_member(case.user)
 
-            ids = moderation_logs[guild_id][ModFormat.temp_mute.value]
-            ids_to_be_removed = []
-
-            for case_id in ids:
-                case, user = await functions.get_case_and_user_by_id(guild, case_id, self.bot)
-
-                if case[CaseFormat.time.value] + case[CaseFormat.duration.value] < round(time.time()):
-                    ids_to_be_removed.append(case_id)
-                    
-                    try:
-                        await functions.handle_case(self.bot, guild, None, self.bot.user, user, 'unmute', "Mute was temporary", 0)
-                    except:
-                        print(f"Error while unmutting {user.id}")
-
-            for id in ids_to_be_removed:
-                moderation_logs[guild_id][ModFormat.temp_mute.value].remove(id)
-
-            functions.save_json(moderation_logs, "data/moderation.json")
+            try:
+                await functions.handle_case(self.bot, guild, None, self.bot.user, user, 'unmute', "Mute was temporary", 0)
+                utils.mark_as_expired(case)
+            except:
+                print(f"Error while unmutting {user.id} in {guild.id}")
 
 
     @tasks.loop(seconds = 10) # TODO: 30 min
     async def remove_bans(self):
-
-        moderation_logs = functions.open_json("data/moderation.json")
-
-        for guild_id in moderation_logs:
-            guild = self.bot.get_guild(int(guild_id))
-
-            ids = moderation_logs[guild_id][ModFormat.temp_ban.value]
-            ids_to_be_removed = []
-
-            for case_id in ids:
-
-                case, user = await functions.get_case_and_user_by_id(guild, case_id, self.bot)
-
-                if case[CaseFormat.time.value] + case[CaseFormat.duration.value] < round(time.time()):
-                
-                    ids_to_be_removed.append(case_id)
-
-                    try:
-                        await functions.handle_case(self.bot, guild, None, self.bot.user, user, 'unban', "Ban was temporary", 0)
-                    except:
-                        print(f"Error while unbanning {user.id}")
-
-            for id in ids_to_be_removed:
-                moderation_logs[guild_id][ModFormat.temp_ban.value].remove(id)
-
-            functions.save_json(moderation_logs, "data/moderation.json")
         
+        path = "data/database.db"
+        table = "moderation_cases"
+
+        connection = sqlite3.connect(path)
+        connection.row_factory = sqlite3.Row
+        cursor = connection.cursor()
+        cursor.execute(f"select * from {table} where time + duration <= ? and duration != 0 and type = 'ban' and expired = 0", (int(round(time.time())),))
+        data = cursor.fetchall()
+        connection.close()
+
+        for entry in data:
+            case = get_case_by_entry(entry)
+            guild = self.bot.get_guild(case.guild)
+            user = await self.bot.fetch_user(case.user)
+
+            # try:
+            await functions.handle_case(self.bot, guild, None, self.bot.user, user, 'unban', "Ban was temporary", 0)
+            utils.mark_as_expired(case)
+            # except:
+            #     print(f"Error while unmutting {user.id} in {guild.id}")    
 
 def setup(bot):
     bot.add_cog(ModerationGeneralCommands(bot))

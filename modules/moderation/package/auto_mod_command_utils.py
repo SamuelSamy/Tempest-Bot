@@ -1,4 +1,7 @@
-from modules.moderation.package.enums import BannedWord, ModFormat
+import discord
+from modules.leveling.package.enums import Leveling
+
+from modules.moderation.package.enums import BannedWord, ExternalLinks, ModFormat
 from modules.package.exceptions import TypeException
 from modules.package.enums import *
 from modules.package.utils import *
@@ -77,3 +80,42 @@ def notify_channel(guild, word_id, channel):
 
     if not set:
         raise UnexpectedError("Unable to unprotect the specified channel")
+
+    
+def change_link_perms(guild, _object, allow):
+    
+    message = ""
+    json_file = open_json("data/moderation.json")
+    moderation = json_file[str(guild.id)][ModFormat.links.value]
+    
+    _type = ""
+    _value = None
+
+    if type(_object) is discord.Role:
+        _type = "Role"
+        _value = ExternalLinks.protected_roles.value
+
+    else:  # type(_object) is discord.TextChannel:
+        _type = "Channel"
+        _value = ExternalLinks.protected_channels.value
+
+    
+    if allow == True:
+            
+        if _object.id in moderation[_value]:
+            message = f"{Emotes.no_entry.value} This {_type.lower()} is already blacklisted!"
+        else:
+            moderation[_value].append(_object.id)
+            message = f"{Emotes.green_tick.value} {_type} successfully blacklisted!"
+    
+    else:  # allow == False
+        
+        if _object.id not in moderation[_value]:
+            message = f"{Emotes.no_entry.value} This {_type.lower()} is not blacklisted!"
+        else:
+            moderation[_value].remove(_object.id)
+            message = f"{Emotes.green_tick.value} The {_type.lower()} was successfully removed from the blacklist!"
+
+    save_json(json_file, "data/moderation.json")
+
+    return message
