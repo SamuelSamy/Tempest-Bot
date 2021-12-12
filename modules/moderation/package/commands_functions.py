@@ -85,7 +85,7 @@ async def handle_case(bot, guild, channel, moderator, user, case_type, reason, d
 async def send_to_logs(bot, case, message = None):
     
     json_file = open_json("data/moderation.json")
-    channel = bot.get_channel(int(json_file[str(case.guild)][ModFormat.channel.value]))
+    channel = bot.get_channel(int(json_file[str(case.guild)][ModFormat.mod_channel.value]))
     
     guild = bot.get_guild(case.guild)
     user =  await bot.fetch_user(case.user)

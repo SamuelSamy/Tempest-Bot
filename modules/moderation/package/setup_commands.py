@@ -64,6 +64,6 @@ def set_mod_channel(guild, channel):
     
     moderation = open_json("data/moderation.json")
     guild_settings = moderation[str(guild.id)]
-    guild_settings[ModFormat.mod_logs.value] = channel.id
-
+    guild_settings[ModFormat.mod_channel.value] = channel.id
+    save_json(moderation, "data/moderation.json")
     return f"{Emotes.green_tick.value} Successfully set the specified channel as the moderation log channel"

@@ -5,7 +5,7 @@ class ModFormat(Enum):
     next_id         = "next-case-id"     
     logs            = "logs"
     mod_logs        = "mod-logs"
-    channel         = "logs-channel"
+    mod_channel     = "logs-channel"
     temp_mute       = "active-temp-mutes"
     temp_ban        = "active-temp-bans"
     a_punish        = "auto-punishments"

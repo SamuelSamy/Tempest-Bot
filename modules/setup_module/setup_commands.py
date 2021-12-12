@@ -89,7 +89,7 @@ class Configure(commands.Cog):
         description = "Sets the moderator log channel"
     )
     @has_permissions(administrator = True)
-    async def logchannel(self, ctx, channel : discord.TextChannel):
+    async def modlogchannel(self, ctx, channel : discord.TextChannel):
         answer = setup_commands.set_mod_channel(ctx.guild, channel)
         await ctx.send(answer)
 
