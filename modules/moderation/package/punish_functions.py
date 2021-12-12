@@ -1,4 +1,5 @@
 import time
+import sqlite3
 
 import  modules.moderation.package.commands_functions as c_functions
 from modules.package.utils import *
@@ -92,21 +93,19 @@ def get_punishments(guild):
 
 
 def count_warns(guild, user, _time):
-    warns = 0
+    
+    path = "data/database.db"
+    table = "moderation_cases"
 
-    guild_id = str(guild.id)
-    user_id = str(user.id)
-    json_file = open_json("data/moderation.json")
-
-    user_cases = json_file[guild_id][ModFormat.logs.value][user_id]
-
-    for case in user_cases:
-        if case[CaseFormat._type.value] == 'warn':
-            if case[CaseFormat.time.value] + _time  >= round(time.time()):
-                warns += 1
+    connection = sqlite3.connect(path)
+    connection.row_factory = sqlite3.Row
+    cursor = connection.cursor()
+    cursor.execute(f"select * from {table} where guild = ? and user = ? and type = 'warn' and time + ? >= ?", (guild.id, user.id, _time, int(round(time.time()))))
+    warns = len(cursor.fetchall())
+    connection.close()
 
     return warns
-
+    
 
 async def apply_punishments(bot, channel, guild, user):
     

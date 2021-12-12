@@ -1,14 +1,15 @@
 import discord
 import time
 import asyncio
+import sqlite3
 
 import modules.moderation.package.punish_functions as punish_funcs
 
 from modules.package.exceptions import *
-from modules.moderation.package.enums import CaseFormat, ModFormat
+from modules.moderation.package.enums import ModFormat
 from modules.package.enums import *
 from modules.moderation.package.utility_functions import *
-
+from modules.moderation.package.classes import Case
 
 # General
 
@@ -30,50 +31,30 @@ async def handle_case(bot, guild, channel, moderator, user, case_type, reason, d
             if case_type not in ['warn', 'ban', 'kick', 'mute', 'unban', 'unmute']:
                 raise TypeException("Invalid case type")
             
-            json_file = open_json("data/moderation.json")
 
             try:
-                guild_id = str(guild.id)
-                user_id = str(user.id)
-                moderator_id = str(moderator.id)
-                case_id = int(json_file[guild_id][ModFormat.next_id.value])
-                case = {
-                    CaseFormat.case_id.value: case_id,
-                    CaseFormat._type.value: case_type,
-                    CaseFormat.reason.value: reason,
-                    CaseFormat.time.value: round(time.time()),
-                    CaseFormat.duration.value: duration,
-                    CaseFormat.moderator.value: moderator_id
-                }
-
-                if user_id not in json_file[guild_id][ModFormat.logs.value].keys():
-                    json_file[guild_id][ModFormat.logs.value][user_id] = []
-
-                json_file[guild_id][ModFormat.logs.value][user_id].append(case)
+                guild_id = guild.id
+                user_id = user.id
+                moderator_id = moderator.id
                 
+                case = Case(
+                    None,
+                    guild_id,
+                    user_id,
+                    case_type,
+                    reason,
+                    round(time.time()),
+                    moderator_id,
+                    duration
+                )
 
-                if moderator_id not in json_file[guild_id][ModFormat.mod_logs.value].keys():
-                    json_file[guild_id][ModFormat.mod_logs.value][moderator_id] = []
-
-                json_file[guild_id][ModFormat.mod_logs.value][moderator_id].append(case_id)
-
-                json_file[guild_id][ModFormat.next_id.value] += 1
-
-
-                if duration != 0:
-
-                    if case_type == 'ban':
-                        json_file[guild_id][ModFormat.temp_ban.value].append(case_id)
-                    elif case_type == 'mute':
-                        json_file[guild_id][ModFormat.temp_mute.value].append(case_id)
-
-
-                save_json(json_file, "data/moderation.json")
-
+                insert_case(case)
+                case.case_id = get_last_id()
+                
                 if channel is not None:
                     await channel.send(embed = create_message(guild, case_type, reason, duration, user, message))
                     
-                await send_to_logs(bot, json_file, guild, case, user, message)
+                await send_to_logs(bot, case, message)
                 
                 if case_type != 'unban':
 
@@ -101,24 +82,27 @@ async def handle_case(bot, guild, channel, moderator, user, case_type, reason, d
         raise MmeberNotFoundException("The specified user is not in this guild")
 
 
-async def send_to_logs(bot, json_file, guild, case, user, message):
+async def send_to_logs(bot, case, message = None):
     
-    guild_id = str(guild.id)
-    channel = bot.get_channel(int(json_file[guild_id][ModFormat.channel.value]))
-    moderator_id = case[CaseFormat.moderator.value]
-
+    json_file = open_json("data/moderation.json")
+    channel = bot.get_channel(int(json_file[str(case.guild)][ModFormat.channel.value]))
+    
+    guild = bot.get_guild(case.guild)
+    user =  await bot.fetch_user(case.user)
+    
+    
     _color = Colors.red.value
 
-    if case[CaseFormat._type.value] == "warn":
+    if case._type == "warn":
         _color = Colors.yellow.value
-    elif case[CaseFormat._type.value].startswith("un"):
+    elif case._type.startswith("un"):
         _color = Colors.green.value
    
     embed = discord.Embed(
         color = _color     
     )
 
-    _type = case[CaseFormat._type.value][0].upper() + case[CaseFormat._type.value][1:]
+    _type = case._type[0].upper() + case._type[1:]
 
     embed.set_author(
         name = f"[{_type}]  {user}",
@@ -132,20 +116,20 @@ async def send_to_logs(bot, json_file, guild, case, user, message):
 
     embed.add_field(
         name = "Moderator",
-        value = f"<@{moderator_id}>"
+        value = f"<@{case.moderator}>"
     )
 
-    if case[CaseFormat.reason.value] != "":
+    if case.reason != "":
 
         embed.add_field(
             name = "Reason",
-            value = case[CaseFormat.reason.value]
+            value = case.reason
         )
 
-    if case[CaseFormat.duration.value] != 0:
+    if case.duration != 0:
         embed.add_field(
             name = "Duration",
-            value = get_string_from_seconds(case[CaseFormat.duration.value])
+            value = get_string_from_seconds(case.duration)
         )     
 
     if message is not None:
@@ -220,34 +204,18 @@ async def handle_slowmode(ctx, channel, slowmode_time):
 
 
 async def deletecase(guild, case_id):
+    
+    path = "data/database.db"
+    table = "moderation_cases"
 
-    case_found = False
+    connection = sqlite3.connect(path)
+    cursor = connection.cursor()
+    cursor.execute(f"delete from {table} where ID = ? and guild = ?", (case_id, guild.id))
+    deleted = cursor.rowcount
+    connection.commit()
+    connection.close()
 
-    json_file = open_json("data/moderation.json")
-
-    users = json_file[str(guild.id)][ModFormat.logs.value]
-
-    for user in users:
-
-        if case_found: 
-            break
-
-        user_cases = json_file[str(guild.id)][ModFormat.logs.value][user]
-        for case in user_cases:
-            if case[CaseFormat.case_id.value] == case_id:
-                case_found = True
-                json_file[str(guild.id)][ModFormat.logs.value][user].remove(case)
-                break
-
-    if case_found:
-
-        for moderator in json_file[str(guild.id)][ModFormat.mod_logs.value]:
-            if case_id in json_file[str(guild.id)][ModFormat.mod_logs.value][moderator]:
-                json_file[str(guild.id)][ModFormat.mod_logs.value][moderator].remove(case_id)
-                break
-            
-        save_json(json_file, "data/moderation.json")
-    else:
+    if deleted == 0:
         raise CaseException("Case with the specified ID not found!")
 
 
@@ -263,7 +231,7 @@ async def handle_mute(guild, user, reason):
 
 
 async def handle_unmute(guild, user, resaon):
-    
+
     member = guild.get_member(user.id)
 
     settings = open_json("data/settings.json")
@@ -271,18 +239,14 @@ async def handle_unmute(guild, user, resaon):
 
     await member.remove_roles(muted_role, reason = resaon)
 
-    moderation_logs = open_json("data/moderation.json")
+    path = "data/database.db"
+    table = "moderation_cases"
 
-    guild_id = str(guild.id)
-    user_id = str(user.id)
-
-    if user_id in moderation_logs[guild_id].keys():
-        for case in moderation_logs[guild_id][user_id]:
-            if case[CaseFormat._type.value] == "mute" and case[CaseFormat.handled.value] == False and case[CaseFormat.duration.value] != 0:
-                case[CaseFormat.handled.value] = True
-                break
-    
-    save_json(moderation_logs, "data/moderation.json")
+    connection = sqlite3.connect(path)
+    cursor = connection.cursor()
+    cursor.execute(f"update {table} set expired = 1 where guild = ? and user = ? and type = 'mute' and duration != 0", (guild.id, user.id))
+    connection.commit()
+    connection.close()
 
 
 async def handle_kick(guild, user, reason):
@@ -309,18 +273,15 @@ async def handle_unban(guild, user, reason):
     if not member_was_unbanned:
         raise MemberNotAffectedByModeration("This user is not banned from this server!")
     else:
-        moderation_logs = open_json("data/moderation.json")
-
-        guild_id = str(guild.id)
-        user_id = str(user.id)
-
-        if user_id in moderation_logs[guild_id].keys():
-            for case in moderation_logs[guild_id][user_id]:
-                if case[CaseFormat._type.value] == "ban" and case[CaseFormat.handled.value] == False and case[CaseFormat.duration.value] != 0:
-                    case[CaseFormat.handled.value] = True
-                    break
         
-        save_json(moderation_logs, "data/moderation.json")
+        path = "data/database.db"
+        table = "moderation_cases"
+
+        connection = sqlite3.connect(path)
+        cursor = connection.cursor()
+        cursor.execute(f"update {table} set expired = 1 where guild = ? and user = ? and type = 'ban' and duration != 0", (guild.id, user.id))
+        connection.commit()
+        connection.close()
 
 
 async def handle_ban(guild, user, reason):
@@ -332,3 +293,30 @@ async def fix_mute_permissions(guild, muted_role):
     channels = guild.text_channels
     for channel in channels:
         await channel.set_permissions(muted_role, send_messages = False)
+
+
+
+def insert_case(case):
+    
+    path = "data/database.db"
+    table = "moderation_cases"
+
+    connection = sqlite3.connect(path)
+    cursor = connection.cursor()
+    cursor.execute(f"insert into {table} values (?, ?, ?, ?, ?, ?, ?, ?, ?)", (None, case.guild, case.user, case._type, case.reason, case.time, case.moderator, case.duration, 0))
+    connection.commit()
+    connection.close()
+
+
+def get_last_id():
+    
+    path = "data/database.db"
+    table = "moderation_cases"
+
+    connection = sqlite3.connect(path)
+    cursor = connection.cursor()
+    cursor.execute(f"select ID, max(ID) from {table}")
+    last_id = cursor.fetchall()[0][0]
+    connection.close()
+
+    return last_id

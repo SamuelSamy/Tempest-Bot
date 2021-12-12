@@ -59,9 +59,11 @@ async def list_permissions(guild, channel):
     await channel.send(permission_string)
     
 
-async def set_log_role(guild, channel):
-    pass
 
+def set_mod_channel(guild, channel):
+    
+    moderation = open_json("data/moderation.json")
+    guild_settings = moderation[str(guild.id)]
+    guild_settings[ModFormat.mod_logs.value] = channel.id
 
-async def set_mmod_channel(guild, channel):
-    pass
+    return f"{Emotes.green_tick.value} Successfully set the specified channel as the moderation log channel"

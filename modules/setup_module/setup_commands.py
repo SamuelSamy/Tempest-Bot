@@ -90,7 +90,7 @@ class Configure(commands.Cog):
     )
     @has_permissions(administrator = True)
     async def logchannel(self, ctx, channel : discord.TextChannel):
-        answer = setup_commands.set_log_role(ctx.guild, channel)
+        answer = setup_commands.set_mod_channel(ctx.guild, channel)
         await ctx.send(answer)
 
 

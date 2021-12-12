@@ -14,16 +14,7 @@ class ModFormat(Enum):
     banned_words    = "banned_words"
     next_bw_id      = "next-bannedowrd-id"
     links           = "external_links"
-
-
-class CaseFormat(Enum):
-    case_id     = "case_id"
-    _type       = "type"
-    reason      = "reason"
-    time        = "time"
-    moderator   = "moderator"
-    duration    = "duration"
-
+    
 
 class AutoPunishment(Enum):
     id              = "id"

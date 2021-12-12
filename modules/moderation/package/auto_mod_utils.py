@@ -6,8 +6,9 @@ from modules.package.utils import *
 from modules.moderation.package.commands_functions import handle_case
 
 
-DISCORD_URLS =  ['discord.com', 'discord.gg', 'discord.gift']
+DISCORD_URLS =  ['discord.com', 'discord.gg', 'discord.gift', 'dis.gd']
 UPPERCASE_MAX = 70  # %
+
 
 async def check_for_banned_words(bot, guild, member, message):
     
