@@ -30,7 +30,10 @@ async def handle_case(bot, guild, channel, moderator, user, case_type, reason, d
 
             if case_type not in ['warn', 'ban', 'kick', 'mute', 'unban', 'unmute']:
                 raise TypeException("Invalid case type")
-            
+
+            if case_type == "mute":
+                if has_muted_role(guild, user):
+                    raise MemberNotAffectedByModeration("This user is already muted!")
 
             try:
                 guild_id = guild.id
@@ -320,3 +323,12 @@ def get_last_id():
     connection.close()
 
     return last_id
+
+
+def has_muted_role(guild, user):
+    
+    member = guild.get_member(user.id)
+
+    settings = open_json("data/settings.json")
+    muted_role = guild.get_role(settings[str(guild.id)][Settings.muted_role.value])
+    return muted_role.id in [role.id for role in member.roles] 

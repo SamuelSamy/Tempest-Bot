@@ -103,7 +103,7 @@ def change_link_perms(guild, _object, allow):
     if allow == True:
             
         if _object.id in moderation[_value]:
-            message = f"{Emotes.no_entry.value} This {_type.lower()} is already blacklisted!"
+            message = f"{Emotes.not_found.value} This {_type.lower()} is already blacklisted!"
         else:
             moderation[_value].append(_object.id)
             message = f"{Emotes.green_tick.value} {_type} successfully blacklisted!"
@@ -111,7 +111,7 @@ def change_link_perms(guild, _object, allow):
     else:  # allow == False
         
         if _object.id not in moderation[_value]:
-            message = f"{Emotes.no_entry.value} This {_type.lower()} is not blacklisted!"
+            message = f"{Emotes.not_found.value} This {_type.lower()} is not blacklisted!"
         else:
             moderation[_value].remove(_object.id)
             message = f"{Emotes.green_tick.value} The {_type.lower()} was successfully removed from the blacklist!"

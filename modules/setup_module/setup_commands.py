@@ -85,7 +85,7 @@ class Configure(commands.Cog):
 
 
     @commands.command(
-        usage = f"{get_prefix()}logchannel [channel]",
+        usage = f"{get_prefix()}modlogchannel [channel]",
         description = "Sets the moderator log channel"
     )
     @has_permissions(administrator = True)

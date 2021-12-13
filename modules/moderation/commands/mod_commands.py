@@ -24,7 +24,7 @@ class Moderation(commands.Cog):
     )
     @has_command_permissions(command = Permissions.mod_logs.value)
     async def modlogs(self, ctx, user : discord.User, page = 1):
-        await ctx.send(embed = functions.generate_modlogs(ctx.guild, user, page))
+        await ctx.reply(embed = functions.generate_modlogs(ctx.guild, user, page))
 
 
     # Warns
@@ -34,7 +34,7 @@ class Moderation(commands.Cog):
     )
     @has_command_permissions(command = Permissions.mod_logs.value)
     async def warns(self, ctx, user : discord.User, page = 1):
-        await ctx.send(embed = functions.generate_modlogs(ctx.guild, user, page, True))
+        await ctx.reply(embed = functions.generate_modlogs(ctx.guild, user, page, True))
 
     # STATS
     @commands.command(
@@ -43,7 +43,7 @@ class Moderation(commands.Cog):
     )
     @has_command_permissions(command = Permissions.mod_stats.value)
     async def modstats(self, ctx, user : discord.User):
-        await ctx.send(embed = await functions.generate_modstats(ctx.guild, user, self.bot))
+        await ctx.reply(embed = await functions.generate_modstats(ctx.guild, user, self.bot))
 
 
     # DELETE CASE
@@ -57,13 +57,13 @@ class Moderation(commands.Cog):
         try:
             await functions.deletecase(ctx.guild, case_id)
 
-            await ctx.channel.send(embed = discord.Embed(
+            await ctx.channel.reply(embed = discord.Embed(
                 color = Colors.green.value,
                 description = f"Case {case_id} deleted!"
             ))
 
         except CaseException as error:
-            await ctx.send(error)
+            await ctx.reply(error)
 
 
     # WARN
@@ -79,7 +79,7 @@ class Moderation(commands.Cog):
         except DMException:
             pass
         except MmeberNotFoundException as error:
-            await ctx.send(error)
+            await ctx.reply(error)
 
 
     # KICK
@@ -95,7 +95,7 @@ class Moderation(commands.Cog):
         except DMException:
             pass
         except MmeberNotFoundException as error:
-            await ctx.send(error)
+            await ctx.reply(error)
 
 
     # BAN       
@@ -111,7 +111,7 @@ class Moderation(commands.Cog):
         except DMException:
             pass
         except MmeberNotFoundException as error:
-            await ctx.send(error)
+            await ctx.reply(error)
 
 
     @commands.command(
@@ -126,9 +126,9 @@ class Moderation(commands.Cog):
         except DMException:
             pass
         except TimeException as error:
-            await ctx.send(error)
+            await ctx.reply(error)
         except MmeberNotFoundException as error:
-            await ctx.send(error)
+            await ctx.reply(error)
 
 
 
@@ -144,7 +144,7 @@ class Moderation(commands.Cog):
         except DMException:
             pass
         except MemberNotAffectedByModeration as error:
-            await ctx.send(error)
+            await ctx.reply(error)
 
 
 
@@ -161,7 +161,7 @@ class Moderation(commands.Cog):
         except DMException:
             pass
         except MmeberNotFoundException as error:
-            await ctx.send(error)
+            await ctx.reply(error)
         
 
     @commands.command(
@@ -176,9 +176,11 @@ class Moderation(commands.Cog):
         except DMException:
             pass
         except TimeException as error:
-            await ctx.send(error)
+            await ctx.reply(error)
         except MmeberNotFoundException as error:
-                await ctx.send(error)
+            await ctx.reply(error)
+        except MemberNotAffectedByModeration as error:
+            await ctx.reply(error)
 
 
     @commands.command(
@@ -193,7 +195,7 @@ class Moderation(commands.Cog):
         except DMException:
             pass
         except MmeberNotFoundException as error:
-            await ctx.send(error)
+            await ctx.reply(error)
 
 
     # PURGE
@@ -217,7 +219,7 @@ class Moderation(commands.Cog):
         try:
             await functions.handle_slowmode(ctx, channel, slowmode_time)
         except TimeException as error:
-            await ctx.send(error)
+            await ctx.reply(error)
 
 
 def setup(bot):
