@@ -56,10 +56,10 @@ class CommandErrorHandler(commands.Cog):
             await ctx.reply(f"{Emotes.not_found.value } The specified channel does not exist!")
 
         elif isinstance(error, commands.MissingRequiredArgument):
-            await ctx.reply(f"{Emotes.not_found.value} Missing required arguments!\n> Use `{ctx.prefix}help {ctx.command}` for aditional help!")
+            await ctx.reply(f"{Emotes.not_found.value} Missing required arguments!\nUse `{ctx.prefix}help {ctx.command}` for aditional help!")
 
         elif isinstance(error, commands.BadUnionArgument):
-            await ctx.reply(f"{Emotes.not_found.value} Invalid argument!\n> Use `{ctx.prefix}help {ctx.command}` for aditional help!")
+            await ctx.reply(f"{Emotes.not_found.value} Invalid argument!\nUse `{ctx.prefix}help {ctx.command}` for aditional help!")
         
         else:
             # All other Errors not returned come here. And we can just print the default TraceBack.
