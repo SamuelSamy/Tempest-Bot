@@ -1,21 +1,22 @@
 from io import BytesIO
-from re import A
 import sqlite3
 import random
 import math
 import time
 import discord
+import math
 
 from PIL import Image, ImageDraw, ImageFont, ImageChops
 
-from modules.leveling.package.enums import Leveling
+from modules.leveling.package.enums import FontColors, Leveling
 from modules.package.enums import Colors, Emotes
 from modules.package.exceptions import LevelingError
 from modules.package.utils import get_prefix, open_json, save_json
 
 MAX_LEVEL = 1e3
-TESTING_XP = 50
+TESTING_XP = 0
 IS_TESTING = True
+
 
 def get_level_from_xp(xp):
     return int((-1 + math.floor(math.floor(math.sqrt(1 + 8 * xp / 25)))) / 4)
@@ -25,7 +26,7 @@ def get_xp_from_level(level):
 
 
 async def increase_xp(guild, user, message):
-
+    pass
     channel = message.channel
 
     leveling_settings = open_json("data/leveling.json")
@@ -337,24 +338,7 @@ def get_blacklist(guild):
     return embed
 
 
-async def generate_level_image(guild, user, ctx):
-    
-    template = Image.open("Images/rank_card.png").convert("RGBA")
-
-    profile_picture = user.avatar_url_as(size = 256)
-    data = BytesIO(await profile_picture.read())
-    profile_picture = Image.open(data).convert("RGBA")
-
-    name = str(user)
-    level, rank = get_user_level_and_rank(guild, user, ctx)
-
-    image = ImageDraw.draw(template)
-    pfp_circle = create_circle_picture(profile_picture, (100, 100)) 
-
-    name_font = None
-
-    
-def get_user_level_and_rank(guild, user, author):
+def get_user_level_rank_xp(guild, user, author):
     
     path = "data/database.db"
     table = "levels"
@@ -371,7 +355,7 @@ def get_user_level_and_rank(guild, user, author):
 
     if len(user_data) != 0:
         entry = user_data[0]
-        return get_level_from_xp(entry["total_xp"]), data.index(entry) + 1
+        return get_level_from_xp(entry["total_xp"]), data.index(entry) + 1, entry["total_xp"]
     else:
 
         if user == author:
@@ -380,6 +364,154 @@ def get_user_level_and_rank(guild, user, author):
             raise LevelingError(f"{Emotes.no_entry.value} That user has no level!")
             
 
+
+async def generate_level_image(guild, user, ctx):
+    
+    max_y = 256   # image max y
+    max_x = 1024  # image max x
+
+    y_offset = 25  # the right, top offset
+    x_offset = 525
+
+    # profile picture data
+    picture_size = 200
+    picture_border_size = 8
+    picture_location_x = y_offset + picture_border_size
+    picture_location_y = int((max_y - picture_size - 2 * picture_border_size) / 2)
+
+    after_image_offset = 16 + picture_location_x + picture_size + 2 * picture_border_size
+
+
+    # name location 
+    name_box_location = (after_image_offset, int(y_offset / 2))
+
+    #rank location
+    rank_location  = (after_image_offset, name_box_location[1] + 3 * y_offset + int(y_offset / 2))
+
+    #level location
+    level_location = (after_image_offset, name_box_location[1] + 6 * y_offset)
+
+    # XP location
+    xp_location = (after_image_offset + x_offset, name_box_location[1] + 6 * y_offset)
+
+    # rounded rectangle
+    rectangle = (after_image_offset, name_box_location[1] + 8 * y_offset, after_image_offset + x_offset, name_box_location[1] + 8 * y_offset + 35 )
+
+    #open the required images
+    template = Image.open("Images/bigger_rank_card.png").convert("RGBA")
+    borded_image = Image.open("Images/border.png").convert("RGBA")
+
+
+    # create a round profile picture image
+    profile_picture = user.avatar_url_as(size = 256)
+    data = BytesIO(await profile_picture.read())
+    profile_picture = Image.open(data).convert("RGBA")
+
+
+    # initialize the dispaly data
+    name = str(user.display_name)
+    discriminator = "#" + str(user.discriminator)
+    level, rank, xp = get_user_level_rank_xp(guild, user, ctx)
+
+    # initialize the draw object
+    draw = ImageDraw.Draw(template)
+
+    # creating a border
+    border = create_circle_picture(borded_image, (picture_size + 2 * picture_border_size, picture_size + 2 * picture_border_size))
+    template.paste(border, (picture_location_x, picture_location_y), border)
+
+
+    # pasting the profile picture on the rank card
+    pfp_circle = create_circle_picture(profile_picture, (picture_size, picture_size)) 
+    template.paste(pfp_circle, (picture_location_x + picture_border_size, picture_location_y + picture_border_size), pfp_circle)
+
+
+    # initializing the fonts
+    if len(name) >= 16:
+        name = name[:16]
+
+    if len(name) >= 12:
+        name_font = ImageFont.truetype("Images/Cambria.ttf", 28)
+        discriminator_font = ImageFont.truetype("Images/Cambria.ttf", 14)
+        
+    elif len(name) >= 8:
+        name_font = ImageFont.truetype("Images/Cambria.ttf", 36)
+        discriminator_font = ImageFont.truetype("Images/Cambria.ttf", 18)
+
+    else:
+        name_font = ImageFont.truetype("Images/Cambria.ttf", 56)
+        discriminator_font = ImageFont.truetype("Images/Cambria.ttf", 27)
+
+    rank_font = ImageFont.truetype("Images/Cambria.ttf", 36)
+    rank_number_font = ImageFont.truetype("Images/Cambria.ttf", 48)
+
+    level_font = ImageFont.truetype("Images/Cambria.ttf", 32)
+    level_number_font = ImageFont.truetype("Images/Cambria.ttf", 48)
+    
+    xp_font = ImageFont.truetype("Images/Cambria.ttf", 32)
+    xp_number_font = ImageFont.truetype("Images/Cambria.ttf", 32)
+
+
+    #  draw the name
+    _w, _h = name_font.getsize(name)
+    draw.text(name_box_location, name, font = name_font, fill = FontColors.white.value)
+
+
+    # draw the discriminator
+    w, h = discriminator_font.getsize(discriminator)
+  
+    discriminator_location = (name_box_location[0] + _w + 8, name_box_location[1] + h)
+    draw.text(discriminator_location, discriminator, font = discriminator_font, fill = FontColors.almost_white.value)
+    
+
+    # draw RANK
+    _w, _h = rank_font.getsize("Rank")
+    draw.text(rank_location, "Rank", font = rank_font, fill = FontColors.almost_white.value)
+
+    # draw the rank number
+    w, h, = rank_number_font.getsize(f"#{rank}")
+    rank_nnumber_location = (rank_location[0] + _w + 12, rank_location[1] - int(_h / 3))
+    draw.text(rank_nnumber_location, f"#{rank}", font = rank_number_font, fill = FontColors.white.value)
+    
+
+    # draw Level
+    _w, _h = level_font.getsize("Level")
+    draw.text(level_location, "Level", font = level_font, fill = FontColors.almost_white.value)
+
+    # draw the level number
+    w, h, = level_number_font.getsize(str(level))
+    level_number_location = (level_location[0] + _w + 12, level_location[1] - int(_h / 2))
+    draw.text(level_number_location, str(level), font = level_number_font, fill = FontColors.white.value)
+    
+
+    #draw xp
+    needed_xp = get_xp_from_level(level + 1) - get_xp_from_level(level)
+    _w, _h = xp_font.getsize(f"/ {format_xp(needed_xp)}  XP")
+    xp_location = (xp_location[0] - _w, xp_location[1])
+    draw.text(xp_location, f"/ {format_xp(needed_xp)}  XP" , font = xp_font, fill = FontColors.almost_white.value, align = "right")
+    
+    # current xp
+    current_xp = xp - get_xp_from_level(level)
+    w, h = xp_number_font.getsize(f"/ {format_xp(current_xp)} ")
+    xp_number_location = (xp_location[0] - w + 16, xp_location[1])
+    draw.text(xp_number_location, f"{format_xp(current_xp)} " , font = xp_number_font, fill = FontColors.white.value, align = "right")
+
+    # draw bar
+    draw.rounded_rectangle(rectangle, fill = FontColors.white.value, width = 12, radius = 30)
+
+    precent = current_xp / needed_xp 
+    print(precent, needed_xp, current_xp)
+
+    rectangle = (rectangle[0], rectangle[1], after_image_offset + rectangle[2] * precent, rectangle[3])
+    draw.rounded_rectangle(rectangle, fill = FontColors.blue.value, width = 12, radius = 30)
+
+    # send the image
+    with BytesIO() as rank_card:
+        template.save(rank_card, "PNG")
+        rank_card.seek(0)
+        await ctx.reply(file = discord.File(rank_card, f"{guild.id}_{user.id}_level.png"))
+
+
 def create_circle_picture(image, size):
 
     image = image.resize(size, Image.ANTIALIAS).convert("RGBA")
@@ -387,9 +519,20 @@ def create_circle_picture(image, size):
     bigsize = (size[0] * 3, size[1] * 3)
     mask = Image.new('L', bigsize, 0)
     draw = ImageDraw.Draw(mask)
-    draw.elipse((0, 0) + bigsize, fill = 255)
+    draw.ellipse((0, 0) + bigsize, fill = 255)
     mask = mask.resize(size, Image.ANTIALIAS)
     mask = ImageChops.darker(mask, image.split()[-1])
     image.putalpha(mask)
 
     return image
+
+
+def format_xp(xp):
+
+    if xp < 1e3:
+        return str(xp)
+    
+    if xp < 1e4:
+        return str(round(xp / 1000, 2)) + "k"
+    
+    return str(round(xp / 1000, 1)) + "k"
