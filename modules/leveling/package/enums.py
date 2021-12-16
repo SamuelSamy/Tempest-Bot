@@ -11,10 +11,11 @@ class Leveling(Enum):
     notify_channel      =   "notify_channel"
 
 
-class FontColors(Enum):
+class CustomColors(Enum):
 
-    blue            =   (35, 24, 112, 255)
+    blue            =   (35,   24, 112, 255)
+    card_black      =   (40,   39,  42, 255)
     white           =   (255, 255, 255, 255)
     almost_white    =   (230, 230, 230, 128) 
     gray            =   (100, 100, 100, 255)
-    black           =   (10, 10, 9, 255)
+    black           =   (10,   10,   9, 255)

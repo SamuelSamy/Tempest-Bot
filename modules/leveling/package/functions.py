@@ -8,14 +8,14 @@ import math
 
 from PIL import Image, ImageDraw, ImageFont, ImageChops
 
-from modules.leveling.package.enums import FontColors, Leveling
+from modules.leveling.package.enums import CustomColors, Leveling
 from modules.package.enums import Colors, Emotes
 from modules.package.exceptions import LevelingError
 from modules.package.utils import get_prefix, open_json, save_json
 
 MAX_LEVEL = 1e3
-TESTING_XP = 0
-IS_TESTING = True
+TESTING_XP = 50
+IS_TESTING = False
 
 
 def get_level_from_xp(xp):
@@ -26,7 +26,7 @@ def get_xp_from_level(level):
 
 
 async def increase_xp(guild, user, message):
-    pass
+    
     channel = message.channel
 
     leveling_settings = open_json("data/leveling.json")
@@ -46,7 +46,7 @@ async def increase_xp(guild, user, message):
             or IS_TESTING:
 
             xp_to_give = random.randint(leveling_settings[Leveling.min_xp.value], leveling_settings[Leveling.max_xp.value])
-            xp_to_give += TESTING_XP
+            xp_to_give += TESTING_XP * IS_TESTING
             
             await change_xp(guild, user, current_xp, xp_to_give, current_time, channel)
     
@@ -180,9 +180,9 @@ async def add_xp(guild, user, xp_to_add, ctx):
 
     if old_xp == -1:
         create_leveling_entry(guild, user)
-
+    
     await change_xp(guild, user, old_xp, new_xp - old_xp, timestamp = last_message_timestamp)
-    await ctx.reply(f"{Emotes.green_tick.value} Successfully added {xp_to_add} to <@{user.id}>!\nTheir new level is **{get_level_from_xp(new_xp)}**!")
+    await ctx.reply(f"{Emotes.green_tick.value} Successfully added {xp_to_add} XP to <@{user.id}>!")
 
 
 async def remove_xp(guild, user, xp_to_remove, ctx):
@@ -191,13 +191,13 @@ async def remove_xp(guild, user, xp_to_remove, ctx):
         raise LevelingError(f"{Emotes.not_found.value} The amount of xp can not be a negative number!")
     
     old_xp, last_message_timestamp = get_leveling_data(guild, user)
-    new_xp = min(old_xp - xp_to_remove, 0)
+    new_xp = old_xp - xp_to_remove
 
     if old_xp == -1:
-        create_leveling_entry(guild, user)
-
-    await change_xp(guild, user, old_xp, new_xp - old_xp, timestamp = last_message_timestamp)
-    await ctx.reply(f"{Emotes.green_tick.value} Successfully removed {xp_to_remove} from <@{user.id}>!\nTheir new level is **{get_level_from_xp(new_xp)}**!")
+        await ctx.reply(f"{Emotes.no_entry.value} This use has no XP yet!")        
+    else:
+        await change_xp(guild, user, old_xp, new_xp - old_xp, timestamp = last_message_timestamp)
+        await ctx.reply(f"{Emotes.green_tick.value} Successfully removed {xp_to_remove} XP from <@{user.id}>!")
 
 
 
@@ -398,7 +398,7 @@ async def generate_level_image(guild, user, ctx):
     rectangle = (after_image_offset, name_box_location[1] + 8 * y_offset, after_image_offset + x_offset, name_box_location[1] + 8 * y_offset + 35 )
 
     #open the required images
-    template = Image.open("Images/bigger_rank_card.png").convert("RGBA")
+    template = Image.open("Images/rank_card.png").convert("RGBA")
     borded_image = Image.open("Images/border.png").convert("RGBA")
 
 
@@ -454,56 +454,59 @@ async def generate_level_image(guild, user, ctx):
 
     #  draw the name
     _w, _h = name_font.getsize(name)
-    draw.text(name_box_location, name, font = name_font, fill = FontColors.white.value)
+    draw.text(name_box_location, name, font = name_font, fill = CustomColors.white.value)
 
 
     # draw the discriminator
     w, h = discriminator_font.getsize(discriminator)
   
     discriminator_location = (name_box_location[0] + _w + 8, name_box_location[1] + h)
-    draw.text(discriminator_location, discriminator, font = discriminator_font, fill = FontColors.almost_white.value)
+    draw.text(discriminator_location, discriminator, font = discriminator_font, fill = CustomColors.almost_white.value)
     
 
     # draw RANK
     _w, _h = rank_font.getsize("Rank")
-    draw.text(rank_location, "Rank", font = rank_font, fill = FontColors.almost_white.value)
+    draw.text(rank_location, "Rank", font = rank_font, fill = CustomColors.almost_white.value)
 
     # draw the rank number
     w, h, = rank_number_font.getsize(f"#{rank}")
     rank_nnumber_location = (rank_location[0] + _w + 12, rank_location[1] - int(_h / 3))
-    draw.text(rank_nnumber_location, f"#{rank}", font = rank_number_font, fill = FontColors.white.value)
+    draw.text(rank_nnumber_location, f"#{rank}", font = rank_number_font, fill = CustomColors.white.value)
     
 
     # draw Level
     _w, _h = level_font.getsize("Level")
-    draw.text(level_location, "Level", font = level_font, fill = FontColors.almost_white.value)
+    draw.text(level_location, "Level", font = level_font, fill = CustomColors.almost_white.value)
 
     # draw the level number
     w, h, = level_number_font.getsize(str(level))
     level_number_location = (level_location[0] + _w + 12, level_location[1] - int(_h / 2))
-    draw.text(level_number_location, str(level), font = level_number_font, fill = FontColors.white.value)
+    draw.text(level_number_location, str(level), font = level_number_font, fill = CustomColors.white.value)
     
 
     #draw xp
     needed_xp = get_xp_from_level(level + 1) - get_xp_from_level(level)
     _w, _h = xp_font.getsize(f"/ {format_xp(needed_xp)}  XP")
     xp_location = (xp_location[0] - _w, xp_location[1])
-    draw.text(xp_location, f"/ {format_xp(needed_xp)}  XP" , font = xp_font, fill = FontColors.almost_white.value, align = "right")
+    draw.text(xp_location, f"/ {format_xp(needed_xp)}  XP" , font = xp_font, fill = CustomColors.almost_white.value, align = "right")
     
     # current xp
     current_xp = xp - get_xp_from_level(level)
     w, h = xp_number_font.getsize(f"/ {format_xp(current_xp)} ")
     xp_number_location = (xp_location[0] - w + 16, xp_location[1])
-    draw.text(xp_number_location, f"{format_xp(current_xp)} " , font = xp_number_font, fill = FontColors.white.value, align = "right")
+    draw.text(xp_number_location, f"{format_xp(current_xp)} " , font = xp_number_font, fill = CustomColors.white.value, align = "right")
 
     # draw bar
-    draw.rounded_rectangle(rectangle, fill = FontColors.white.value, width = 12, radius = 30)
+    draw.rounded_rectangle(rectangle, fill = CustomColors.white.value, width = 0, radius = 28)
 
     precent = current_xp / needed_xp 
-    print(precent, needed_xp, current_xp)
 
-    rectangle = (rectangle[0], rectangle[1], after_image_offset + rectangle[2] * precent, rectangle[3])
-    draw.rounded_rectangle(rectangle, fill = FontColors.blue.value, width = 12, radius = 30)
+    pixels = get_original_pixels(rectangle, template)
+
+    rectangle = (rectangle[0], rectangle[1], after_image_offset + x_offset * precent, rectangle[3])
+    draw.rounded_rectangle(rectangle, fill = CustomColors.blue.value, width = 0, radius = 28)
+
+    rectify_bar(pixels, template)
 
     # send the image
     with BytesIO() as rank_card:
@@ -536,3 +539,37 @@ def format_xp(xp):
         return str(round(xp / 1000, 2)) + "k"
     
     return str(round(xp / 1000, 1)) + "k"
+
+
+def get_original_pixels(rectangle, temppalte):
+
+    pixels = []
+
+    for i in range(50):
+        for j in range(rectangle[3] - rectangle[1] + 1):
+            
+            pi = rectangle[0] + i
+            pj = rectangle[1] + j
+
+            r, g, b, a = temppalte.getpixel((pi, pj))
+  
+            if (r, g, b, 255) == CustomColors.card_black.value:
+                pixels.append((pi, pj))
+
+
+            pi = rectangle[2] - i
+            pj = rectangle[1] + j
+
+            r, g, b, a = temppalte.getpixel((pi, pj))
+  
+            if (r, g, b, 255) == CustomColors.card_black.value:
+                pixels.append((pi, pj))
+
+    return pixels
+
+
+def rectify_bar(pixels, template):
+    for pixel in pixels:
+        template.putpixel(pixel, CustomColors.card_black.value)
+    
+

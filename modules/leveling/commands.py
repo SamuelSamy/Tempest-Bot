@@ -132,7 +132,6 @@ class Leveling(commands.Cog):
         usage = f"{get_prefix()}level (optional user)",
         description = "Checks a user level"
     )
-    @commands.has_permissions(administrator = True)
     async def level(self, ctx, user : typing.Optional[discord.User]):
         
         try:
