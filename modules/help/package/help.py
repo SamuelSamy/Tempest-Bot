@@ -29,11 +29,12 @@ class CustomHelpCommand(commands.HelpCommand):
             if cog is not None and len(cog.get_commands()) > 0:
                 _name = re.sub(r"(\w)([A-Z])", r"\1 \2", cog.qualified_name)
                 
-                embed.add_field(
-                    name = f"{_name}",
-                    value = f"`{self.prefix}help {cog.qualified_name}`",
-                    inline = False
-                )
+                if _name.lower() != "owner":
+                    embed.add_field(
+                        name = f"{_name}",
+                        value = f"`{self.prefix}help {cog.qualified_name}`",
+                        inline = False
+                    )
 
         await self.get_destination().send(embed = embed)
 
