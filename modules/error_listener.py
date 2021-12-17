@@ -65,6 +65,9 @@ class CommandErrorHandler(commands.Cog):
         elif isinstance(error, commands.UserNotFound):
             await ctx.reply(f"{Emotes.not_found.value} The specified user is not in this server or does not exist!")
 
+        elif isinstance(error, commands.ChannelNotFound):
+            await ctx.reply(f"{Emotes.not_found.value} The specified channel does not exist!")
+
         else:
             # All other Errors not returned come here. And we can just print the default TraceBack.
             await ctx.reply(f'{Emotes.wrong.value} Something went wrong.')
