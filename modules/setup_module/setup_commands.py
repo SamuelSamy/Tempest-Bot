@@ -21,7 +21,7 @@ class Configure(commands.Cog):
     )
     @has_permissions(administrator = True)
     async def liststaff(self, ctx):
-        await setup_utils.list_staff(ctx.guild, ctx.channel)
+        await setup_utils.list_staff(ctx.guild, ctx)
 
 
     @commands.command(
@@ -31,7 +31,7 @@ class Configure(commands.Cog):
     @has_permissions(administrator = True)
     async def addstaff(self, ctx, role : discord.Role):
         answer = setup_utils.modifiy_staff(ctx.guild, role, True)
-        await ctx.send(answer)
+        await ctx.reply(answer)
 
 
     @commands.command(
@@ -41,7 +41,7 @@ class Configure(commands.Cog):
     @has_permissions(administrator = True)
     async def removestaff(self, ctx, role : discord.Role):
         answer = setup_utils.modifiy_staff(ctx.guild, role, False)
-        await ctx.send(answer)
+        await ctx.reply(answer)
 
 
     # Permissions
@@ -51,7 +51,7 @@ class Configure(commands.Cog):
     )
     @has_permissions(administrator = True)
     async def listpermissions(self, ctx):
-        await setup_commands.list_permissions(ctx.guild, ctx.channel)
+        await setup_commands.list_permissions(ctx.guild, ctx)
 
 
     @commands.command(
@@ -61,7 +61,7 @@ class Configure(commands.Cog):
     @has_permissions(administrator = True)
     async def modallow(self, ctx, _type, role : discord.Role):
         answer = setup_commands.change_permissions(ctx.guild, _type, role, True)
-        await ctx.send(answer)
+        await ctx.reply(answer)
 
 
     @commands.command(
@@ -71,7 +71,7 @@ class Configure(commands.Cog):
     @has_permissions(administrator = True)
     async def modblock(self, ctx, _type, role : discord.Role):
         answer = setup_commands.change_permissions(ctx.guild, _type, role, False)
-        await ctx.send(answer)
+        await ctx.reply(answer)
 
 
     @commands.command(
@@ -81,7 +81,7 @@ class Configure(commands.Cog):
     @has_permissions(administrator = True)
     async def muterole(self, ctx, role : discord.Role):
         answer = setup_commands.set_mute_role(ctx.guild, role)
-        await ctx.send(answer)
+        await ctx.reply(answer)
 
 
     @commands.command(
@@ -91,7 +91,7 @@ class Configure(commands.Cog):
     @has_permissions(administrator = True)
     async def modlogchannel(self, ctx, channel : discord.TextChannel):
         answer = setup_commands.set_mod_channel(ctx.guild, channel)
-        await ctx.send(answer)
+        await ctx.reply(answer)
 
 
 def setup(bot):

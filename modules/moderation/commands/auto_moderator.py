@@ -57,7 +57,7 @@ class AutoModerator(commands.Cog):
         json_content = functions.list_banned_words(ctx.guild)
         _fp = io.StringIO(json_content)
         _filename = f"{ctx.guild.id}.banned_words.json"
-        await ctx.send(content = "**Banned Words**", file = discord.File(fp = _fp, filename =_filename ))
+        await ctx.reply(content = "**Banned Words**", file = discord.File(fp = _fp, filename =_filename ))
 
 
     @commands.command(

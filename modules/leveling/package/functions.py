@@ -191,7 +191,7 @@ async def send_level_up_message(guild, user, level, last_channel):
         channel_id = last_channel.id
 
     channel = guild.get_channel(int(channel_id))
-    await channel.send(f"Congratulations <@{user.id}>! You just advanced to **level {level}**")
+    await channel.send(f"Congratulations <@{user.id}>! You just advanced to **level {level}**!")
 
 
 async def set_level(guild, user, level):

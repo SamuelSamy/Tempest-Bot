@@ -2,6 +2,7 @@ import typing
 import discord
 
 from discord.ext import commands
+from discord.ext.commands.errors import MemberNotFound
 from modules.moderation.package.enums import Permissions
 
 from modules.package.enums import *
@@ -75,7 +76,7 @@ class Moderation(commands.Cog):
     async def warn(self, ctx, user : discord.User, *, reason = ""):
 
         try:
-            await functions.handle_case(self.bot, ctx.guild, ctx.channel, ctx.author, user, 'warn', reason, 0)
+            await functions.handle_case(self.bot, ctx.guild, ctx.channel, ctx.author, user, 'warn', reason, 0, ctx = ctx)
         except DMException:
             pass
         except MmeberNotFoundException as error:
@@ -92,7 +93,7 @@ class Moderation(commands.Cog):
     async def kick(self, ctx, user : discord.User, *, reason = ""):
         
         try:
-            await functions.handle_case(self.bot, ctx.guild, ctx.channel, ctx.author, user, 'kick', reason, 0)
+            await functions.handle_case(self.bot, ctx.guild, ctx.channel, ctx.author, user, 'kick', reason, 0, ctx = ctx)
         except DMException:
             pass
         except MmeberNotFoundException as error:
@@ -108,7 +109,7 @@ class Moderation(commands.Cog):
     async def ban(self, ctx, user : discord.User, *, reason = ""):
         
         try:
-            await functions.handle_case(self.bot, ctx.guild, ctx.channel, ctx.author, user, 'ban', reason, 0)
+            await functions.handle_case(self.bot, ctx.guild, ctx.channel, ctx.author, user, 'ban', reason, 0, ctx = ctx)
         except DMException:
             pass
         except MmeberNotFoundException as error:
@@ -123,7 +124,7 @@ class Moderation(commands.Cog):
     async def tempban(self, ctx, user : discord.User, duration, *, reason = ""):
     
         try:
-            await functions.handle_case(self.bot, ctx.guild, ctx.channel, ctx.author, user, 'ban', reason, duration)
+            await functions.handle_case(self.bot, ctx.guild, ctx.channel, ctx.author, user, 'ban', reason, duration, ctx = ctx)
         except DMException:
             pass
         except TimeException as error:
@@ -141,7 +142,7 @@ class Moderation(commands.Cog):
     async def unban(self, ctx, user : discord.User, *, reason = ""):
         
         try:
-            await functions.handle_case(self.bot, ctx.guild, ctx.channel, ctx.author, user, 'unban', reason, 0)
+            await functions.handle_case(self.bot, ctx.guild, ctx.channel, ctx.author, user, 'unban', reason, 0, ctx = ctx)
         except DMException:
             pass
         except MemberNotAffectedByModeration as error:
@@ -157,7 +158,7 @@ class Moderation(commands.Cog):
     async def mute(self, ctx, user : discord.User, *, reason = ""):
         
         try:
-            await functions.handle_case(self.bot, ctx.guild, ctx.channel, ctx.author, user, 'mute', reason, 0)
+            await functions.handle_case(self.bot, ctx.guild, ctx.channel, ctx.author, user, 'mute', reason, 0, ctx = ctx)
         except DMException:
             pass
         except MmeberNotFoundException as error:
@@ -174,7 +175,7 @@ class Moderation(commands.Cog):
     async def tempmute(self, ctx, user : discord.User, duration, *, reason = ""):
         
         try:
-            await functions.handle_case(self.bot, ctx.guild, ctx.channel, ctx.author, user, 'mute', reason, duration)
+            await functions.handle_case(self.bot, ctx.guild, ctx.channel, ctx.author, user, 'mute', reason, duration, ctx = ctx)
         except DMException:
             pass
         except TimeException as error:
@@ -195,7 +196,7 @@ class Moderation(commands.Cog):
     async def unmute(self, ctx, user : discord.User, *, reason = ""):
         
         try:
-            await functions.handle_case(self.bot, ctx.guild, ctx.channel, ctx.author, user, 'unmute', reason, 0)
+            await functions.handle_case(self.bot, ctx.guild, ctx.channel, ctx.author, user, 'unmute', reason, 0, ctx = ctx)
         except DMException:
             pass
         except MmeberNotFoundException as error:
@@ -214,7 +215,7 @@ class Moderation(commands.Cog):
         await functions.handle_purge(ctx, amount_of_messages, user)
     
 
-    # SLOWMODE
+    # WHOIS
     @commands.command(
          usage = f"{get_prefix()}slowmode (channel) [slowmode]",
         description = "Sets the slowmode of the specified channel. If no channel is specified the current channel will be affected"
@@ -227,6 +228,21 @@ class Moderation(commands.Cog):
         except TimeException as error:
             await ctx.reply(error)
 
+
+    # SLOWMODE
+    @commands.command(
+         usage = f"{get_prefix()}whois (user)",
+        description = "Get information about a user"
+    )
+    @has_staff_role()
+    async def whois(self, ctx, user : typing.Optional[discord.User]):
+        
+        try:
+            await functions.generate_whois(ctx, user)
+        except MemberNotFound as error:
+            await ctx.reply(error)
+
+       
 
 def setup(bot):
     bot.add_cog(Moderation(bot))

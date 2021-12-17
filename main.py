@@ -28,9 +28,9 @@ async def restart(ctx):
         try:
             unload_packages(files, bot)
             load_packages(files, bot)
-            await ctx.send("Modules restarted!")
+            await ctx.reply("Modules restarted!")
         except:
-            await ctx.send("Error while restarting")
+            await ctx.reply("Error while restarting")
 
 
 @bot.event
@@ -44,7 +44,7 @@ async def on_ready():
 @has_permissions(administrator = True)
 async def uptime(ctx):
     uptime = get_time() - startTime
-    await ctx.send(f"Uptime: {uptime}")
+    await ctx.reply(f"Uptime: {uptime}")
 
 
 bot.run(config['token'])

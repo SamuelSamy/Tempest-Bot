@@ -28,11 +28,11 @@ class AutoPunishments(commands.Cog):
                 duration = 0
 
             functions.add_punishment(ctx.guild, warns, time, _type, duration)
-            await ctx.send("Auto-Punishment added!")
+            await ctx.reply("Auto-Punishment added!")
         except ValueError as error:
-            await ctx.send(error)
+            await ctx.reply(error)
         except TimeException as error:
-            await ctx.send(error)
+            await ctx.reply(error)
 
     
     @commands.command(
@@ -44,9 +44,9 @@ class AutoPunishments(commands.Cog):
         
         try:
             functions.remove_punishment(ctx.guild, punishment_id)
-            await ctx.send("Auto-Punishment removed!")
+            await ctx.reply("Auto-Punishment removed!")
         except ValueError as error:
-            await ctx.send(error)
+            await ctx.reply(error)
 
 
     @commands.command(
@@ -59,7 +59,7 @@ class AutoPunishments(commands.Cog):
         json_content = functions.list_punishments(ctx.guild)
         _fp = io.StringIO(json_content)
         _filename = f"{ctx.guild.id}.auto_punishments.json"
-        await ctx.send(content = "**Autho Punishments**", file = discord.File(fp = _fp, filename =_filename ))
+        await ctx.reply(content = "**Autho Punishments**", file = discord.File(fp = _fp, filename =_filename ))
 
 
 def setup(bot):

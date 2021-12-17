@@ -31,9 +31,13 @@ def change_permissions(guild, _type, role, append = True):
 
     return answer
 
-async def list_permissions(guild, channel):
+async def list_permissions(guild, ctx):
     
-    permission_string = "**Current Moderator Permissions**\n```"
+    embed = discord.Embed(
+        color = Colors.blue.value,
+        title = "Current Moderator Permissions"
+    )
+    
 
     guild_id = str(guild.id)
 
@@ -42,21 +46,33 @@ async def list_permissions(guild, channel):
     permissions = json_file[guild_id][ModFormat.permissions.value]
 
     for permission in permissions.keys():
-        permission_string += f"{permission}: ["
-
-        roles = permissions[permission]
         
+        roles = permissions[permission]
+
+        allowed_roles = ""
+
         for role in roles:
             actual_role = guild.get_role(role)
-            permission_string += f"{actual_role.name}, "
+            if actual_role is not None:
+                allowed_roles += f"<@&{actual_role.id}> "
+        
+        if allowed_roles == "":
+            allowed_roles = None
 
-        if permission_string[-1] == ' ':
-            permission_string = permission_string[:-2]
+        perm = permission[0].upper() + permission[1:]
+        perm = perm.replace('-', '')
 
-        permission_string += "]\n"
+        embed.add_field(
+            name = f"{perm}",
+            value = allowed_roles,
+            inline = True
+        )
 
-    permission_string += "```*Note: Administrators can use any of the above commands, regradless of their roles!*"
-    await channel.send(permission_string)
+    embed.set_footer(
+        text = "Administrators can use any of the above commands, regradless of their roles!"
+    )
+
+    await ctx.reply(embed = embed)
     
 
 

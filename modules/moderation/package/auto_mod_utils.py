@@ -113,7 +113,7 @@ async def check_for_external_links(guild, user, message):
 
 async def check_for_mass_mention(bot, guild, user, message):
     
-    if len(message.mentions) > 1:
+    if len(message.mentions) > 6:
         
         await handle_case(
             bot, 

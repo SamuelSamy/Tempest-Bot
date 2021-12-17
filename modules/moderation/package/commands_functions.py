@@ -3,6 +3,9 @@ import time
 import asyncio
 import sqlite3
 
+from datetime import datetime
+from discord.ext.commands.errors import MemberNotFound
+
 import modules.moderation.package.punish_functions as punish_funcs
 
 from modules.package.exceptions import *
@@ -13,14 +16,21 @@ from modules.moderation.package.classes import Case
 
 # General
 
-async def handle_case(bot, guild, channel, moderator, user, case_type, reason, duration = 0, message = None):
+async def handle_case(bot, guild, channel, moderator, user, case_type, reason, duration = 0, message = None, ctx = None):
 
     if user_in_guild(guild, user) or case_type == 'unban':
 
         if user.id == moderator.id:
-            await channel.send(f"{Emotes.red_tick.value} You can not use that command on yourself!")
+            if ctx is not None:
+                await channel.reply(f"{Emotes.red_tick.value} You can not use that command on yourself!")
+            else:
+                await channel.reply(f"{Emotes.red_tick.value} You can not use that command on yourself!")
         elif is_staff(guild, user):
-            await channel.send(f"{Emotes.red_tick.value} You can not use that command on a staff member!")
+            if ctx is not None:
+                await channel.reply(f"{Emotes.red_tick.value} You can not use that command on a staff member!")
+            else:
+                await channel.send(f"{Emotes.red_tick.value} You can not use that command on a staff member!")
+
         else:
             case_type = case_type.lower()
             reason = reason.strip()
@@ -54,9 +64,12 @@ async def handle_case(bot, guild, channel, moderator, user, case_type, reason, d
                 insert_case(case)
                 case.case_id = get_last_id()
                 
-                if channel is not None:
-                    await channel.send(embed = create_message(guild, case_type, reason, duration, user, message))
-                    
+                if ctx is not None:
+                    await channel.reply(embed = create_message(guild, case_type, reason, duration, user, message))
+                else:
+                    if channel is not None:
+                        await channel.send(embed = create_message(guild, case_type, reason, duration, user, message))
+
                 await send_to_logs(bot, case, message)
                 
                 if case_type != 'unban':
@@ -179,7 +192,7 @@ async def handle_purge(ctx, amount_of_messages, user):
         icon_url = ctx.author.avatar_url
     )
     
-    purge_message = await ctx.channel.send(embed = embed)
+    purge_message = await ctx.reply(embed = embed)
     await asyncio.sleep(5)
     await purge_message.delete()
 
@@ -200,7 +213,7 @@ async def handle_slowmode(ctx, channel, slowmode_time):
     else:
         message = f"Slowmode disabled in <#{channel.id}>"
 
-    await ctx.send(embed = discord.Embed(
+    await ctx.reply(embed = discord.Embed(
         color = Colors.green.value,
         description = message
     ))
@@ -346,3 +359,73 @@ def has_muted_role(guild, user):
         raise MuteException(f"{Emotes.wrong.value} Mute role not found")
 
     return muted_role.id in [role.id for role in member.roles] 
+
+
+async def generate_whois(ctx, user):
+    
+    
+    if user is None:
+        user = ctx.author
+
+    guild = ctx.guild
+    member = guild.get_member(user.id)
+
+    if member is None:
+        raise MemberNotFound(f"{Emotes.not_found.value} The user is not in this server!")
+
+    joined = round((member.joined_at - datetime(1970, 1, 1)).total_seconds()) 
+    created = round((user.created_at - datetime(1970, 1, 1)).total_seconds())
+
+    embed = discord.Embed(
+        color = Colors.blue.value,
+        description = f"<@{user.id}>"
+    )
+
+    embed.set_author(
+        name = f"{member}", 
+        icon_url = member.avatar_url
+    )
+    
+    embed.add_field(
+        name = 'Joined', 
+        value = f"<t:{joined}> (<t:{joined}:R>)",    
+        inline = False    
+    )
+
+    embed.add_field(
+        name = 'Registered',
+        value = f"<t:{created}> (<t:{created}:R>)",
+        inline = False
+    )
+
+    embed.set_footer(
+        text = f"ID: {user.id}"
+    )
+
+    roles = ""
+
+    for role in member.roles:
+        if str(role) != "@everyone":
+            role = guild.get_role(role.id)
+            roles += f"{role.mention} "
+
+    if roles != "":
+        embed.add_field(
+            name = f"Roles [{len(member.roles) - 1}]",
+            value = roles,
+            inline = False
+        )
+    
+
+    if member.premium_since is not None:
+        boosting = round((member.premium_since - datetime(1970, 1, 1)).total_seconds())
+
+        embed.add_field(
+            name = "Nitro Booster since", 
+            value = f"<t:{boosting}>",
+            inline = False
+        )
+    
+
+    await ctx.reply(embed = embed)
+        
