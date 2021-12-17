@@ -14,8 +14,8 @@ from modules.package.exceptions import LevelingError
 from modules.package.utils import get_prefix, open_json, save_json
 
 MAX_LEVEL = 1e3
-TESTING_XP = 50
-IS_TESTING = False
+TESTING_XP = 100
+IS_TESTING = True
 
 
 def get_level_from_xp(xp):
@@ -27,29 +27,31 @@ def get_xp_from_level(level):
 
 async def increase_xp(guild, user, message):
     
-    channel = message.channel
+    if not user.bot:
 
-    leveling_settings = open_json("data/leveling.json")
-    leveling_settings = leveling_settings[str(guild.id)]
+        channel = message.channel
 
-    if (not user_is_blacklisted(guild, user, leveling_settings[Leveling.no_xp_roles.value]) \
-        and not channel_is_blacklisted(channel, leveling_settings[Leveling.no_xp_channels.value])):
+        leveling_settings = open_json("data/leveling.json")
+        leveling_settings = leveling_settings[str(guild.id)]
 
-        current_xp, last_message = get_leveling_data(guild, user)
+        if (not user_is_blacklisted(guild, user, leveling_settings[Leveling.no_xp_roles.value]) \
+            and not channel_is_blacklisted(channel, leveling_settings[Leveling.no_xp_channels.value])):
 
-        if current_xp == -1:
-            create_leveling_entry(guild, user)
+            current_xp, last_message = get_leveling_data(guild, user)
 
-        current_time = round(time.time())
+            if current_xp == -1:
+                create_leveling_entry(guild, user)
 
-        if last_message + leveling_settings[Leveling.time.value] < current_time \
-            or IS_TESTING:
+            current_time = round(time.time())
 
-            xp_to_give = random.randint(leveling_settings[Leveling.min_xp.value], leveling_settings[Leveling.max_xp.value])
-            xp_to_give += TESTING_XP * IS_TESTING
-            
-            await change_xp(guild, user, current_xp, xp_to_give, current_time, channel)
-    
+            if last_message + leveling_settings[Leveling.time.value] < current_time \
+                or IS_TESTING:
+
+                xp_to_give = random.randint(leveling_settings[Leveling.min_xp.value], leveling_settings[Leveling.max_xp.value])
+                xp_to_give += TESTING_XP * IS_TESTING
+                
+                await change_xp(guild, user, current_xp, xp_to_give, current_time, channel)
+
 
 def get_leveling_data(guild, user):
 
@@ -124,20 +126,59 @@ async def change_xp(guild, user, current_xp, xp_to_give = 0, timestamp = None, l
     connection.commit()
     connection.close()
 
-    await check_for_level_up(guild, user, current_xp, new_xp, last_channel)
+    await check_for_level_change(guild, user, current_xp, new_xp, last_channel)
 
 
 
-async def check_for_level_up(guild, user, old_xp, new_xp, last_channel):
+async def check_for_level_change(guild, user, old_xp, new_xp, last_channel):
     
-    if new_xp > old_xp:
-        old_level = get_level_from_xp(old_xp)
-        new_level = get_level_from_xp(new_xp)
-        
-        if new_level > old_level:
-            await send_level_up_message(guild, user, new_level, last_channel)
+   
+    old_level = get_level_from_xp(old_xp)
+    new_level = get_level_from_xp(new_xp)
+    
+    if new_level != old_level:
+        await check_for_new_rewards(guild, user, new_level)
+
+    if new_level > old_level:
+        await send_level_up_message(guild, user, new_level, last_channel)
 
 
+
+async def check_for_new_rewards(guild, user, level):
+    
+    leveling = open_json("data/leveling.json")
+    guild_settings = leveling[str(guild.id)]
+    rewards = guild_settings[Leveling.rewards.value]
+    
+    reward_roles = []
+    new_reward_role = None
+    last_index = None
+    index = 0
+
+    for reward_level in rewards:
+        if level >= int(reward_level):
+            new_reward_role = int(rewards[reward_level])
+            last_index = index
+
+        index += 1
+        reward_roles.append(int(rewards[reward_level]))
+  
+    if last_index is None:
+        last_index = len(reward_roles)
+
+    index = 0
+
+    while index < last_index: 
+        role = reward_roles[index]
+        role = guild.get_role(role)
+        if role in user.roles:
+            await user.remove_roles(role, reason = f"Removed old level reward")
+        index += 1
+
+    new_reward_role = guild.get_role(new_reward_role)
+    if new_reward_role is not None and new_reward_role not in user.roles:
+        await user.add_roles(new_reward_role, reason = f"Reached level {level}")
+    
 
 async def send_level_up_message(guild, user, level, last_channel):
 
@@ -340,6 +381,7 @@ def get_blacklist(guild):
 
 def get_user_level_rank_xp(guild, user, author):
     
+    
     path = "data/database.db"
     table = "levels"
 
@@ -367,152 +409,154 @@ def get_user_level_rank_xp(guild, user, author):
 
 async def generate_level_image(guild, user, ctx):
     
-    max_y = 256   # image max y
-    max_x = 1024  # image max x
+    if not user.bot:
 
-    y_offset = 25  # the right, top offset
-    x_offset = 525
+        max_y = 256   # image max y
+        max_x = 1024  # image max x
 
-    # profile picture data
-    picture_size = 200
-    picture_border_size = 8
-    picture_location_x = y_offset + picture_border_size
-    picture_location_y = int((max_y - picture_size - 2 * picture_border_size) / 2)
+        y_offset = 25  # the right, top offset
+        x_offset = 525
 
-    after_image_offset = 16 + picture_location_x + picture_size + 2 * picture_border_size
+        # profile picture data
+        picture_size = 200
+        picture_border_size = 8
+        picture_location_x = y_offset + picture_border_size
+        picture_location_y = int((max_y - picture_size - 2 * picture_border_size) / 2)
 
-
-    # name location 
-    name_box_location = (after_image_offset, int(y_offset / 2))
-
-    #rank location
-    rank_location  = (after_image_offset, name_box_location[1] + 3 * y_offset + int(y_offset / 2))
-
-    #level location
-    level_location = (after_image_offset, name_box_location[1] + 6 * y_offset)
-
-    # XP location
-    xp_location = (after_image_offset + x_offset, name_box_location[1] + 6 * y_offset)
-
-    # rounded rectangle
-    rectangle = (after_image_offset, name_box_location[1] + 8 * y_offset, after_image_offset + x_offset, name_box_location[1] + 8 * y_offset + 35 )
-
-    #open the required images
-    template = Image.open("Images/rank_card.png").convert("RGBA")
-    borded_image = Image.open("Images/border.png").convert("RGBA")
+        after_image_offset = 16 + picture_location_x + picture_size + 2 * picture_border_size
 
 
-    # create a round profile picture image
-    profile_picture = user.avatar_url_as(size = 256)
-    data = BytesIO(await profile_picture.read())
-    profile_picture = Image.open(data).convert("RGBA")
+        # name location 
+        name_box_location = (after_image_offset, int(y_offset / 2))
+
+        #rank location
+        rank_location  = (after_image_offset, name_box_location[1] + 3 * y_offset + int(y_offset / 2))
+
+        #level location
+        level_location = (after_image_offset, name_box_location[1] + 6 * y_offset)
+
+        # XP location
+        xp_location = (after_image_offset + x_offset, name_box_location[1] + 6 * y_offset)
+
+        # rounded rectangle
+        rectangle = (after_image_offset, name_box_location[1] + 8 * y_offset, after_image_offset + x_offset, name_box_location[1] + 8 * y_offset + 35 )
+
+        #open the required images
+        template = Image.open("Images/rank_card.png").convert("RGBA")
+        borded_image = Image.open("Images/border.png").convert("RGBA")
 
 
-    # initialize the dispaly data
-    name = str(user.display_name)
-    discriminator = "#" + str(user.discriminator)
-    level, rank, xp = get_user_level_rank_xp(guild, user, ctx)
-
-    # initialize the draw object
-    draw = ImageDraw.Draw(template)
-
-    # creating a border
-    border = create_circle_picture(borded_image, (picture_size + 2 * picture_border_size, picture_size + 2 * picture_border_size))
-    template.paste(border, (picture_location_x, picture_location_y), border)
+        # create a round profile picture image
+        profile_picture = user.avatar_url_as(size = 256)
+        data = BytesIO(await profile_picture.read())
+        profile_picture = Image.open(data).convert("RGBA")
 
 
-    # pasting the profile picture on the rank card
-    pfp_circle = create_circle_picture(profile_picture, (picture_size, picture_size)) 
-    template.paste(pfp_circle, (picture_location_x + picture_border_size, picture_location_y + picture_border_size), pfp_circle)
+        # initialize the dispaly data
+        name = str(user.display_name)
+        discriminator = "#" + str(user.discriminator)
+        level, rank, xp = get_user_level_rank_xp(guild, user, ctx)
+
+        # initialize the draw object
+        draw = ImageDraw.Draw(template)
+
+        # creating a border
+        border = create_circle_picture(borded_image, (picture_size + 2 * picture_border_size, picture_size + 2 * picture_border_size))
+        template.paste(border, (picture_location_x, picture_location_y), border)
 
 
-    # initializing the fonts
-    if len(name) >= 16:
-        name = name[:16]
+        # pasting the profile picture on the rank card
+        pfp_circle = create_circle_picture(profile_picture, (picture_size, picture_size)) 
+        template.paste(pfp_circle, (picture_location_x + picture_border_size, picture_location_y + picture_border_size), pfp_circle)
 
-    if len(name) >= 12:
-        name_font = ImageFont.truetype("Images/Cambria.ttf", 28)
-        discriminator_font = ImageFont.truetype("Images/Cambria.ttf", 14)
+
+        # initializing the fonts
+        if len(name) >= 16:
+            name = name[:16]
+
+        if len(name) >= 12:
+            name_font = ImageFont.truetype("Images/Cambria.ttf", 28)
+            discriminator_font = ImageFont.truetype("Images/Cambria.ttf", 14)
+            
+        elif len(name) >= 8:
+            name_font = ImageFont.truetype("Images/Cambria.ttf", 36)
+            discriminator_font = ImageFont.truetype("Images/Cambria.ttf", 18)
+
+        else:
+            name_font = ImageFont.truetype("Images/Cambria.ttf", 56)
+            discriminator_font = ImageFont.truetype("Images/Cambria.ttf", 27)
+
+        rank_font = ImageFont.truetype("Images/Cambria.ttf", 36)
+        rank_number_font = ImageFont.truetype("Images/Cambria.ttf", 48)
+
+        level_font = ImageFont.truetype("Images/Cambria.ttf", 32)
+        level_number_font = ImageFont.truetype("Images/Cambria.ttf", 48)
         
-    elif len(name) >= 8:
-        name_font = ImageFont.truetype("Images/Cambria.ttf", 36)
-        discriminator_font = ImageFont.truetype("Images/Cambria.ttf", 18)
+        xp_font = ImageFont.truetype("Images/Cambria.ttf", 32)
+        xp_number_font = ImageFont.truetype("Images/Cambria.ttf", 32)
 
-    else:
-        name_font = ImageFont.truetype("Images/Cambria.ttf", 56)
-        discriminator_font = ImageFont.truetype("Images/Cambria.ttf", 27)
 
-    rank_font = ImageFont.truetype("Images/Cambria.ttf", 36)
-    rank_number_font = ImageFont.truetype("Images/Cambria.ttf", 48)
+        #  draw the name
+        _w, _h = name_font.getsize(name)
+        draw.text(name_box_location, name, font = name_font, fill = CustomColors.white.value)
 
-    level_font = ImageFont.truetype("Images/Cambria.ttf", 32)
-    level_number_font = ImageFont.truetype("Images/Cambria.ttf", 48)
+
+        # draw the discriminator
+        w, h = discriminator_font.getsize(discriminator)
     
-    xp_font = ImageFont.truetype("Images/Cambria.ttf", 32)
-    xp_number_font = ImageFont.truetype("Images/Cambria.ttf", 32)
+        discriminator_location = (name_box_location[0] + _w + 8, name_box_location[1] + h)
+        draw.text(discriminator_location, discriminator, font = discriminator_font, fill = CustomColors.almost_white.value)
+        
 
+        # draw RANK
+        _w, _h = rank_font.getsize("Rank")
+        draw.text(rank_location, "Rank", font = rank_font, fill = CustomColors.almost_white.value)
 
-    #  draw the name
-    _w, _h = name_font.getsize(name)
-    draw.text(name_box_location, name, font = name_font, fill = CustomColors.white.value)
+        # draw the rank number
+        w, h, = rank_number_font.getsize(f"#{rank}")
+        rank_nnumber_location = (rank_location[0] + _w + 12, rank_location[1] - int(_h / 3))
+        draw.text(rank_nnumber_location, f"#{rank}", font = rank_number_font, fill = CustomColors.white.value)
+        
 
+        # draw Level
+        _w, _h = level_font.getsize("Level")
+        draw.text(level_location, "Level", font = level_font, fill = CustomColors.almost_white.value)
 
-    # draw the discriminator
-    w, h = discriminator_font.getsize(discriminator)
-  
-    discriminator_location = (name_box_location[0] + _w + 8, name_box_location[1] + h)
-    draw.text(discriminator_location, discriminator, font = discriminator_font, fill = CustomColors.almost_white.value)
-    
+        # draw the level number
+        w, h, = level_number_font.getsize(str(level))
+        level_number_location = (level_location[0] + _w + 12, level_location[1] - int(_h / 2))
+        draw.text(level_number_location, str(level), font = level_number_font, fill = CustomColors.white.value)
+        
 
-    # draw RANK
-    _w, _h = rank_font.getsize("Rank")
-    draw.text(rank_location, "Rank", font = rank_font, fill = CustomColors.almost_white.value)
+        #draw xp
+        needed_xp = get_xp_from_level(level + 1) - get_xp_from_level(level)
+        _w, _h = xp_font.getsize(f"/ {format_xp(needed_xp)}  XP")
+        xp_location = (xp_location[0] - _w, xp_location[1])
+        draw.text(xp_location, f"/ {format_xp(needed_xp)}  XP" , font = xp_font, fill = CustomColors.almost_white.value, align = "right")
+        
+        # current xp
+        current_xp = xp - get_xp_from_level(level)
+        w, h = xp_number_font.getsize(f"/ {format_xp(current_xp)} ")
+        xp_number_location = (xp_location[0] - w + 16, xp_location[1])
+        draw.text(xp_number_location, f"{format_xp(current_xp)} " , font = xp_number_font, fill = CustomColors.white.value, align = "right")
 
-    # draw the rank number
-    w, h, = rank_number_font.getsize(f"#{rank}")
-    rank_nnumber_location = (rank_location[0] + _w + 12, rank_location[1] - int(_h / 3))
-    draw.text(rank_nnumber_location, f"#{rank}", font = rank_number_font, fill = CustomColors.white.value)
-    
+        # draw bar
+        draw.rounded_rectangle(rectangle, fill = CustomColors.white.value, width = 0, radius = 28)
 
-    # draw Level
-    _w, _h = level_font.getsize("Level")
-    draw.text(level_location, "Level", font = level_font, fill = CustomColors.almost_white.value)
+        precent = current_xp / needed_xp 
 
-    # draw the level number
-    w, h, = level_number_font.getsize(str(level))
-    level_number_location = (level_location[0] + _w + 12, level_location[1] - int(_h / 2))
-    draw.text(level_number_location, str(level), font = level_number_font, fill = CustomColors.white.value)
-    
+        pixels = get_original_pixels(rectangle, template)
 
-    #draw xp
-    needed_xp = get_xp_from_level(level + 1) - get_xp_from_level(level)
-    _w, _h = xp_font.getsize(f"/ {format_xp(needed_xp)}  XP")
-    xp_location = (xp_location[0] - _w, xp_location[1])
-    draw.text(xp_location, f"/ {format_xp(needed_xp)}  XP" , font = xp_font, fill = CustomColors.almost_white.value, align = "right")
-    
-    # current xp
-    current_xp = xp - get_xp_from_level(level)
-    w, h = xp_number_font.getsize(f"/ {format_xp(current_xp)} ")
-    xp_number_location = (xp_location[0] - w + 16, xp_location[1])
-    draw.text(xp_number_location, f"{format_xp(current_xp)} " , font = xp_number_font, fill = CustomColors.white.value, align = "right")
+        rectangle = (rectangle[0], rectangle[1], after_image_offset + x_offset * precent, rectangle[3])
+        draw.rounded_rectangle(rectangle, fill = CustomColors.blue.value, width = 0, radius = 28)
 
-    # draw bar
-    draw.rounded_rectangle(rectangle, fill = CustomColors.white.value, width = 0, radius = 28)
+        rectify_bar(pixels, template)
 
-    precent = current_xp / needed_xp 
-
-    pixels = get_original_pixels(rectangle, template)
-
-    rectangle = (rectangle[0], rectangle[1], after_image_offset + x_offset * precent, rectangle[3])
-    draw.rounded_rectangle(rectangle, fill = CustomColors.blue.value, width = 0, radius = 28)
-
-    rectify_bar(pixels, template)
-
-    # send the image
-    with BytesIO() as rank_card:
-        template.save(rank_card, "PNG")
-        rank_card.seek(0)
-        await ctx.reply(file = discord.File(rank_card, f"{guild.id}_{user.id}_level.png"))
+        # send the image
+        with BytesIO() as rank_card:
+            template.save(rank_card, "PNG")
+            rank_card.seek(0)
+            await ctx.reply(file = discord.File(rank_card, f"{guild.id}_{user.id}_level.png"))
 
 
 def create_circle_picture(image, size):
@@ -573,3 +617,9 @@ def rectify_bar(pixels, template):
         template.putpixel(pixel, CustomColors.card_black.value)
     
 
+def set_notify_channel(guild, channel):
+
+    leveling = open_json("data/leveling.json")
+    guild_settings = leveling[str(guild.id)]
+    guild_settings[Leveling.notify_channel.value] = channel.id
+    save_json(leveling, "data/leveling.json")

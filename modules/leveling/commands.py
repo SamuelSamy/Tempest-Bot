@@ -143,5 +143,31 @@ class Leveling(commands.Cog):
             await ctx.reply(error)
 
 
+    @commands.command(
+        usage = f"{get_prefix()}level (optional user)",
+        description = "Get someone's user rank card"
+    )
+    async def level(self, ctx, user : typing.Optional[discord.User]):
+        
+        try:
+            if user is None:
+                user = ctx.author
+
+            await functions.generate_level_image(ctx.guild, user, ctx)
+        except LevelingError as error:
+            await ctx.reply(error)
+
+    @commands.command(
+        usage = f"{get_prefix()}levelups [channel]",
+        description = "The level up messages will be send in the specified channel"
+    )
+    async def levelups(self, ctx, channel : discord.TextChannel):
+        try:
+            functions.set_notify_channel(ctx.guild, channel)
+            await ctx.reply(f"{Emotes.green_tick.value} The level up messages will now be sent in <#{channel.id}>")
+        except LevelingError as error:
+            await ctx.reply(error)
+
+
 def setup(bot):
     bot.add_cog(Leveling(bot))

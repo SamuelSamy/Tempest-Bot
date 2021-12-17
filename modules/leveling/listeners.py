@@ -15,7 +15,7 @@ class LevelingListeners(commands.Cog):
     
     @commands.Cog.listener("on_message")
     async def increase_xp(self, message):
-        if message.author != self.bot.user:
+        if not message.author.bot:
             await functions.increase_xp(message.guild,  message.author, message)
     
     
