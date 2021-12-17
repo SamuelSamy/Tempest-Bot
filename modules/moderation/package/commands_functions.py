@@ -90,58 +90,59 @@ async def send_to_logs(bot, case, message = None):
     json_file = open_json("data/moderation.json")
     channel = bot.get_channel(int(json_file[str(case.guild)][ModFormat.mod_channel.value]))
     
-    guild = bot.get_guild(case.guild)
-    user =  await bot.fetch_user(case.user)
+    if channel is not None:
+
+        user =  await bot.fetch_user(case.user)
+        
+        
+        _color = Colors.red.value
+
+        if case._type == "warn":
+            _color = Colors.yellow.value
+        elif case._type.startswith("un"):
+            _color = Colors.green.value
     
-    
-    _color = Colors.red.value
-
-    if case._type == "warn":
-        _color = Colors.yellow.value
-    elif case._type.startswith("un"):
-        _color = Colors.green.value
-   
-    embed = discord.Embed(
-        color = _color     
-    )
-
-    _type = case._type[0].upper() + case._type[1:]
-
-    embed.set_author(
-        name = f"[{_type}]  {user}",
-        icon_url = user.avatar_url
-    )
-
-    embed.add_field(
-        name = "User",
-        value = f"<@{user.id}>"
-    )
-
-    embed.add_field(
-        name = "Moderator",
-        value = f"<@{case.moderator}>"
-    )
-
-    if case.reason != "":
-
-        embed.add_field(
-            name = "Reason",
-            value = case.reason
+        embed = discord.Embed(
+            color = _color     
         )
 
-    if case.duration != 0:
-        embed.add_field(
-            name = "Duration",
-            value = get_string_from_seconds(case.duration)
-        )     
+        _type = case._type[0].upper() + case._type[1:]
 
-    if message is not None:
-        embed.add_field(
-            name = "Message",
-            value = message
-        )   
+        embed.set_author(
+            name = f"[{_type}]  {user}",
+            icon_url = user.avatar_url
+        )
 
-    await channel.send(embed = embed)
+        embed.add_field(
+            name = "User",
+            value = f"<@{user.id}>"
+        )
+
+        embed.add_field(
+            name = "Moderator",
+            value = f"<@{case.moderator}>"
+        )
+
+        if case.reason != "":
+
+            embed.add_field(
+                name = "Reason",
+                value = case.reason
+            )
+
+        if case.duration != 0:
+            embed.add_field(
+                name = "Duration",
+                value = get_string_from_seconds(case.duration)
+            )     
+
+        if message is not None:
+            embed.add_field(
+                name = "Message",
+                value = message
+            )   
+
+        await channel.send(embed = embed)
 
 
 async def handle_purge(ctx, amount_of_messages, user):
@@ -229,6 +230,9 @@ async def handle_mute(guild, user, reason):
     settings = open_json("data/settings.json")
     muted_role = guild.get_role(settings[str(guild.id)][Settings.muted_role.value])
 
+    if muted_role is None:
+        raise MuteException(f"{Emotes.wrong.value} Mute role not found")
+
     await fix_mute_permissions(guild, muted_role)
     await member.add_roles(muted_role, reason = reason)
 
@@ -239,6 +243,12 @@ async def handle_unmute(guild, user, resaon):
 
     settings = open_json("data/settings.json")
     muted_role = guild.get_role(settings[str(guild.id)][Settings.muted_role.value])
+
+    if muted_role is None:
+        raise MuteException(f"{Emotes.wrong.value} Mute role not found")
+
+    if muted_role is not None and muted_role not in member.roles:
+        raise MuteException(f"{Emotes.no_entry.value} <@{user.id}> is not muted!")
 
     await member.remove_roles(muted_role, reason = resaon)
 
@@ -331,4 +341,8 @@ def has_muted_role(guild, user):
 
     settings = open_json("data/settings.json")
     muted_role = guild.get_role(settings[str(guild.id)][Settings.muted_role.value])
+    
+    if muted_role is None:
+        raise MuteException(f"{Emotes.wrong.value} Mute role not found")
+
     return muted_role.id in [role.id for role in member.roles] 

@@ -80,7 +80,8 @@ class Moderation(commands.Cog):
             pass
         except MmeberNotFoundException as error:
             await ctx.reply(error)
-
+        except MuteException as error:
+            pass
 
     # KICK
     @commands.command(
@@ -146,8 +147,7 @@ class Moderation(commands.Cog):
         except MemberNotAffectedByModeration as error:
             await ctx.reply(error)
 
-
-
+ 
     # MUTE
     @commands.command(
         usage = f"{get_prefix()}mute [user] (optioanl reason)",
@@ -161,6 +161,8 @@ class Moderation(commands.Cog):
         except DMException:
             pass
         except MmeberNotFoundException as error:
+            await ctx.reply(error)
+        except MuteException as error:
             await ctx.reply(error)
         
 
@@ -181,6 +183,8 @@ class Moderation(commands.Cog):
             await ctx.reply(error)
         except MemberNotAffectedByModeration as error:
             await ctx.reply(error)
+        except MuteException as error:
+            await ctx.reply(error)
 
 
     @commands.command(
@@ -195,6 +199,8 @@ class Moderation(commands.Cog):
         except DMException:
             pass
         except MmeberNotFoundException as error:
+            await ctx.reply(error)
+        except MuteException as error:
             await ctx.reply(error)
 
 
