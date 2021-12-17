@@ -66,11 +66,11 @@ class ModerationGeneralCommands(commands.Cog):
             guild = self.bot.get_guild(case.guild)
             user = await self.bot.fetch_user(case.user)
 
-            # try:
-            await functions.handle_case(self.bot, guild, None, self.bot.user, user, 'unban', "Ban was temporary", 0)
-            utils.mark_as_expired(case)
-            # except:
-            #     print(f"Error while unmutting {user.id} in {guild.id}")    
+            try:
+                await functions.handle_case(self.bot, guild, None, self.bot.user, user, 'unban', "Ban was temporary", 0)
+                utils.mark_as_expired(case)
+            except:
+                print(f"Error while unmutting {user.id} in {guild.id}")    
 
 def setup(bot):
     bot.add_cog(ModerationGeneralCommands(bot))

@@ -3,11 +3,12 @@ from discord.ext import commands
 from modules.package.utils import *
 from modules.moderation.package.enums import *
 
+OWNERS_IDS = [225629057172111362]
 
 def has_staff_role():
 
     async def predicate(ctx):
-        return ctx.guild is not None and is_staff(ctx.guild, ctx.author)
+        return ctx.guild is not None and (is_staff(ctx.guild, ctx.author) or (ctx.author.id in OWNERS_IDS))
 
     return commands.check(predicate)
 
@@ -43,3 +44,4 @@ def has_command_permissions(command):
             return False
 
     return commands.check(predicate)
+
