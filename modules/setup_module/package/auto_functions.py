@@ -39,7 +39,9 @@ def create_setup(guild, restart = False):
         
         settings[guild_id] = {
             "muted-role": 0,
-            "staff-roles": []
+            "staff-roles": [],
+            "welcome_message": "",
+            "welcome_channel": 0
         }
         
 

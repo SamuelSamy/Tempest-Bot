@@ -18,6 +18,9 @@ class Settings(Enum):
 
     staff_roles          = "staff-roles" # []
 
+    welcome_message      = "welcome_message"
+    welcome_channel      = "welcome_channel"
+
 
 class Colors(Enum):
 
