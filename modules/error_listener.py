@@ -71,12 +71,14 @@ class CommandErrorHandler(commands.Cog):
 
         else:
             # All other Errors not returned come here. And we can just print the default TraceBack.
-            await ctx.reply(f'{Emotes.wrong.value} Something went wrong.')
+            error_id = f"{round(time.time())}{ctx.message.id}"
+
+            await ctx.reply(f'{Emotes.wrong.value} Something went wrong.\n*Error ID: {error_id}*')
             
 
             error_channel = self.bot.get_channel(921429366007816212)
     
-            message  = f"Error ID: {round(time.time())}{ctx.message.id}\n"
+            message  = f"Error ID: {error_id}\n"
             message += f'The command: `{ctx.command}` raised an error\n'
             message += f"Error type: {type(error)}\n"
             message += f"Short description: {error}\n"
