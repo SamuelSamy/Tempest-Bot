@@ -173,17 +173,7 @@ async def handle_purge(ctx, amount_of_messages, user):
     else:
         message = "No messages found to delete"
 
-    embed = discord.Embed(
-        color = Colors.green.value,
-        description = message
-    )
-
-    embed.set_author(
-        name = f"{ctx.author}",
-        icon_url = ctx.author.avatar_url
-    )
-    
-    purge_message = await ctx.reply(embed = embed)
+    purge_message = await ctx.reply(f"{Emotes.green_tick.value} {message}")
     await asyncio.sleep(5)
     await purge_message.delete()
 
