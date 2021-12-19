@@ -10,12 +10,12 @@ from modules.package.exceptions import *
 def add_punishment(guild, warns, time, _type, duration):
     
     if _type not in ['mute', 'ban', 'kick']:
-        raise TypeException("Auto-punishment type must be `mute`, `kick` or `ban`")
+        raise CustomException("Auto-punishment type must be `mute`, `kick` or `ban`")
 
     try:
         warns = int(warns)
     except:
-        raise PunishmentException("The number of warns must be an integer!")
+        raise CustomException(f"{Emotes.wrong.value} The number of warns must be an integer!")
 
     if _type == 'kick' or duration == "" or duration == 0:
         duration = "0s"
@@ -56,7 +56,7 @@ def remove_punishment(guild, punishment_id):
     save_json(json_file, "data/moderation.json")
     
     if not removed:
-        raise PunishmentException("No punishment found with the specified ID")
+        raise CustomException(f"{Emotes.wrong.value} No punishment found with the specified ID")
 
 
 def list_punishments(guild):

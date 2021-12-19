@@ -10,7 +10,7 @@ from PIL import Image, ImageDraw, ImageFont, ImageChops
 
 from modules.leveling.package.enums import CustomColors, Leveling
 from modules.package.enums import Colors, Emotes
-from modules.package.exceptions import LevelingError
+from modules.package.exceptions import CustomException
 from modules.package.utils import get_prefix, open_json, save_json
 
 MAX_LEVEL = 1e3
@@ -197,10 +197,10 @@ async def send_level_up_message(guild, user, level, last_channel):
 async def set_level(guild, user, level):
 
     if level < 0:
-        raise LevelingError(f"{Emotes.not_found.value} The level can not be a negative number!")
+        raise CustomException(f"{Emotes.not_found.value} The level can not be a negative number!")
 
     if level > MAX_LEVEL:
-        raise LevelingError(f"{Emotes.not_found.value} The maximum level is **{MAX_LEVEL}**")
+        raise CustomException(f"{Emotes.not_found.value} The maximum level is **{MAX_LEVEL}**")
 
     new_xp = get_xp_from_level(level)
     old_xp, last_message_timestamp = get_leveling_data(guild, user)
@@ -214,7 +214,7 @@ async def set_level(guild, user, level):
 async def add_xp(guild, user, xp_to_add, ctx):
 
     if xp_to_add < 0:
-        raise LevelingError(f"{Emotes.not_found.value} The amount of xp can not be a negative number!")
+        raise CustomException(f"{Emotes.not_found.value} The amount of xp can not be a negative number!")
     
     old_xp, last_message_timestamp = get_leveling_data(guild, user)
     new_xp = min(old_xp + xp_to_add, get_xp_from_level(MAX_LEVEL))
@@ -229,7 +229,7 @@ async def add_xp(guild, user, xp_to_add, ctx):
 async def remove_xp(guild, user, xp_to_remove, ctx):
 
     if xp_to_remove < 0:
-        raise LevelingError(f"{Emotes.not_found.value} The amount of xp can not be a negative number!")
+        raise CustomException(f"{Emotes.not_found.value} The amount of xp can not be a negative number!")
     
     old_xp, last_message_timestamp = get_leveling_data(guild, user)
     new_xp = old_xp - xp_to_remove
@@ -249,7 +249,7 @@ def add_reward(guild, level, role):
     rewards = leveling[str(guild.id)][Leveling.rewards.value]
 
     if str(level) in rewards.keys():
-        raise LevelingError("This level already has a reward set!")
+        raise CustomException(f"{Emotes.wrong.value} This level already has a reward set!")
 
     rewards[str(level)] = role.id
     save_json(leveling, "data/leveling.json")
@@ -261,7 +261,7 @@ def remove_reward(guild, level):
     rewards = leveling[str(guild.id)][Leveling.rewards.value]
 
     if str(level) not in rewards.keys():
-        raise LevelingError("This level does not have a reward!")
+        raise CustomException(f"{Emotes.wrong.value} This level does not have a reward!")
 
     del rewards[str(level)]
     save_json(leveling, "data/leveling.json")
@@ -401,9 +401,9 @@ def get_user_level_rank_xp(guild, user, author):
     else:
 
         if user == author:
-            raise LevelingError(f"{Emotes.no_entry.value} You have no level! Keep chatting to earn a rank!")
+            raise CustomException(f"{Emotes.wrong.value} You have no level! Keep chatting to earn a rank!")
         else:
-            raise LevelingError(f"{Emotes.no_entry.value} That user has no level!")
+            raise CustomException(f"{Emotes.wrong.value} That user has no level!")
             
 
 

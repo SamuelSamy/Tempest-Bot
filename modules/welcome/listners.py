@@ -15,11 +15,8 @@ class WelcomeListener(commands.Cog):
     
     @commands.Cog.listener("on_member_join")
     async def welcome(self, member):
-        try:
-            await functions.welcome(self.bot, member.guild, member)
-        except DMException:
-            pass
-        
+        await functions.welcome(self.bot, member.guild, member)
+
     
 def setup(bot):
     bot.add_cog(WelcomeListener(bot))

@@ -1,3 +1,4 @@
+import time
 import discord
 import traceback
 import sys
@@ -74,8 +75,9 @@ class CommandErrorHandler(commands.Cog):
             
 
             error_channel = self.bot.get_channel(921429366007816212)
-            
-            message  = f'The command: `{ctx.command}` raised an error\n'
+    
+            message  = f"Error ID: {round(time.time())}{ctx.message.id}\n"
+            message += f'The command: `{ctx.command}` raised an error\n'
             message += f"Error type: {type(error)}\n"
             message += f"Short description: {error}\n"
             message += f"Error message:\n"
@@ -84,15 +86,15 @@ class CommandErrorHandler(commands.Cog):
             for line in lines:
                 message += line
 
-            message = [message[i: i + 1900] for i in range(0, len(message), 1900)]
+            message = [message[i: i + 1536] for i in range(0, len(message), 1536)]
 
             for _message in message:
                 await error_channel.send(f"```\n{_message}\n```")
 
-            await error_channel.send("``` ```")
 
             print('Ignoring exception in command {}:'.format(ctx.command), file=sys.stderr)
             traceback.print_exception(type(error), error, error.__traceback__, file=sys.stderr)
+
 
 
 def setup(bot):

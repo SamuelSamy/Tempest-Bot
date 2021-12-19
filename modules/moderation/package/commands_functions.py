@@ -4,7 +4,6 @@ import asyncio
 import sqlite3
 
 from datetime import datetime
-from discord.ext.commands.errors import MemberNotFound
 
 import modules.moderation.package.punish_functions as punish_funcs
 
@@ -39,45 +38,42 @@ async def handle_case(bot, guild, channel, moderator, user, case_type, reason, d
                 duration = compute_seconds(duration)
 
             if case_type not in ['warn', 'ban', 'kick', 'mute', 'unban', 'unmute']:
-                raise TypeException("Invalid case type")
+                raise CustomException(f"{Emotes.wrong.value} Invalid case type")
 
-            try:
-                guild_id = guild.id
-                user_id = user.id
-                moderator_id = moderator.id
-                
-                case = Case(
-                    None,
-                    guild_id,
-                    user_id,
-                    case_type,
-                    reason,
-                    round(time.time()),
-                    moderator_id,
-                    duration
-                )
+            guild_id = guild.id
+            user_id = user.id
+            moderator_id = moderator.id
+            
+            case = Case(
+                None,
+                guild_id,
+                user_id,
+                case_type,
+                reason,
+                round(time.time()),
+                moderator_id,
+                duration
+            )
 
-                insert_case(case)
-                case.case_id = get_last_id()
-                
-                if ctx is not None:
-                    await ctx.reply(embed = create_message(guild, case_type, reason, duration, user, message))
-                else:
-                    if channel is not None:
-                        await channel.send(embed = create_message(guild, case_type, reason, duration, user, message))
+            insert_case(case)
+            case.case_id = get_last_id()
+            
+            if ctx is not None:
+                await ctx.reply(embed = create_message(guild, case_type, reason, duration, user, message))
+            else:
+                if channel is not None:
+                    await channel.send(embed = create_message(guild, case_type, reason, duration, user, message))
 
-                await send_to_logs(bot, case, message)
-                
-                if case_type != 'unban':
+            await send_to_logs(bot, case, message)
+            
+            if case_type != 'unban':
 
-                    try:
-                        await user.send(embed = create_message(guild, case_type, reason, duration, _message = message))
-                    except:
-                        pass
+                try:
+                    await user.send(embed = create_message(guild, case_type, reason, duration, _message = message))
+                except:
+                    pass
 
-            except:
-                raise UnexpectedError("UnexpectedError occured when logging case")
-
+            
             if case_type == 'warn':
                 await punish_funcs.apply_punishments(bot, channel, guild, user)
             elif case_type == 'ban':
@@ -91,7 +87,7 @@ async def handle_case(bot, guild, channel, moderator, user, case_type, reason, d
             elif case_type == 'unmute':
                 await handle_unmute(guild, user, reason)
     else:
-        raise MmeberNotFoundException("The specified user is not in this guild")
+        raise CustomException(f"{Emotes.wrong.value} The specified user is not in this guild")
 
 
 async def send_to_logs(bot, case, message = None):
@@ -228,7 +224,7 @@ async def deletecase(guild, case_id):
     connection.close()
 
     if deleted == 0:
-        raise CaseException("Case with the specified ID not found!")
+        raise CustomException(f"{Emotes.wrong.value} Case with the specified ID not found!")
 
 
 async def handle_mute(guild, user, reason):
@@ -239,10 +235,10 @@ async def handle_mute(guild, user, reason):
     muted_role = guild.get_role(settings[str(guild.id)][Settings.muted_role.value])
 
     if muted_role is None:
-        raise MuteException(f"{Emotes.wrong.value} Mute role not found")
+        raise CustomException(f"{Emotes.wrong.value} Mute role not found")
 
     if muted_role is not None and muted_role not in member.roles:
-        raise MuteException(f"{Emotes.no_entry.value} <@{user.id}> is already muted!")
+        raise CustomException(f"{Emotes.no_entry.value} <@{user.id}> is already muted!")
 
 
     await fix_mute_permissions(guild, muted_role)
@@ -257,10 +253,10 @@ async def handle_unmute(guild, user, resaon):
     muted_role = guild.get_role(settings[str(guild.id)][Settings.muted_role.value])
 
     if muted_role is None:
-        raise MuteException(f"{Emotes.wrong.value} Mute role not found")
+        raise CustomException(f"{Emotes.wrong.value} Mute role not found")
 
     if muted_role is not None and muted_role not in member.roles:
-        raise MuteException(f"{Emotes.no_entry.value} <@{user.id}> is not muted!")
+        raise CustomException(f"{Emotes.no_entry.value} <@{user.id}> is not muted!")
 
     await member.remove_roles(muted_role, reason = resaon)
 
@@ -294,7 +290,7 @@ async def handle_unban(guild, user, reason):
             member_was_unbanned = True
 
     if not member_was_unbanned:
-        raise MemberNotAffectedByModeration("This user is not banned from this server!")
+        raise CustomException(f"{Emotes.wrong.value} This user is not banned from this server!")
     else:
         
         path = "data/database.db"
@@ -353,7 +349,7 @@ def has_muted_role(guild, user):
     muted_role = guild.get_role(settings[str(guild.id)][Settings.muted_role.value])
     
     if muted_role is None:
-        raise MuteException(f"{Emotes.wrong.value} Mute role not found")
+        raise CustomException(f"{Emotes.wrong.value} Mute role not found")
 
     return muted_role.id in [role.id for role in member.roles] 
 
@@ -368,7 +364,7 @@ async def generate_whois(ctx, user):
     member = guild.get_member(user.id)
 
     if member is None:
-        raise MemberNotFound(f"{Emotes.not_found.value} The user is not in this server!")
+        raise CustomException(f"{Emotes.not_found.value} The user is not in this server!")
 
     joined = round((member.joined_at - datetime(1970, 1, 1)).total_seconds()) 
     created = round((user.created_at - datetime(1970, 1, 1)).total_seconds())

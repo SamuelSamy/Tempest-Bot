@@ -3,7 +3,7 @@ import discord
 
 from discord.ext import commands
 from modules.package.enums import Emotes
-from modules.package.exceptions import LevelingError
+from modules.package.exceptions import CustomException
 
 from modules.package.utils import get_prefix
 import modules.leveling.package.functions as functions
@@ -25,7 +25,7 @@ class Leveling(commands.Cog):
         try:
             await functions.set_level(ctx.guild, user, level)
             await ctx.reply(f"{Emotes.green_tick.value} Successfully set <@{user.id}>'s level to **{level}**!")
-        except LevelingError as error:
+        except CustomException as error:
             await ctx.reply(error)
 
 
@@ -38,7 +38,7 @@ class Leveling(commands.Cog):
     async def addxp(self, ctx, user : discord.Member, xp : int):
         try:
             await functions.add_xp(ctx.guild, user, xp, ctx)
-        except LevelingError as error:
+        except CustomException as error:
             await ctx.reply(error)
 
 
@@ -51,7 +51,7 @@ class Leveling(commands.Cog):
     async def removexp(self, ctx, user : discord.Member, xp : int):
         try:
             await functions.remove_xp(ctx.guild, user, xp, ctx)
-        except LevelingError as error:
+        except CustomException as error:
             await ctx.reply(error)
 
 
@@ -65,7 +65,7 @@ class Leveling(commands.Cog):
         try:
             functions.add_reward(ctx.guild, level, role)
             await ctx.reply(f"{Emotes.green_tick.value} Successfully added the role reward!")
-        except LevelingError as error:
+        except CustomException as error:
             await ctx.reply(error)
 
     @commands.command(
@@ -78,7 +78,7 @@ class Leveling(commands.Cog):
         try:
             functions.remove_reward(ctx.guild, level)
             await ctx.reply(f"{Emotes.green_tick.value} Successfully removed the role reward!")
-        except LevelingError as error:
+        except CustomException as error:
             await ctx.reply(error)
 
 
@@ -91,7 +91,7 @@ class Leveling(commands.Cog):
     async def rewards(self, ctx):
         try:
             await ctx.reply(embed = functions.get_rewards(ctx.guild))
-        except LevelingError as error:
+        except CustomException as error:
             await ctx.reply(error)
 
 
@@ -105,7 +105,7 @@ class Leveling(commands.Cog):
         try:
             message = functions.change_no_xp(ctx.guild, _object, True)
             await ctx.reply(message)
-        except LevelingError as error:
+        except CustomException as error:
             await ctx.reply(error)
 
 
@@ -119,7 +119,7 @@ class Leveling(commands.Cog):
         try:
             message = functions.change_no_xp(ctx.guild, _object, False)
             await ctx.reply(message)
-        except LevelingError as error:
+        except CustomException as error:
             await ctx.reply(error)
 
 
@@ -133,7 +133,7 @@ class Leveling(commands.Cog):
         try:
             embed = functions.get_blacklist(ctx.guild)
             await ctx.reply(embed = embed)
-        except LevelingError as error:
+        except CustomException as error:
             await ctx.reply(error)
 
 
@@ -149,7 +149,7 @@ class Leveling(commands.Cog):
                 user = ctx.author
 
             await functions.generate_level_image(ctx.guild, user, ctx)
-        except LevelingError as error:
+        except CustomException as error:
             await ctx.reply(error)
 
     @commands.command(
@@ -162,7 +162,7 @@ class Leveling(commands.Cog):
         try:
             functions.set_notify_channel(ctx.guild, channel)
             await ctx.reply(f"{Emotes.green_tick.value} The level up messages will now be sent in <#{channel.id}>")
-        except LevelingError as error:
+        except CustomException as error:
             await ctx.reply(error)
 
 

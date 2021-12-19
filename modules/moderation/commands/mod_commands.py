@@ -2,7 +2,6 @@ import typing
 import discord
 
 from discord.ext import commands
-from discord.ext.commands.errors import MemberNotFound
 from modules.moderation.package.enums import Permissions
 
 from modules.package.enums import *
@@ -26,7 +25,10 @@ class Moderation(commands.Cog):
     @commands.guild_only()
     @has_command_permissions(command = Permissions.mod_logs.value)
     async def modlogs(self, ctx, user : discord.User, page = 1):
-        await ctx.reply(embed = functions.generate_modlogs(ctx.guild, user, page))
+        try:
+            await ctx.reply(embed = functions.generate_modlogs(ctx.guild, user, page))
+        except CustomException as error:
+            await ctx.reply(error)
 
 
     # Warns
@@ -37,7 +39,11 @@ class Moderation(commands.Cog):
     @commands.guild_only()
     @has_command_permissions(command = Permissions.mod_logs.value)
     async def warns(self, ctx, user : discord.User, page = 1):
-        await ctx.reply(embed = functions.generate_modlogs(ctx.guild, user, page, True))
+        try:
+            await ctx.reply(embed = functions.generate_modlogs(ctx.guild, user, page, True))
+        except CustomException as error:
+            await ctx.reply(error)
+
 
     # STATS
     @commands.command(
@@ -47,7 +53,10 @@ class Moderation(commands.Cog):
     @commands.guild_only()
     @has_command_permissions(command = Permissions.mod_stats.value)
     async def modstats(self, ctx, user : discord.User):
-        await ctx.reply(embed = await functions.generate_modstats(ctx.guild, user, self.bot))
+        try:
+            await ctx.reply(embed = await functions.generate_modstats(ctx.guild, user, self.bot))
+        except CustomException as error:
+            await ctx.reply(error)
 
 
     # DELETE CASE
@@ -67,7 +76,7 @@ class Moderation(commands.Cog):
                 description = f"Case {case_id} deleted!"
             ))
 
-        except CaseException as error:
+        except CustomException as error:
             await ctx.reply(error)
 
 
@@ -82,15 +91,9 @@ class Moderation(commands.Cog):
 
         try:
             await functions.handle_case(self.bot, ctx.guild, ctx.channel, ctx.author, user, 'warn', reason, 0, ctx = ctx)
-        except DMException:
-            pass
-        except MmeberNotFoundException as error:
+        except CustomException as error:
             await ctx.reply(error)
-        except MemberNotAffectedByModeration as error:
-            await ctx.reply(error)
-        except MuteException as error:
-            await ctx.reply(error)
-
+        
     # KICK
     @commands.command(
         usage = f"{get_prefix()}kick [user] (optional reason)",
@@ -102,9 +105,7 @@ class Moderation(commands.Cog):
         
         try:
             await functions.handle_case(self.bot, ctx.guild, ctx.channel, ctx.author, user, 'kick', reason, 0, ctx = ctx)
-        except DMException:
-            pass
-        except MmeberNotFoundException as error:
+        except CustomException as error:
             await ctx.reply(error)
 
 
@@ -119,9 +120,7 @@ class Moderation(commands.Cog):
         
         try:
             await functions.handle_case(self.bot, ctx.guild, ctx.channel, ctx.author, user, 'ban', reason, 0, ctx = ctx)
-        except DMException:
-            pass
-        except MmeberNotFoundException as error:
+        except CustomException as error:
             await ctx.reply(error)
 
 
@@ -135,11 +134,7 @@ class Moderation(commands.Cog):
     
         try:
             await functions.handle_case(self.bot, ctx.guild, ctx.channel, ctx.author, user, 'ban', reason, duration, ctx = ctx)
-        except DMException:
-            pass
-        except TimeException as error:
-            await ctx.reply(error)
-        except MmeberNotFoundException as error:
+        except CustomException as error:
             await ctx.reply(error)
 
 
@@ -154,9 +149,7 @@ class Moderation(commands.Cog):
         
         try:
             await functions.handle_case(self.bot, ctx.guild, ctx.channel, ctx.author, user, 'unban', reason, 0, ctx = ctx)
-        except DMException:
-            pass
-        except MemberNotAffectedByModeration as error:
+        except CustomException as error:
             await ctx.reply(error)
 
  
@@ -171,12 +164,9 @@ class Moderation(commands.Cog):
         
         try:
             await functions.handle_case(self.bot, ctx.guild, ctx.channel, ctx.author, user, 'mute', reason, 0, ctx = ctx)
-        except DMException:
-            pass
-        except MmeberNotFoundException as error:
+        except CustomException as error:
             await ctx.reply(error)
-        except MuteException as error:
-            await ctx.reply(error)
+
         
 
     @commands.command(
@@ -189,16 +179,9 @@ class Moderation(commands.Cog):
         
         try:
             await functions.handle_case(self.bot, ctx.guild, ctx.channel, ctx.author, user, 'mute', reason, duration, ctx = ctx)
-        except DMException:
-            pass
-        except TimeException as error:
+        except CustomException as error:
             await ctx.reply(error)
-        except MmeberNotFoundException as error:
-            await ctx.reply(error)
-        except MemberNotAffectedByModeration as error:
-            await ctx.reply(error)
-        except MuteException as error:
-            await ctx.reply(error)
+
 
 
     @commands.command(
@@ -211,11 +194,7 @@ class Moderation(commands.Cog):
         
         try:
             await functions.handle_case(self.bot, ctx.guild, ctx.channel, ctx.author, user, 'unmute', reason, 0, ctx = ctx)
-        except DMException:
-            pass
-        except MmeberNotFoundException as error:
-            await ctx.reply(error)
-        except MuteException as error:
+        except CustomException as error:
             await ctx.reply(error)
 
 
@@ -226,9 +205,13 @@ class Moderation(commands.Cog):
     )
     @commands.guild_only()
     @has_command_permissions(command = Permissions.purge.value)
-    async def purge(self, ctx, amount_of_messages : int, user :  typing.Optional[discord.User]):            
-        await functions.handle_purge(ctx, amount_of_messages, user)
-    
+    async def purge(self, ctx, amount_of_messages : int, user :  typing.Optional[discord.User]):   
+
+        try:       
+            await functions.handle_purge(ctx, amount_of_messages, user)
+        except CustomException as error:
+            await ctx.reply(error)
+
 
     # WHOIS
     @commands.command(
@@ -241,7 +224,7 @@ class Moderation(commands.Cog):
         
         try:
             await functions.handle_slowmode(ctx, channel, slowmode_time)
-        except TimeException as error:
+        except CustomException as error:
             await ctx.reply(error)
 
 
@@ -256,7 +239,7 @@ class Moderation(commands.Cog):
         
         try:
             await functions.generate_whois(ctx, user)
-        except MemberNotFound as error:
+        except CustomException as error:
             await ctx.reply(error)
 
        

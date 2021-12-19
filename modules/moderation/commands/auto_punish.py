@@ -4,9 +4,9 @@ import io
 from discord.ext import commands
 from discord.ext.commands.core import has_permissions
 
+import modules.moderation.package.punish_functions as functions
 from modules.package.enums import *
 from modules.package.exceptions import *
-import modules.moderation.package.punish_functions as functions
 from modules.package.utils import get_prefix
 
 
@@ -30,9 +30,7 @@ class AutoPunishments(commands.Cog):
 
             functions.add_punishment(ctx.guild, warns, time, _type, duration)
             await ctx.reply("Auto-Punishment added!")
-        except TypeException as error:
-            await ctx.reply(error)
-        except TimeException as error:
+        except CustomException as error:
             await ctx.reply(error)
 
     
@@ -47,7 +45,7 @@ class AutoPunishments(commands.Cog):
         try:
             functions.remove_punishment(ctx.guild, punishment_id)
             await ctx.reply("Auto-Punishment removed!")
-        except PunishmentException as error:
+        except CustomException as error:
             await ctx.reply(error)
 
 
@@ -59,11 +57,13 @@ class AutoPunishments(commands.Cog):
     @has_permissions(administrator = True)
     async def listpunishments(self, ctx):
         
-        json_content = functions.list_punishments(ctx.guild)
-        _fp = io.StringIO(json_content)
-        _filename = f"{ctx.guild.id}.auto_punishments.json"
-        await ctx.reply(content = "**Autho Punishments**", file = discord.File(fp = _fp, filename =_filename ))
-
+        try:
+            json_content = functions.list_punishments(ctx.guild)
+            _fp = io.StringIO(json_content)
+            _filename = f"{ctx.guild.id}.auto_punishments.json"
+            await ctx.reply(content = "**Autho Punishments**", file = discord.File(fp = _fp, filename =_filename ))
+        except CustomException as error:
+            await ctx.reply(error)
 
 def setup(bot):
     bot.add_cog(AutoPunishments(bot))

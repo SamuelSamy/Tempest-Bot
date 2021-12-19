@@ -43,5 +43,12 @@ class Owner(commands.Cog):
         await ctx.reply(invite.url)
     
 
+    @commands.command()
+    @commands.is_owner()
+    @commands.guild_only()
+    async def test(self, ctx):
+        raise ValueError()
+
+
 def setup(bot):
     bot.add_cog(Owner(bot))

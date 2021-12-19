@@ -27,9 +27,7 @@ class AutoModerator(commands.Cog):
         try:
             functions.add_banned_word(ctx.guild, word, punishment, duration)
             await ctx.reply(f"Successfully banned the specified word!")
-        except WordError as error:
-            await ctx.reply(error)
-        except TimeException as error:
+        except CustomException as error:
             await ctx.reply(error)
 
 
@@ -44,7 +42,7 @@ class AutoModerator(commands.Cog):
         try:
             functions.remove_banned_word(ctx.guild, id)
             await ctx.reply(f"Successfully removed the word!")
-        except WordError as error:
+        except CustomException as error:
             await ctx.reply(error)
 
 
@@ -55,11 +53,14 @@ class AutoModerator(commands.Cog):
     @commands.guild_only()
     @commands.has_permissions(administrator = True)
     async def bannedwords(self, ctx):
-        
-        json_content = functions.list_banned_words(ctx.guild)
-        _fp = io.StringIO(json_content)
-        _filename = f"{ctx.guild.id}.banned_words.json"
-        await ctx.reply(content = "**Banned Words**", file = discord.File(fp = _fp, filename =_filename ))
+
+        try:
+            json_content = functions.list_banned_words(ctx.guild)
+            _fp = io.StringIO(json_content)
+            _filename = f"{ctx.guild.id}.banned_words.json"
+            await ctx.reply(content = "**Banned Words**", file = discord.File(fp = _fp, filename =_filename ))
+        except CustomException as error:
+            await ctx.reply(error)
 
 
     @commands.command(
@@ -76,7 +77,7 @@ class AutoModerator(commands.Cog):
                 await ctx.reply("Channel successfully set as a notify channel for the specified word!")
             else:
                 await ctx.reply("Successfully removed the notify channel for the specified word!")
-        except WordError as error:
+        except CustomException as error:
             await ctx.reply(error)
 
 
@@ -88,8 +89,12 @@ class AutoModerator(commands.Cog):
     @commands.guild_only()
     @commands.has_permissions(administrator = True)
     async def linkblock(self, ctx, _object : typing.Union[discord.TextChannel, discord.Role]):
-        message = functions.change_link_perms(ctx.guild, _object, False)
-        await ctx.reply(message)
+
+        try:
+            message = functions.change_link_perms(ctx.guild, _object, False)
+            await ctx.reply(message)
+        except CustomException as error:
+            await ctx.reply(error)
 
 
     @commands.command(
@@ -99,8 +104,12 @@ class AutoModerator(commands.Cog):
     @commands.guild_only()
     @commands.has_permissions(administrator = True)
     async def linkallow(self, ctx, _object : typing.Union[discord.TextChannel, discord.Role]):
-        message = functions.change_link_perms(ctx.guild, _object, True)
-        await ctx.reply(message)
+
+        try:
+            message = functions.change_link_perms(ctx.guild, _object, True)
+            await ctx.reply(message)
+        except CustomException as error:
+            await ctx.reply(error)
 
 
 def setup(bot):

@@ -2,7 +2,7 @@ import discord
 from modules.leveling.package.enums import Leveling
 
 from modules.moderation.package.enums import BannedWord, ExternalLinks, ModFormat
-from modules.package.exceptions import TypeException
+from modules.package.exceptions import CustomException
 from modules.package.enums import *
 from modules.package.utils import *
 
@@ -10,7 +10,7 @@ from modules.package.utils import *
 def add_banned_word(guild, word, _type, duration):
     
     if _type not in ['ban', 'kick', 'warn']:
-        raise TypeException("Auto-punishment type must be `ban`, `kick` or `warn`")
+        raise CustomException(f"{Emotes.wrong.value} Auto-punishment type must be `ban`, `kick` or `warn`")
 
     if _type != 'ban' or duration == "":
         duration = "0s"
@@ -48,7 +48,7 @@ def remove_banned_word(guild, word_id):
     save_json(json_file, "data/moderation.json")
     
     if not removed:
-        raise WordError("No word entry found with the specified ID")
+        raise CustomException(f"{Emotes.wrong.value} No word entry found with the specified ID")
 
 
 def list_banned_words(guild):
@@ -79,7 +79,7 @@ def notify_channel(guild, word_id, channel):
     save_json(json_file, "data/moderation.json")
 
     if not set:
-        raise WordError("Unable to unprotect the specified channel")
+        raise CustomException(f"{Emotes.wrong.value} Unable to unprotect the specified channel")
 
     
 def change_link_perms(guild, _object, allow):

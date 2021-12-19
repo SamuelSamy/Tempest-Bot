@@ -2,7 +2,6 @@ import discord
 import time
 
 from modules.package.enums import Colors, Settings
-from modules.package.exceptions import DMException
 from modules.package.utils import open_json, save_json
 
 
@@ -43,5 +42,5 @@ async def welcome(bot, guild, member):
         try:
             await member.send(embed = embed)
         except:
-            raise DMException("Can not DM the user")
+            pass
 

@@ -1,7 +1,7 @@
 import json
 import re
 
-from modules.package.enums import Settings
+from modules.package.enums import Emotes, Settings
 from modules.package.exceptions import *
 
 
@@ -69,12 +69,12 @@ def compute_seconds(time):
     time_unit = time[-1]
 
     if time_unit not in time_units:
-        raise TimeException("Time must be either: `s`, `m`, `h` or `d`")
+        raise CustomException(f"{Emotes.wrong.value} Time must be either: `s`, `m`, `h` or `d`")
 
     try:
         actual_time = int(time[:-1])
     except:
-        raise TimeException("Time must be an integer")
+        raise CustomException(f"{Emotes.wrong.value} Time must be an integer")
 
     return actual_time * time_dict[time_unit]
 
