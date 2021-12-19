@@ -227,7 +227,7 @@ async def handle_mute(guild, user, reason):
     if muted_role is None:
         raise CustomException(f"{Emotes.wrong.value} Mute role not found")
 
-    if muted_role is not None and muted_role not in member.roles:
+    if muted_role is not None and muted_role in member.roles:
         raise CustomException(f"{Emotes.no_entry.value} <@{user.id}> is already muted!")
 
 

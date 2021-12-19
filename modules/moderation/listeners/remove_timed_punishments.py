@@ -41,12 +41,10 @@ class ModerationGeneralCommands(commands.Cog):
             guild = self.bot.get_guild(case.guild)
             user = guild.get_member(case.user)
 
-            try:
-                await functions.handle_case(self.bot, guild, None, self.bot.user, user, 'unmute', "Mute was temporary", 0)
-                utils.mark_as_expired(case)
-            except:
-                print(f"Error while unmutting {user.id} in {guild.id}")
-
+            
+            await functions.handle_case(self.bot, guild, None, self.bot.user, user, 'unmute', "Mute was temporary", 0)
+            utils.mark_as_expired(case)
+            
 
     @tasks.loop(seconds = 10) # TODO: 15 min
     async def remove_bans(self):
@@ -66,11 +64,9 @@ class ModerationGeneralCommands(commands.Cog):
             guild = self.bot.get_guild(case.guild)
             user = await self.bot.fetch_user(case.user)
 
-            try:
-                await functions.handle_case(self.bot, guild, None, self.bot.user, user, 'unban', "Ban was temporary", 0)
-                utils.mark_as_expired(case)
-            except:
-                print(f"Error while unmutting {user.id} in {guild.id}")    
-
+           
+            await functions.handle_case(self.bot, guild, None, self.bot.user, user, 'unban', "Ban was temporary", 0)
+            utils.mark_as_expired(case)
+            
 def setup(bot):
     bot.add_cog(ModerationGeneralCommands(bot))
