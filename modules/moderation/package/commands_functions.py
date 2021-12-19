@@ -280,7 +280,7 @@ async def handle_unban(guild, user, reason):
             member_was_unbanned = True
 
     if not member_was_unbanned:
-        raise CustomException(f"{Emotes.wrong.value} This user is not banned from this server!")
+        raise CustomException(f"{Emotes.wrong.value} <@{user.id}> is not banned from this server!")
     else:
         
         path = "data/database.db"

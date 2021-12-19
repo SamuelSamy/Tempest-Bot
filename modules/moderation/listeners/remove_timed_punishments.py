@@ -42,10 +42,17 @@ class ModerationGeneralCommands(commands.Cog):
             user = guild.get_member(case.user)
 
             try:
+
                 await functions.handle_case(self.bot, guild, None, self.bot.user, user, 'unmute', "Mute was temporary", 0)
                 utils.mark_as_expired(case)
-            except Exception as e:
-                print(f"Error: Can not unmute {user.id} in {guild.id}", e)
+
+            except Exception as error:
+
+                if not str(error).endswith("is not muted!"):
+                    print(f"Error: Can not unmute {user.id} in {guild.id}\n{error}")
+                else:
+                    utils.mark_as_expired(case)
+
             
 
     @tasks.loop(seconds = 10) # TODO: 15 min
@@ -67,10 +74,18 @@ class ModerationGeneralCommands(commands.Cog):
             user = await self.bot.fetch_user(case.user)
 
             try:
+
                 await functions.handle_case(self.bot, guild, None, self.bot.user, user, 'unban', "Ban was temporary", 0)
                 utils.mark_as_expired(case)
-            except Exception as e:
-                print(f"Error: Can not unmute {user.id} in {guild.id}", e)
-            
+
+            except Exception as error:
+                
+                if not str(error).endswith("is not banned from this server!"):
+                    print(f"Error: Can not unban {user.id} in {guild.id}\n{error}")
+                else:
+                    utils.mark_as_expired(case)
+                
+
+
 def setup(bot):
     bot.add_cog(ModerationGeneralCommands(bot))
