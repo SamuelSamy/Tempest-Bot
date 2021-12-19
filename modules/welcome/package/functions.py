@@ -29,7 +29,7 @@ async def welcome(bot, guild, member):
 
         embed = discord.Embed(
             color = Colors.blue.value,
-            title = f"Welcome to {guild}",
+            title = f"Welcome to `{guild}`",
             description = message + f"\n\nMember #{guild.member_count}\nJoined at: <t:{round(time.time())}>"
         )
 

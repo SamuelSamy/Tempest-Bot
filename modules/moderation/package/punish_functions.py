@@ -15,7 +15,7 @@ def add_punishment(guild, warns, time, _type, duration):
     try:
         warns = int(warns)
     except:
-        raise ValueError("The number of warns must be integer!")
+        raise PunishmentException("The number of warns must be an integer!")
 
     if _type == 'kick' or duration == "" or duration == 0:
         duration = "0s"
@@ -54,7 +54,9 @@ def remove_punishment(guild, punishment_id):
         removed = True
     
     save_json(json_file, "data/moderation.json")
-    return removed
+    
+    if not removed:
+        raise PunishmentException("No punishment found with the specified ID")
 
 
 def list_punishments(guild):
@@ -126,5 +128,5 @@ async def apply_punishments(bot, channel, guild, user):
             if warns >= p_warns:
                 _type = punishment[AutoPunishment.flags.value][AutoPunishment.flag_type.value]
                 _duration = punishment[AutoPunishment.flags.value][AutoPunishment.flag_duration.value]
-                await c_functions.handle_case(bot, guild, channel, bot.user, user, _type, f"Too many warns! ({warns})", _duration)
+                await c_functions.handle_case(bot, guild, channel, bot.user, user, _type, f"Too many warns! ({p_warns} or more)", _duration)
                 break

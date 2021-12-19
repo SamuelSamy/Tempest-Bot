@@ -78,3 +78,24 @@ class MuteException(Exception):
         return self.__message
 
 
+class StarboardException(Exception):
+    def __init__(self, message):
+            self.__message = message
+
+    def __str__(self):
+        return self.__message
+
+
+class WordError(Exception):
+    def __init__(self, message):
+            self.__message = message
+
+    def __str__(self):
+        return self.__message
+
+class PunishmentException(Exception):
+    def __init__(self, message):
+            self.__message = message
+
+    def __str__(self):
+        return self.__message

@@ -19,13 +19,11 @@ async def check_for_banned_words(bot, guild, member, message):
 
     punishments = []
 
-
     for entry in json_file[guild_id][ModFormat.banned_words.value].values():
         word = entry[BannedWord.word.value]
 
         if word in message.content.lower():
             punishments.append(entry)
-
 
     if len(punishments) != 0:
 
@@ -66,9 +64,6 @@ async def check_for_banned_words(bot, guild, member, message):
             message = message.content
         )
 
-def get_urls(message):
-    urls = re.findall("https?:\/\/\S+", message)
-    return urls
 
 
 def link_protected(guild, user, channel):

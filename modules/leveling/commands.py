@@ -19,6 +19,7 @@ class Leveling(commands.Cog):
         usage = f"{get_prefix()}setlevel [user] [level]",
         description = "Sets the specified user's level"
     )
+    @commands.guild_only()
     @commands.has_permissions(administrator = True)
     async def setlevel(self, ctx, user : discord.Member, level : int):
         try:
@@ -32,6 +33,7 @@ class Leveling(commands.Cog):
         usage = f"{get_prefix()}addxp [user] [xp]",
         description = "Gives xp to the specified user"
     )
+    @commands.guild_only()
     @commands.has_permissions(administrator = True)
     async def addxp(self, ctx, user : discord.Member, xp : int):
         try:
@@ -44,6 +46,7 @@ class Leveling(commands.Cog):
         usage = f"{get_prefix()}removexp [user] [xp]",
         description = "Removes xp from the specified user"
     )
+    @commands.guild_only()
     @commands.has_permissions(administrator = True)
     async def removexp(self, ctx, user : discord.Member, xp : int):
         try:
@@ -53,9 +56,10 @@ class Leveling(commands.Cog):
 
 
     @commands.command(
-        usage = f"{get_prefix()}removexp [user] [xp]",
-        description = "Removes xp from the specified user"
+        usage = f"{get_prefix()}addreward [level] [role]",
+        description = "Adds a new reward"
     )
+    @commands.guild_only()
     @commands.has_permissions(administrator = True)
     async def addreward(self, ctx, level : int, role : discord.Role):
         try:
@@ -65,9 +69,10 @@ class Leveling(commands.Cog):
             await ctx.reply(error)
 
     @commands.command(
-        usage = f"{get_prefix()}removexp [user] [xp]",
-        description = "Removes xp from the specified user"
+        usage = f"{get_prefix()}removereward [level]",
+        description = "Removes a reward"
     )
+    @commands.guild_only()
     @commands.has_permissions(administrator = True)
     async def removereward(self, ctx, level : int):
         try:
@@ -78,9 +83,10 @@ class Leveling(commands.Cog):
 
 
     @commands.command(
-        usage = f"{get_prefix()}removexp [user] [xp]",
-        description = "Removes xp from the specified user"
+        usage = f"{get_prefix()}rewards",
+        description = "Displays all rewards"
     )
+    @commands.guild_only()
     @commands.has_permissions(administrator = True)
     async def rewards(self, ctx):
         try:
@@ -93,6 +99,7 @@ class Leveling(commands.Cog):
         usage = f"{get_prefix()}addnoxp [Channel or Role]",
         description = "Blacklists the specified channel / role from leveling"
     )
+    @commands.guild_only()
     @commands.has_permissions(administrator = True)
     async def addnoxp(self, ctx, _object : typing.Union[discord.TextChannel, discord.Role]):
         try:
@@ -104,8 +111,9 @@ class Leveling(commands.Cog):
 
     @commands.command(
         usage = f"{get_prefix()}removenoxp [Channel or Role]",
-        description = "Removes the spcified channel / role from leveling blacklist"
+        description = "Removes the specified channel / role from leveling blacklist"
     )
+    @commands.guild_only()
     @commands.has_permissions(administrator = True)
     async def removenoxp(self, ctx, _object : typing.Union[discord.TextChannel, discord.Role]):
         try:
@@ -119,6 +127,7 @@ class Leveling(commands.Cog):
         usage = f"{get_prefix()}xpblacklist",
         description = "Get a the xp blacklist"
     )
+    @commands.guild_only()
     @commands.has_permissions(administrator = True)
     async def xpblacklist(self, ctx):
         try:
@@ -130,23 +139,9 @@ class Leveling(commands.Cog):
 
     @commands.command(
         usage = f"{get_prefix()}level (optional user)",
-        description = "Checks a user level"
-    )
-    async def level(self, ctx, user : typing.Optional[discord.User]):
-        
-        try:
-            if user is None:
-                user = ctx.author
-
-            await functions.generate_level_image(ctx.guild, user, ctx)
-        except LevelingError as error:
-            await ctx.reply(error)
-
-
-    @commands.command(
-        usage = f"{get_prefix()}level (optional user)",
         description = "Get someone's user rank card"
     )
+    @commands.guild_only()
     async def level(self, ctx, user : typing.Optional[discord.User]):
         
         try:
@@ -161,6 +156,8 @@ class Leveling(commands.Cog):
         usage = f"{get_prefix()}levelups [channel]",
         description = "The level up messages will be send in the specified channel"
     )
+    @commands.guild_only()
+    @commands.has_permissions(administrator = True)
     async def levelups(self, ctx, channel : discord.TextChannel):
         try:
             functions.set_notify_channel(ctx.guild, channel)

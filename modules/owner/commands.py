@@ -15,6 +15,7 @@ class Owner(commands.Cog):
 
     @commands.command()
     @commands.is_owner()
+    @commands.guild_only()
     async def leave(self, ctx, guild : discord.Guild):
         await guild.leave()
         await ctx.reply(f"{Emotes.green_tick.value} Succsefully left `{guild.name}`")
@@ -22,18 +23,21 @@ class Owner(commands.Cog):
 
     @commands.command()
     @commands.is_owner()
+    @commands.guild_only()
     async def guilds(self, ctx):
         await ctx.reply(f"I am currently in **{len(self.bot.guilds)}** guilds!")
 
 
     @commands.command()
     @commands.is_owner()
+    @commands.guild_only()
     async def reconfigure(self, ctx, guild : discord.Guild):
         create_setup(guild, True)
         await ctx.reply(f"{Emotes.green_tick.value} Reconfigured data for the specified guild!")
     
     @commands.command()
     @commands.is_owner()
+    @commands.guild_only()
     async def invite(self, ctx, guild : discord.Guild):
         invite = await guild.text_channels[0].create_invite(max_uses = 1, reason = "Invite requested by the bot owner")
         await ctx.reply(invite.url)

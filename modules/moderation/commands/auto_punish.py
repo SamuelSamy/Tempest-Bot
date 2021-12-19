@@ -20,6 +20,7 @@ class AutoPunishments(commands.Cog):
         usage = f"{get_prefix()}addpunishment [amount of warns] [time] [mute/kick/ban] (duration)",
         description = "Adds an auto-punishment"
     )
+    @commands.guild_only()
     @has_permissions(administrator = True)
     async def addpunishment(self, ctx, warns,  time, _type, duration = ""):
         
@@ -29,7 +30,7 @@ class AutoPunishments(commands.Cog):
 
             functions.add_punishment(ctx.guild, warns, time, _type, duration)
             await ctx.reply("Auto-Punishment added!")
-        except ValueError as error:
+        except TypeException as error:
             await ctx.reply(error)
         except TimeException as error:
             await ctx.reply(error)
@@ -39,13 +40,14 @@ class AutoPunishments(commands.Cog):
         usage = f"{get_prefix()}removepunishment [punishment id]",
         description = "Removes the punishment entry with the specified ID"
     )
+    @commands.guild_only()
     @has_permissions(administrator = True)
     async def removepunishment(self, ctx, punishment_id):
         
         try:
             functions.remove_punishment(ctx.guild, punishment_id)
             await ctx.reply("Auto-Punishment removed!")
-        except ValueError as error:
+        except PunishmentException as error:
             await ctx.reply(error)
 
 
@@ -53,6 +55,7 @@ class AutoPunishments(commands.Cog):
         usage = f"{get_prefix()}listpunishments",
         description = "Displays a list of auto-punishments"
     )
+    @commands.guild_only()
     @has_permissions(administrator = True)
     async def listpunishments(self, ctx):
         

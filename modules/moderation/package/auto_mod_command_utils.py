@@ -48,7 +48,7 @@ def remove_banned_word(guild, word_id):
     save_json(json_file, "data/moderation.json")
     
     if not removed:
-        raise UnexpectedError("No word entry found with the specified ID")
+        raise WordError("No word entry found with the specified ID")
 
 
 def list_banned_words(guild):
@@ -79,7 +79,7 @@ def notify_channel(guild, word_id, channel):
     save_json(json_file, "data/moderation.json")
 
     if not set:
-        raise UnexpectedError("Unable to unprotect the specified channel")
+        raise WordError("Unable to unprotect the specified channel")
 
     
 def change_link_perms(guild, _object, allow):

@@ -19,6 +19,7 @@ class Configure(commands.Cog):
         usage = f"{get_prefix()}liststaff",
         description = "Displays a list with the current staff roles"
     )
+    @commands.guild_only()
     @has_permissions(administrator = True)
     async def liststaff(self, ctx):
         await setup_utils.list_staff(ctx.guild, ctx)
@@ -28,6 +29,7 @@ class Configure(commands.Cog):
         usage = f"{get_prefix()}addstaff [role]",
         description = "Adds the specified role as a staff role"
     )
+    @commands.guild_only()
     @has_permissions(administrator = True)
     async def addstaff(self, ctx, role : discord.Role):
         answer = setup_utils.modifiy_staff(ctx.guild, role, True)
@@ -38,6 +40,7 @@ class Configure(commands.Cog):
         usage = f"{get_prefix()}removestaff [role]",
         description = "Removes the specified role from the staff roles"
     )
+    @commands.guild_only()
     @has_permissions(administrator = True)
     async def removestaff(self, ctx, role : discord.Role):
         answer = setup_utils.modifiy_staff(ctx.guild, role, False)
@@ -49,6 +52,7 @@ class Configure(commands.Cog):
         usage = f"{get_prefix()}listpermissions",
         description = "Displays a list with the current permissions configuration"
     )
+    @commands.guild_only()
     @has_permissions(administrator = True)
     async def listpermissions(self, ctx):
         await setup_commands.list_permissions(ctx.guild, ctx)
@@ -58,6 +62,7 @@ class Configure(commands.Cog):
         usage = f"{get_prefix()}modallow [command] [role]",
         description = "Allows a role to use the specified command"
     )
+    @commands.guild_only()
     @has_permissions(administrator = True)
     async def modallow(self, ctx, _type, role : discord.Role):
         answer = setup_commands.change_permissions(ctx.guild, _type, role, True)
@@ -66,8 +71,9 @@ class Configure(commands.Cog):
 
     @commands.command(
         usage = f"{get_prefix()}modblock [command] [role]",
-        description = "Blcoks the role from using the specified command"
+        description = "Blocks the role from using the specified command"
     )
+    @commands.guild_only()
     @has_permissions(administrator = True)
     async def modblock(self, ctx, _type, role : discord.Role):
         answer = setup_commands.change_permissions(ctx.guild, _type, role, False)
@@ -78,6 +84,7 @@ class Configure(commands.Cog):
         usage = f"{get_prefix()}muterole [role]",
         description = "Sets the muted role"
     )
+    @commands.guild_only()
     @has_permissions(administrator = True)
     async def muterole(self, ctx, role : discord.Role):
         answer = setup_commands.set_mute_role(ctx.guild, role)
@@ -88,6 +95,7 @@ class Configure(commands.Cog):
         usage = f"{get_prefix()}modlogchannel [channel]",
         description = "Sets the moderator log channel"
     )
+    @commands.guild_only()
     @has_permissions(administrator = True)
     async def modlogchannel(self, ctx, channel : discord.TextChannel):
         answer = setup_commands.set_mod_channel(ctx.guild, channel)

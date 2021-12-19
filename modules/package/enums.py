@@ -42,3 +42,4 @@ class Emotes(Enum):
     wrong           = "️️⁉️"
     not_found       = "💢"
     reply           = "<:reply:917177348988760095>"
+    star            = "⭐"

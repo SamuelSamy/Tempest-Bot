@@ -60,7 +60,6 @@ async def list_permissions(guild, ctx):
             allowed_roles = None
 
         perm = permission[0].upper() + permission[1:]
-        perm = perm.replace('-', '')
 
         embed.add_field(
             name = f"{perm}",
@@ -82,4 +81,12 @@ def set_mod_channel(guild, channel):
     guild_settings = moderation[str(guild.id)]
     guild_settings[ModFormat.mod_channel.value] = channel.id
     save_json(moderation, "data/moderation.json")
-    return f"{Emotes.green_tick.value} Successfully set the specified channel as the moderation log channel"
+    return f"{Emotes.green_tick.value} Successfully set the specified channel as the moderation log channel!"
+
+
+def set_mute_role(guild, role):
+    settings = open_json("data/settings.json")
+    guild_settings = settings[str(guild.id)]
+    guild_settings[Settings.muted_role.value] = role.id
+    save_json(settings, "data/settings.json")
+    return f"{Emotes.green_tick.value} Successfully set the `Muted` role!"

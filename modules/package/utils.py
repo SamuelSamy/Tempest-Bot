@@ -1,6 +1,7 @@
 import json
-from modules.package.enums import Settings
+import re
 
+from modules.package.enums import Settings
 from modules.package.exceptions import *
 
 
@@ -107,3 +108,8 @@ def is_staff(guild, user):
 def get_prefix():
     json_file = open_json("data/config.json")
     return json_file["prefix"]
+
+
+def get_urls(message):
+    urls = re.findall("https?:\/\/\S+", message)
+    return urls

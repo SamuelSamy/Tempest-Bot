@@ -2,7 +2,6 @@ import discord
 import io
 import typing
 from discord.ext import commands
-from discord.ext.commands.errors import MissingRequiredArgument
 
 from modules.package.enums import *
 from modules.package.exceptions import *
@@ -21,13 +20,14 @@ class AutoModerator(commands.Cog):
         usage = f"{get_prefix()}banword [word] [warn/kick/ban] (optional time)",
         description = "Bans the specified word and sets a punishment when members use the word. *The time must be a number ending in 's'/'m'/'h'/'d'*"
     )
+    @commands.guild_only()
     @commands.has_permissions(administrator = True)
     async def banword(self, ctx, word,  punishment, duration = ""):
         
         try:
             functions.add_banned_word(ctx.guild, word, punishment, duration)
             await ctx.reply(f"Successfully banned the specified word!")
-        except ValueError as error:
+        except WordError as error:
             await ctx.reply(error)
         except TimeException as error:
             await ctx.reply(error)
@@ -37,13 +37,14 @@ class AutoModerator(commands.Cog):
         usage = f"{get_prefix()}unbanword [word_id]",
         description = "Removes the ban word entry with the specified ID"
     )
+    @commands.guild_only()
     @commands.has_permissions(administrator = True)
     async def unbanword(self, ctx, id):
 
         try:
             functions.remove_banned_word(ctx.guild, id)
             await ctx.reply(f"Successfully removed the word!")
-        except ValueError as error:
+        except WordError as error:
             await ctx.reply(error)
 
 
@@ -51,6 +52,7 @@ class AutoModerator(commands.Cog):
         usage = f"{get_prefix()}bannedwords",
         description = "Displays a list of banned words and their punishments"
     )
+    @commands.guild_only()
     @commands.has_permissions(administrator = True)
     async def bannedwords(self, ctx):
         
@@ -64,14 +66,18 @@ class AutoModerator(commands.Cog):
         usage = f"{get_prefix()}notifychannel [word_id] [channel]",
         description = "When members use the specified banned word a message will be sent in the mentioned channel"
     )
+    @commands.guild_only()
     @commands.has_permissions(administrator = True)
     async def notifychannel(self, ctx, word_id, channel : discord.TextChannel = None):
 
-        functions.notify_channel(ctx.guild, word_id, channel)
-        if channel is not None:
-            await ctx.reply("Channel successfully set as a notify channel for the specified word!")
-        else:
-            await ctx.reply("Successfully removed the notify channel for the specified word!")
+        try:
+            functions.notify_channel(ctx.guild, word_id, channel)
+            if channel is not None:
+                await ctx.reply("Channel successfully set as a notify channel for the specified word!")
+            else:
+                await ctx.reply("Successfully removed the notify channel for the specified word!")
+        except WordError as error:
+            await ctx.reply(error)
 
 
 
@@ -79,6 +85,7 @@ class AutoModerator(commands.Cog):
         usage = f"{get_prefix()}linkblock [channel / role]",
         description = "Removes the specified role / channel from the blacklist"
     )
+    @commands.guild_only()
     @commands.has_permissions(administrator = True)
     async def linkblock(self, ctx, _object : typing.Union[discord.TextChannel, discord.Role]):
         message = functions.change_link_perms(ctx.guild, _object, False)
@@ -89,6 +96,7 @@ class AutoModerator(commands.Cog):
         usage = f"{get_prefix()}linkallow [channel / role]",
         description = "Allows the specified role / channel to send external links"
     )
+    @commands.guild_only()
     @commands.has_permissions(administrator = True)
     async def linkallow(self, ctx, _object : typing.Union[discord.TextChannel, discord.Role]):
         message = functions.change_link_perms(ctx.guild, _object, True)

@@ -22,12 +22,12 @@ async def handle_case(bot, guild, channel, moderator, user, case_type, reason, d
 
         if user.id == moderator.id:
             if ctx is not None:
-                await channel.reply(f"{Emotes.red_tick.value} You can not use that command on yourself!")
+                await ctx.reply(f"{Emotes.red_tick.value} You can not use that command on yourself!")
             else:
-                await channel.reply(f"{Emotes.red_tick.value} You can not use that command on yourself!")
+                await channel.send(f"{Emotes.red_tick.value} You can not use that command on yourself!")
         elif is_staff(guild, user):
             if ctx is not None:
-                await channel.reply(f"{Emotes.red_tick.value} You can not use that command on a staff member!")
+                await ctx.reply(f"{Emotes.red_tick.value} You can not use that command on a staff member!")
             else:
                 await channel.send(f"{Emotes.red_tick.value} You can not use that command on a staff member!")
 
@@ -40,10 +40,6 @@ async def handle_case(bot, guild, channel, moderator, user, case_type, reason, d
 
             if case_type not in ['warn', 'ban', 'kick', 'mute', 'unban', 'unmute']:
                 raise TypeException("Invalid case type")
-
-            if case_type == "mute":
-                if has_muted_role(guild, user):
-                    raise MemberNotAffectedByModeration("This user is already muted!")
 
             try:
                 guild_id = guild.id
@@ -65,7 +61,7 @@ async def handle_case(bot, guild, channel, moderator, user, case_type, reason, d
                 case.case_id = get_last_id()
                 
                 if ctx is not None:
-                    await channel.reply(embed = create_message(guild, case_type, reason, duration, user, message))
+                    await ctx.reply(embed = create_message(guild, case_type, reason, duration, user, message))
                 else:
                     if channel is not None:
                         await channel.send(embed = create_message(guild, case_type, reason, duration, user, message))
@@ -106,8 +102,7 @@ async def send_to_logs(bot, case, message = None):
     if channel is not None:
 
         user =  await bot.fetch_user(case.user)
-        
-        
+    
         _color = Colors.red.value
 
         if case._type == "warn":
@@ -246,6 +241,10 @@ async def handle_mute(guild, user, reason):
     if muted_role is None:
         raise MuteException(f"{Emotes.wrong.value} Mute role not found")
 
+    if muted_role is not None and muted_role not in member.roles:
+        raise MuteException(f"{Emotes.no_entry.value} <@{user.id}> is already muted!")
+
+
     await fix_mute_permissions(guild, muted_role)
     await member.add_roles(muted_role, reason = reason)
 
@@ -276,13 +275,11 @@ async def handle_unmute(guild, user, resaon):
 
 
 async def handle_kick(guild, user, reason):
+    member = guild.get_member(user.id)
 
-    try:
-        memeber = guild.get_member(user.id)
-        await memeber.kick(reason = reason)
-    except:
-        raise ValueError("")
-
+    if member is not None:
+        await member.kick(reason = reason)
+  
 
 async def handle_unban(guild, user, reason):
 

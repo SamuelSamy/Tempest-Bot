@@ -23,7 +23,7 @@ class ModerationGeneralCommands(commands.Cog):
         self.remove_bans.start()
 
 
-    @tasks.loop(seconds = 5) # TODO: 1 min
+    @tasks.loop(seconds = 5) # TODO: 30 sec
     async def remove_mute(self):
         
         path = "data/database.db"
@@ -48,7 +48,7 @@ class ModerationGeneralCommands(commands.Cog):
                 print(f"Error while unmutting {user.id} in {guild.id}")
 
 
-    @tasks.loop(seconds = 10) # TODO: 30 min
+    @tasks.loop(seconds = 10) # TODO: 15 min
     async def remove_bans(self):
         
         path = "data/database.db"
