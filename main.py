@@ -13,6 +13,7 @@ init_files('./modules', files)
 bot = commands.Bot(
     intents = discord.Intents.all(), 
     command_prefix = commands.when_mentioned_or(config['prefix']),
+    case_insensitive = True,
     help_command = CustomHelpCommand()
 )
 
