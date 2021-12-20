@@ -18,11 +18,30 @@ TESTING_XP = 100
 IS_TESTING = True
 
 
-def get_level_from_xp(xp):
-    return int((-1 + math.floor(math.floor(math.sqrt(1 + 8 * xp / 25)))) / 4)
+# def get_level_from_xp(xp):
+#     return int((-1 + math.floor(math.floor(math.sqrt(1 + 8 * xp / 25)))) / 4)
 
-def get_xp_from_level(level):
-    return 25 * (2 * level ** 2 + level)
+# def get_xp_from_level(level):
+#     return 25 * (2 * level ** 2 + level)
+
+def gaus(n):
+    return n * (n + 1) / 2
+
+def sum_of_squares(n):
+    return n * (n + 1) * (2 * n + 1) / 6
+
+def get_xp_from_level(x):
+    return math.floor(5 * (sum_of_squares(x - 1)) + (40 * gaus(x - 1)) + x * 100)
+
+
+def get_level_from_xp(xp):
+    _xp, level = 0, 0
+
+    while _xp < xp:
+        level += 1
+        _xp = get_xp_from_level(level)
+
+    return level - 1
 
 
 async def increase_xp(guild, user, message):
