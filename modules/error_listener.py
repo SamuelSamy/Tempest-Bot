@@ -49,7 +49,7 @@ class CommandErrorHandler(commands.Cog):
         elif isinstance(error, commands.MissingPermissions) or isinstance(error, commands.CheckFailure):
             
             if str(error) != "You do not own this bot.":
-                await ctx.reply(f'{Emotes.no_entry.value}You can not use that comamnd!')
+                await ctx.reply(f'{Emotes.no_entry.value}You can not use that command!')
         
         elif isinstance(error, commands.RoleNotFound):
             await ctx.reply(f"{Emotes.not_found.value } The specified role does not exist!")
