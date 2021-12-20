@@ -13,7 +13,7 @@ class Leveling(Enum):
 
 class CustomColors(Enum):
 
-    blue            =   (35,   24, 112, 255)
+    blue            =   ( 17, 113, 197, 255)
     card_black      =   (40,   39,  42, 255)
     white           =   (255, 255, 255, 255)
     almost_white    =   (230, 230, 230, 128) 
