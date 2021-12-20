@@ -14,7 +14,7 @@ from modules.package.exceptions import CustomException
 from modules.package.utils import get_prefix, open_json, save_json
 
 MAX_LEVEL = 1e3
-TESTING_XP = 100
+TESTING_XP = 500
 IS_TESTING = True
 
 
