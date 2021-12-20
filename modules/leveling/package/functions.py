@@ -14,7 +14,6 @@ from modules.package.exceptions import CustomException
 from modules.package.utils import get_prefix, open_json, save_json
 
 MAX_LEVEL = 1e3
-TESTING_XP = 500
 IS_TESTING = True
 
 
@@ -63,12 +62,11 @@ async def increase_xp(guild, user, message):
 
             current_time = round(time.time())
 
-            if last_message + leveling_settings[Leveling.time.value] < current_time \
-                or IS_TESTING:
+            if last_message + leveling_settings[Leveling.time.value] < current_time or IS_TESTING:
 
                 xp_to_give = random.randint(leveling_settings[Leveling.min_xp.value], leveling_settings[Leveling.max_xp.value])
-                xp_to_give += TESTING_XP * IS_TESTING
-                
+                xp_to_give *= get_multiplier(guild, user)
+
                 await change_xp(guild, user, current_xp, xp_to_give, current_time, channel)
 
 
@@ -642,3 +640,83 @@ def set_notify_channel(guild, channel):
     guild_settings = leveling[str(guild.id)]
     guild_settings[Leveling.notify_channel.value] = channel.id
     save_json(leveling, "data/leveling.json")
+
+
+def get_multiplier(guild, user):
+
+    leveling = open_json("data/leveling.json")
+    guild_settings = leveling[str(guild.id)]
+    multipliers = guild_settings[Leveling.multipliers.value]
+
+    multiplier = float(multipliers["0"])
+
+    for multiplier_role in multipliers:
+
+        if int(multiplier_role) != 0:
+            role = guild.get_role(int(multiplier_role))
+            
+            if role in user.roles:
+                multiplier += float(multipliers[multiplier_role])
+
+    return multiplier
+
+
+def set_multiplier(guild, role, value):
+
+    if value < 0:
+        raise CustomException(f"{Emotes.wrong.value} You can not set negative multipliers!")
+
+    value = int(value * 100) / 100
+
+    leveling = open_json("data/leveling.json")
+    guild_settings = leveling[str(guild.id)]
+    multipliers = guild_settings[Leveling.multipliers.value]
+
+    if role == 0:
+        multipliers["0"] = value
+    else:
+        multipliers[str(role.id)] = value
+
+    save_json(leveling, "data/leveling.json")
+
+    return value
+
+
+def remove_multiplier(guild, role):
+
+    leveling = open_json("data/leveling.json")
+    guild_settings = leveling[str(guild.id)]
+    multipliers = guild_settings[Leveling.multipliers.value]
+
+    if str(role.id) not in multipliers:
+        raise CustomException(f"{Emotes.wrong.value} This role does not have a multiplier!")
+    
+    del multipliers[str(role.id)]
+
+    save_json(leveling, "data/leveling.json")
+
+
+def list_multipliers(guild):
+
+    leveling = open_json("data/leveling.json")
+    guild_settings = leveling[str(guild.id)]
+    multipliers = guild_settings[Leveling.multipliers.value]
+
+    default = float(multipliers["0"])
+    description = f"**Default:**   `{default}x`\n"
+
+    for multiplier_role in multipliers:
+
+        if int(multiplier_role) != 0:
+            role = guild.get_role(int(multiplier_role))
+
+            if role is not None:
+                description += f"**<@&{role.id}>:**   `{float(multipliers[multiplier_role])}x`\n"
+
+    embed = discord.Embed(
+        color = Colors.blue.value,
+        title = "Leveling Multipliers",
+        description = description
+    )
+
+    return embed

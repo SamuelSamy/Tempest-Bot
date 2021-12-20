@@ -166,5 +166,61 @@ class Leveling(commands.Cog):
             await ctx.reply(error)
 
 
+    @commands.command(
+        usage = f"{get_prefix()}defaultmultiplier [number]",
+        description = "The server default multiplier"
+    )
+    @commands.guild_only()
+    @commands.has_permissions(administrator = True)
+    async def defaultmultiplier(self, ctx, value : float):
+        try:
+            value = functions.set_multiplier(ctx.guild, 0, value)
+            await ctx.reply(f"{Emotes.green_tick.value} Server's default multiplier is now **{value}x**")
+        except CustomException as error:
+            await ctx.reply(error)
+
+
+    @commands.command(
+        usage = f"{get_prefix()}setmultiplier [role] [number]",
+        description = "Sets a multiplier for the specified role"
+    )
+    @commands.guild_only()
+    @commands.has_permissions(administrator = True)
+    async def setmultiplier(self, ctx, role : discord.Role, value : float):
+        try:
+            value = functions.set_multiplier(ctx.guild, role, value)
+            await ctx.reply(f"{Emotes.green_tick.value} The specified role's multiplier is now **{value}x**")
+        except CustomException as error:
+            await ctx.reply(error)
+
+
+    @commands.command(
+        usage = f"{get_prefix()}checkmultiplier [user]",
+        description = "Check a user's multiplier"
+    )
+    @commands.guild_only()
+    @commands.has_permissions(administrator = True)
+    async def checkmultiplier(self, ctx, user : discord.Member):
+        try:
+            value = functions.get_multiplier(ctx.guild, user)
+            await ctx.reply(f"{user.mention}'s multipliers is **{value}x**")
+        except CustomException as error:
+            await ctx.reply(error)
+
+
+    @commands.command(
+        usage = f"{get_prefix()}listmultipliers",
+        description = "Get a list of all active multipliers"
+    )
+    @commands.guild_only()
+    @commands.has_permissions(administrator = True)
+    async def listmultipliers(self, ctx):
+        try:
+            multipliers_embed = functions.list_multipliers(ctx.guild)
+            await ctx.reply(embed = multipliers_embed)
+        except CustomException as error:
+            await ctx.reply(error)
+
+
 def setup(bot):
     bot.add_cog(Leveling(bot))

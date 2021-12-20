@@ -54,7 +54,10 @@ def create_setup(guild, restart = False):
             "time": 60,
             "no_xp_roles": [],
             "no_xp_channels": [],
-            "rewards": {}
+            "rewards": {},
+            "multipliers": {
+                "0": 1
+            }
         }
 
         moderation = open_json("data/moderation.json")
