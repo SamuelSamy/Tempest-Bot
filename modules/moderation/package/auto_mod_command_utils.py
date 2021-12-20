@@ -92,29 +92,27 @@ def change_link_perms(guild, _object, allow):
     _value = None
 
     if type(_object) is discord.Role:
-        _type = "Role"
+        _type = f"from <@&{_object.id}>"
         _value = ExternalLinks.protected_roles.value
 
     else:  # type(_object) is discord.TextChannel:
-        _type = "Channel"
+        _type = f"in <#{_object.id}>"
         _value = ExternalLinks.protected_channels.value
 
     
     if allow == True:
             
-        if _object.id in moderation[_value]:
-            message = f"{Emotes.not_found.value} This {_type.lower()} is already blacklisted!"
-        else:
+        if _object.id not in moderation[_value]:
             moderation[_value].append(_object.id)
-            message = f"{Emotes.green_tick.value} {_type} successfully blacklisted!"
+        
+        message = f"{Emotes.green_tick.value} Links {_type} will no longer be deleted!"
     
     else:  # allow == False
         
-        if _object.id not in moderation[_value]:
-            message = f"{Emotes.not_found.value} This {_type.lower()} is not blacklisted!"
-        else:
+        if _object.id in moderation[_value]:
             moderation[_value].remove(_object.id)
-            message = f"{Emotes.green_tick.value} The {_type.lower()} was successfully removed from the blacklist!"
+        
+        message = f"{Emotes.not_found.value} This {_type.lower()} is not blacklisted!"
 
     save_json(json_file, "data/moderation.json")
 
