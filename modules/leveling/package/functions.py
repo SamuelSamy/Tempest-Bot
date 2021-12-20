@@ -13,7 +13,7 @@ from modules.package.enums import Colors, Emotes
 from modules.package.exceptions import CustomException
 from modules.package.utils import get_prefix, open_json, save_json
 
-MAX_LEVEL = 1e3
+MAX_LEVEL = int(1e3)
 IS_TESTING = True
 
 
@@ -656,7 +656,7 @@ def get_multiplier(guild, user):
             role = guild.get_role(int(multiplier_role))
             
             if role in user.roles:
-                multiplier += float(multipliers[multiplier_role])
+                multiplier *= float(multipliers[multiplier_role])
 
     return multiplier
 
