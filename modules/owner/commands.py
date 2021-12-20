@@ -1,11 +1,12 @@
+import typing
 from PIL.Image import init
 import discord
 
 from discord.ext import commands
 
+import modules.owner.package.functions as functions
 from modules.package.enums import Emotes
 from modules.setup_module.package.auto_functions import create_setup
-
 
 class Owner(commands.Cog):
     
@@ -49,6 +50,12 @@ class Owner(commands.Cog):
     async def test(self, ctx):
         raise ValueError()
 
+    @commands.command()
+    @commands.is_owner()
+    @commands.guild_only()
+    async def getuser(self, ctx, user : typing.Optional[discord.User]):
+        await ctx.reply(embed = functions.get_user_data(ctx, user))
 
+        
 def setup(bot):
     bot.add_cog(Owner(bot))
