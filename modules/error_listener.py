@@ -63,11 +63,12 @@ class CommandErrorHandler(commands.Cog):
         elif isinstance(error, commands.BadUnionArgument):
             await ctx.reply(f"{Emotes.not_found.value} Invalid arguments!")
         
-        elif isinstance(error, commands.UserNotFound):
+        elif isinstance(error, commands.UserNotFound) or isinstance(error, commands.MemberNotFound):
             await ctx.reply(f"{Emotes.not_found.value} The specified user is not in this server or does not exist!")
 
-        elif isinstance(error, commands.ChannelNotFound):
-            await ctx.reply(f"{Emotes.not_found.value} The specified channel does not exist!")
+
+        elif isinstance(error, commands.BadArgument):
+            await ctx.reply(f"{Emotes.not_found.value} Incorect arguments!")
 
         else:
             # All other Errors not returned come here. And we can just print the default TraceBack.
