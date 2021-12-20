@@ -125,7 +125,7 @@ class Leveling(commands.Cog):
 
     @commands.command(
         usage = f"{get_prefix()}xpblacklist",
-        description = "Get a the xp blacklist"
+        description = "Get the xp blacklist"
     )
     @commands.guild_only()
     @commands.has_permissions(administrator = True)
