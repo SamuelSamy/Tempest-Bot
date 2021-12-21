@@ -5,7 +5,7 @@ import sys
 
 from discord.ext import commands
 
-from modules.package.enums import *
+from modules.normal.package.enums import *
 
 
 # https://gist.github.com/EvieePy/7822af90858ef65012ea500bcecf1612

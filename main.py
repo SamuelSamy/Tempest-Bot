@@ -3,7 +3,7 @@ from discord.ext import commands
 from discord.ext.commands.core import has_permissions
 
 from services import *
-from modules.help.package.help import CustomHelpCommand
+from modules.normal.help.package.help import CustomHelpCommand
 
 config = get_json_file('data/config.json')
 
@@ -29,9 +29,9 @@ async def restart(ctx):
         try:
             unload_packages(files, bot)
             load_packages(files, bot)
-            await ctx.reply("Modules restarted!")
+            await ctx.respond("Modules restarted!")
         except:
-            await ctx.reply("Error while restarting")
+            await ctx.respond("Error while restarting")
 
 
 @bot.event
@@ -45,7 +45,7 @@ async def on_ready():
 @has_permissions(administrator = True)
 async def uptime(ctx):
     uptime = get_time() - startTime
-    await ctx.reply(f"Uptime: {uptime}")
+    await ctx.respond(f"Uptime: {uptime}")
 
 
 bot.run(config['token'])

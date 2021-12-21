@@ -1,7 +1,7 @@
 import discord
 from datetime import datetime
 
-from modules.package.enums import Colors
+from modules.normal.package.enums import Colors
 
 
 def get_user_data(ctx, user):
@@ -18,7 +18,7 @@ def get_user_data(ctx, user):
 
     embed.set_author(
         name = f"{user}", 
-        icon_url = user.avatar_url
+        icon_url = user.display_avatar
     )
     
     embed.add_field(
