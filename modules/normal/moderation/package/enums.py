@@ -30,7 +30,7 @@ class Permissions(Enum):
     slowmode    = "slowmode"
     mod_logs    = "mod-logs"
     mod_stats   = "mod-stats"
-
+    lock        = "lock"
 
 class BannedWord(Enum):
     word                = "word"

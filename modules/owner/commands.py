@@ -47,7 +47,7 @@ class Owner(commands.Cog):
     @commands.command()
     @commands.is_owner()
     @commands.guild_only()
-    async def test(self, ctx):
+    async def status(self, ctx):
         await ctx.reply("I am alive!")
 
     @commands.command()

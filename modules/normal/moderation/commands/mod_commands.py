@@ -198,6 +198,36 @@ class Moderation(commands.Cog):
             await ctx.reply(error)
 
 
+    # WHOIS
+    @commands.command(
+         usage = f"{get_prefix()}whois (user)",
+        description = "Get information about a user"
+    )
+    @commands.guild_only()
+    @has_staff_role()
+    async def whois(self, ctx, user : typing.Optional[discord.User]):
+        
+        try:
+            await functions.generate_whois(ctx, user)
+        except CustomException as error:
+            await ctx.reply(error)
+
+
+    # SLOWMODE
+    @commands.command(
+         usage = f"{get_prefix()}slowmode (channel) [slowmode]",
+        description = "Sets the slowmode of the specified channel. If no channel is specified the current channel will be affected"
+    )
+    @commands.guild_only()
+    @has_command_permissions(command = Permissions.slowmode.value)
+    async def slowmode(self, ctx, channel : typing.Optional[discord.TextChannel], slowmode_time):
+        
+        try:
+            await functions.handle_slowmode(ctx, channel, slowmode_time)
+        except CustomException as error:
+            await ctx.reply(error)
+
+
     # PURGE
     @commands.command(
         usage = f"{get_prefix()}purge [amount of messages] (optioanl user)",
@@ -213,36 +243,42 @@ class Moderation(commands.Cog):
             await ctx.reply(error)
 
 
-    # WHOIS
-    @commands.command(
-         usage = f"{get_prefix()}slowmode (channel) [slowmode]",
-        description = "Sets the slowmode of the specified channel. If no channel is specified the current channel will be affected"
+    @commands.group(invoke_without_command = True)
+    async def lockdown(self, ctx):
+        await ctx.reply("greater will eventually add something here")
+
+
+    @lockdown.command(
+        name = f"add",
+        usage = f"{get_prefix()}lockdown add [channel])",
+        description = "Prevents the `@everyone` role to send messages in a channel"
     )
     @commands.guild_only()
-    @has_command_permissions(command = Permissions.slowmode.value)
-    async def slowmode(self, ctx, channel : typing.Optional[discord.TextChannel], slowmode_time):
-        
-        try:
-            await functions.handle_slowmode(ctx, channel, slowmode_time)
+    @has_command_permissions(command = Permissions.lock.value)
+    async def lockdown_add(self, ctx, channel : typing.Optional[discord.TextChannel]):   
+        await ctx.reply("add")
+        try:       
+            functions.lock_channel(ctx.guild, channel or ctx.channel)
         except CustomException as error:
             await ctx.reply(error)
 
 
-    # SLOWMODE
-    @commands.command(
-         usage = f"{get_prefix()}whois (user)",
-        description = "Get information about a user"
+    @lockdown.command(
+        name = f"remove",
+        usage = f"{get_prefix()}lock (optioanl channel)",
+        description = "Prevents the @everyone role to send messages in a channel"
     )
     @commands.guild_only()
-    @has_staff_role()
-    async def whois(self, ctx, user : typing.Optional[discord.User]):
-        
-        try:
-            await functions.generate_whois(ctx, user)
+    @has_command_permissions(command = Permissions.lock.value)
+    async def lockdown_remove(self, ctx, channel : typing.Optional[discord.TextChannel]):   
+        await ctx.reply("remove")
+
+        try:       
+            functions.lock_channel(ctx.guild, channel or ctx.channel)
         except CustomException as error:
             await ctx.reply(error)
 
-       
+
 
 def setup(bot):
     bot.add_cog(Moderation(bot))

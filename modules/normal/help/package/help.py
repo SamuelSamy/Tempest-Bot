@@ -56,7 +56,15 @@ class CustomHelpCommand(commands.HelpCommand):
             )
 
             for command in cog.get_commands():
-                _description += f"`{command.usage}`\n{Emotes.reply.value}{command.description}\n\n"
+                
+                if isinstance(command, commands.Group):
+
+                    for subcommand in command.walk_commands():
+                        if subcommand.parents[0] == command and subcommand.usage is not None:
+                            _description += f"`{subcommand.usage}`\n{Emotes.reply.value}{subcommand.description}\n\n"
+                
+                elif command.usage is not None:
+                    _description += f"`{command.usage}`\n{Emotes.reply.value}{command.description}\n\n"
 
             embed.description = _description
 

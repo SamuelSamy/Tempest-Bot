@@ -5,6 +5,8 @@ import sqlite3
 
 from datetime import datetime, tzinfo
 
+from discord.permissions import P
+
 import modules.normal.moderation.package.punish_functions as punish_funcs
 
 from modules.normal.package.exceptions import *
@@ -411,4 +413,7 @@ async def generate_whois(ctx, user):
     
 
     await ctx.reply(embed = embed)
-        
+
+
+def lock_channel(guild, channel):
+    pass
