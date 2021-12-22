@@ -545,22 +545,34 @@ async def generate_level_image(guild, user, ctx):
         draw.text(level_number_location, str(level), font = level_number_font, fill = CustomColors.white.value)
         
 
-        #draw xp
-        needed_xp = get_xp_from_level(level + 1) - get_xp_from_level(level)
-        _w, _h = xp_font.getsize(f"/ {format_xp(needed_xp)}  XP")
-        xp_location = (xp_location[0] - _w, xp_location[1])
-        draw.text(xp_location, f"/ {format_xp(needed_xp)}  XP" , font = xp_font, fill = CustomColors.almost_white.value, align = "right")
+        if level < MAX_LEVEL:
+
+            # draw xp
+            needed_xp = get_xp_from_level(level + 1) - get_xp_from_level(level)
+            _w, _h = xp_font.getsize(f"/ {format_xp(needed_xp)}  XP")
+            xp_location = (xp_location[0] - _w, xp_location[1])
+            draw.text(xp_location, f"/ {format_xp(needed_xp)}  XP" , font = xp_font, fill = CustomColors.almost_white.value, align = "right")
         
-        # current xp
-        current_xp = xp - get_xp_from_level(level)
-        w, h = xp_number_font.getsize(f"/ {format_xp(current_xp)} ")
-        xp_number_location = (xp_location[0] - w + 16, xp_location[1])
-        draw.text(xp_number_location, f"{format_xp(current_xp)} " , font = xp_number_font, fill = CustomColors.white.value, align = "right")
+            # current xp
+            current_xp = xp - get_xp_from_level(level)
+            w, h = xp_number_font.getsize(f"/ {format_xp(current_xp)} ")
+            xp_number_location = (xp_location[0] - w + 16, xp_location[1])
+            draw.text(xp_number_location, f"{format_xp(current_xp)} " , font = xp_number_font, fill = CustomColors.white.value, align = "right")
+
+
+            precent = current_xp / needed_xp 
+        else:  # level >= MAX_LEVEL:
+            
+            # draw 'MAX LEVEL' text 
+            _w, _h = xp_font.getsize(f"MAX LEVEL ")
+            xp_location = (xp_location[0] - _w, xp_location[1])
+            draw.text(xp_location, f"MAX LEVEL " , font = xp_font, fill = CustomColors.almost_white.value, align = "right")
+            
+            precent = 1
+
 
         # draw bar
         draw.rounded_rectangle(rectangle, fill = CustomColors.white.value, width = 0, radius = 28)
-
-        precent = current_xp / needed_xp 
 
         pixels = get_original_pixels(rectangle, template)
 
