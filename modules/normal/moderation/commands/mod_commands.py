@@ -3,15 +3,12 @@ import discord
 
 from discord.ext import commands
 from modules.normal.moderation.package.enums import Permissions
-from discord.commands import slash_command
 
 import modules.normal.moderation.package.commands_functions as functions
-
 
 from modules.normal.package.enums import *
 from modules.normal.package.exceptions import *
 from modules.normal.package.commands_checks import *
-
 
 
 class Moderation(commands.Cog):
