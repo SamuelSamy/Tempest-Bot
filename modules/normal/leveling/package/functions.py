@@ -135,6 +135,7 @@ async def change_xp(guild, user, current_xp, xp_to_give = 0, timestamp = None, l
     connection = sqlite3.connect(path)
     connection.row_factory = sqlite3.Row
     cursor = connection.cursor()
+    
     if timestamp is not None:
         cursor.execute(f"update {table} set total_xp = ?, last_message_time = ? where guild = ? and user = ?", (new_xp, timestamp, guild.id, user.id))
     else:

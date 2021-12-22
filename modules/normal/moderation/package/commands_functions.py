@@ -255,7 +255,7 @@ async def handle_unmute(guild, user, resaon):
 
     connection = sqlite3.connect(path)
     cursor = connection.cursor()
-    cursor.execute(f"update {table} set expired = 1 where guild = ? and user = ? and type = 'mute' and duration != 0", (guild.id, user.id))
+    cursor.execute(f"update {table} set expired = 1 where guild = ? and user = ? and type = 'mute'", (guild.id, user.id))
     connection.commit()
     connection.close()
 
@@ -288,7 +288,7 @@ async def handle_unban(guild, user, reason):
 
         connection = sqlite3.connect(path)
         cursor = connection.cursor()
-        cursor.execute(f"update {table} set expired = 1 where guild = ? and user = ? and type = 'ban' and duration != 0", (guild.id, user.id))
+        cursor.execute(f"update {table} set expired = 1 where guild = ? and user = ? and type = 'ban'", (guild.id, user.id))
         connection.commit()
         connection.close()
 

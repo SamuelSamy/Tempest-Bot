@@ -2,12 +2,11 @@ import time
 import sqlite3
 
 from discord.ext import commands, tasks
-from modules.normal.moderation.package.enums import ModFormat
-from modules.normal.moderation.package.classes import Case
-from modules.normal.moderation.package.utility_functions import get_case_by_entry
 
 from modules.normal.package.enums import *
 from modules.normal.package.exceptions import *
+from modules.normal.package.config import *
+
 import modules.normal.moderation.package.commands_functions as functions
 import modules.normal.moderation.package.utility_functions as utils
 
@@ -23,7 +22,7 @@ class ModerationGeneralCommands(commands.Cog):
         self.remove_bans.start()
 
 
-    @tasks.loop(seconds = 5) # TODO: 30 sec
+    @tasks.loop(seconds = MIN_MUTE_TIME / 2)
     async def remove_mute(self):
         
         path = "data/database.db"
@@ -37,25 +36,27 @@ class ModerationGeneralCommands(commands.Cog):
         connection.close()
 
         for entry in data:
-            case = get_case_by_entry(entry)
+            case = utils.get_case_by_entry(entry)
             guild = self.bot.get_guild(case.guild)
             user = guild.get_member(case.user)
 
-            try:
+            mark = True
 
-                await functions.handle_case(self.bot, guild, None, self.bot.user, user, 'unmute', "Mute was temporary", 0)
+            if user is not None:
+
+                try:
+                    await functions.handle_case(self.bot, guild, None, self.bot.user, user, 'unmute', "Mute was temporary", 0)
+                except Exception as error:
+                    if not str(error).endswith("is not muted!"):
+                        mark = False
+                        print(f"Error: Can not unmute {user.id} in {guild.id}\n{error}")
+            
+            if mark:
                 utils.mark_as_expired(case)
-
-            except Exception as error:
-
-                if not str(error).endswith("is not muted!"):
-                    print(f"Error: Can not unmute {user.id} in {guild.id}\n{error}")
-                else:
-                    utils.mark_as_expired(case)
-
+            
             
 
-    @tasks.loop(seconds = 10) # TODO: 15 min
+    @tasks.loop(seconds = MIN_BAN_TIME)
     async def remove_bans(self):
         
         path = "data/database.db"
@@ -69,7 +70,7 @@ class ModerationGeneralCommands(commands.Cog):
         connection.close()
 
         for entry in data:
-            case = get_case_by_entry(entry)
+            case = utils.get_case_by_entry(entry)
             guild = self.bot.get_guild(case.guild)
             user = await self.bot.fetch_user(case.user)
 
@@ -84,7 +85,24 @@ class ModerationGeneralCommands(commands.Cog):
                     print(f"Error: Can not unban {user.id} in {guild.id}\n{error}")
                 else:
                     utils.mark_as_expired(case)
-                
+
+
+    @commands.Cog.listener("on_member_join")
+    async def sync_mute(self, member):
+        
+        path = "data/database.db"
+        table = "moderation_cases"
+
+        connection = sqlite3.connect(path)
+        connection.row_factory = lambda cursor, row: row[0]
+        cursor = connection.cursor()
+        cursor.execute(f"select user from {table} where type = 'mute' and expired = 0")
+        users = cursor.fetchall()
+        connection.close()
+
+        if member.id in users:
+            await functions.handle_mute(member.guild, member, "")
+
 
 
 def setup(bot):
