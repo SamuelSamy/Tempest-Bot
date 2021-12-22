@@ -365,9 +365,9 @@ def get_blacklist(guild):
     no_xp_channels = leveling[str(guild.id)][Leveling.no_xp_channels.value]
     no_xp_roles = leveling[str(guild.id)][Leveling.no_xp_roles.value]
 
-    if len(no_xp_channels) == 0 and len(no_xp_roles):
+    if len(no_xp_channels) == 0 and len(no_xp_roles) == 0:
         _title = "There are no blacklisted roles or channels!"
-        _desc  = f"{Emotes.reply.value} Use `{get_prefix()} addreward` in order to add rewards!"
+        _desc  = f"{Emotes.reply.value} Use `{get_prefix()}addnoxp` in order to blacklist roles / channels!"
         _color = Colors.red.value
     else:
         _title = "Leveling Blacklist\n"
@@ -437,10 +437,10 @@ async def generate_level_image(guild, user, ctx):
         # profile picture data
         picture_size = 200
         picture_border_size = 8
-        picture_location_x = y_offset + picture_border_size
+        picture_location_x = y_offset 
         picture_location_y = int((max_y - picture_size - 2 * picture_border_size) / 2)
 
-        after_image_offset = 16 + picture_location_x + picture_size + 2 * picture_border_size
+        after_image_offset = 2 * picture_location_x + picture_size + 2 * picture_border_size
 
 
         # name location 
