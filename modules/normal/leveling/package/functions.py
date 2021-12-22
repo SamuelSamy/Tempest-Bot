@@ -40,12 +40,12 @@ def get_level_from_xp(xp):
         level += 1
         _xp = get_xp_from_level(level)
 
-    return level - 1
+    return level - (not xp == get_xp_from_level(level))
 
 
 async def increase_xp(guild, user, message):
     
-    if not user.bot and not message.is_system:
+    if not user.bot and not message.is_system():
 
         channel = message.channel
 

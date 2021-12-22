@@ -182,7 +182,7 @@ def generate_modlogs(guild, user, page, warns_only = False):
         )
 
         for case in cases:
-            details = compute_case_details(case)
+            details = compute_case_details(case, display_mod = warns_only)
             
 
             embed.add_field(
@@ -319,7 +319,7 @@ def count_total(dict):
     return total
 
 
-def compute_case_details(case):
+def compute_case_details(case, display_moderator):
     message = ""
 
     _type = case._type
@@ -333,7 +333,9 @@ def compute_case_details(case):
     if case.duration != 0:
         message += f"\n**Duration:** {get_string_from_seconds(case.duration)}"
 
-    message += f"\n**Moderator:** <@{(case.moderator)}>"
+    if display_moderator:
+        message += f"\n**Moderator:** <@{(case.moderator)}>"
+    
     message += f"\n**Time:** <t:{(case.time)}> (<t:{(case.time)}:R>)"
 
     return message

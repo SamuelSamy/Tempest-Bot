@@ -14,7 +14,7 @@ class Owner(commands.Cog):
         self.bot = bot
 
 
-    commands.command()
+    @commands.command()
     @commands.is_owner()
     @commands.guild_only()
     async def leave(self, ctx, guild : discord.Guild):
@@ -22,21 +22,21 @@ class Owner(commands.Cog):
         await ctx.respond(f"{Emotes.green_tick.value} Succsefully left `{guild.name}`")
 
 
-    commands.command()
+    @commands.command()
     @commands.is_owner()
     @commands.guild_only()
     async def guilds(self, ctx):
         await ctx.respond(f"I am currently in **{len(self.bot.guilds)}** guilds!")
 
 
-    commands.command()
+    @commands.command()
     @commands.is_owner()
     @commands.guild_only()
     async def reconfigure(self, ctx, guild : discord.Guild):
         create_setup(guild, True)
         await ctx.respond(f"{Emotes.green_tick.value} Reconfigured data for the specified guild!")
     
-    commands.command()
+    @commands.command()
     @commands.is_owner()
     @commands.guild_only()
     async def invite(self, ctx, guild : discord.Guild):
@@ -44,16 +44,16 @@ class Owner(commands.Cog):
         await ctx.respond(invite.url)
     
 
-    commands.command()
+    @commands.command()
     @commands.is_owner()
     @commands.guild_only()
     async def test(self, ctx):
-        raise ValueError()
+        await ctx.reply("I am alive!")
 
-    commands.command()
+    @commands.command()
     @commands.is_owner()
     @commands.guild_only()
-    async def getuser(self, ctx, user : typing.Optional[discord.User]):
+    async def user(self, ctx, user : typing.Optional[discord.User]):
         await ctx.respond(embed = functions.get_user_data(ctx, user))
 
         
