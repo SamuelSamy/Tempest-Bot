@@ -1,5 +1,4 @@
 from io import BytesIO
-import sqlite3
 import random
 import math
 import time
@@ -11,6 +10,7 @@ from PIL import Image, ImageDraw, ImageFont, ImageChops
 from domain.enums.leveling import CustomColors, Leveling
 from domain.enums.general import Colors, Emotes
 from domain.exceptions import CustomException
+from repository.database_repo import DatabaseRepository
 from repository.json_repo import LevelingRepo
 from service._general.utils import get_prefix
 
@@ -76,16 +76,13 @@ async def increase_xp(guild, user, message):
 
 def get_leveling_data(guild, user):
 
-    path = "data/database.db"
-    table = "levels"
 
-    connection = sqlite3.connect(path)
-    connection.row_factory = sqlite3.Row
-    cursor = connection.cursor()
-    cursor.execute(f"select * from {table} where guild = ? and user = ?", (guild.id, user.id))
-    data = cursor.fetchall()
-    connection.close()
-
+    database_repo = DatabaseRepository()
+    data = database_repo.select(
+        sql_statement = "select * from levels where guild = ? and user = ?", 
+        args = (guild.id, user.id)
+    )
+        
     if len(data) != 0:
         entry = data[0]
         return entry["total_xp"], entry["last_message_time"]
@@ -95,16 +92,11 @@ def get_leveling_data(guild, user):
 
 def create_leveling_entry(guild, user):
     
-    path = "data/database.db"
-    table = "levels"
-
-    connection = sqlite3.connect(path)
-    connection.row_factory = sqlite3.Row
-    cursor = connection.cursor()
-    cursor.execute(f"insert into {table} values (?, ?, ?, ?, ?)", (None, guild.id, user.id, 0, 0))
-    connection.commit()
-    connection.close()
-
+    database_repo = DatabaseRepository()
+    database_repo.general_statement(
+        sql_statement = "insert into levels values (?, ?, ?, ?, ?)", 
+        args = (None, guild.id, user.id, 0, 0)
+    )
 
 
 def user_is_blacklisted(guild, user, roles):
@@ -132,21 +124,18 @@ async def change_xp(guild, user, current_xp, xp_to_give = 0, timestamp = None, l
     if level > MAX_LEVEL:
         new_xp = get_xp_from_level(MAX_LEVEL)
     
-
-    path = "data/database.db"
-    table = "levels"
-
-    connection = sqlite3.connect(path)
-    connection.row_factory = sqlite3.Row
-    cursor = connection.cursor()
-    
+    database_repo = DatabaseRepository()
+   
     if timestamp is not None:
-        cursor.execute(f"update {table} set total_xp = ?, last_message_time = ? where guild = ? and user = ?", (new_xp, timestamp, guild.id, user.id))
+        database_repo.general_statement(
+            sql_statement = "update levels set total_xp = ?, last_message_time = ? where guild = ? and user = ?", 
+            args = (new_xp, timestamp, guild.id, user.id)
+        )
     else:
-        cursor.execute(f"update {table} set total_xp = ? where guild = ? and user = ?", (new_xp, guild.id, user.id))
-
-    connection.commit()
-    connection.close()
+        database_repo.general_statement(
+            sql_statement = "update levels set total_xp = ? where guild = ? and user = ?",
+            args = (new_xp, guild.id, user.id)
+        )
 
     await check_for_level_change(guild, user, current_xp, new_xp, last_channel)
 
@@ -370,20 +359,19 @@ def get_blacklist(guild):
 
 def get_user_level_rank_xp(guild, user, author):
     
+
+    database_repo = DatabaseRepository()
     
-    path = "data/database.db"
-    table = "levels"
+    data = database_repo.select(
+        sql_statement = "select * from levels where guild = ? order by total_xp desc", 
+        args = (guild.id,)
+    )
 
-    connection = sqlite3.connect(path)
-    connection.row_factory = sqlite3.Row
-    cursor = connection.cursor()
-    cursor.execute(f"select * from {table} where guild = ? order by total_xp desc", (guild.id,))
-    data = cursor.fetchall()
-
-    cursor.execute(f"select * from {table} where guild = ? and user = ?", (guild.id, user.id))
-    user_data = cursor.fetchall()
-    connection.close()
-
+    user_data = database_repo.select(
+        sql_statement = "select * from levels where guild = ? and user = ?",
+        args = (guild.id, user.id)
+    )
+    
     if len(user_data) != 0:
         entry = user_data[0]
         return get_level_from_xp(entry["total_xp"]), data.index(entry) + 1, entry["total_xp"]

@@ -1,6 +1,6 @@
 import re
 
-from domain.enums.moderation import BannedWord, ModFormat
+from domain.enums.moderation import BannedWord
 from domain.enums.general import Emotes
 from repository.json_repo import ModerationRepo
 from service._general.utils import get_urls

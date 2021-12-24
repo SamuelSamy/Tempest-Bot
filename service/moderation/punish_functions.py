@@ -1,5 +1,5 @@
 import time
-import sqlite3
+from repository.database_repo import DatabaseRepository
 from repository.json_repo import ModerationRepo
 
 import service.moderation.commands_functions as c_functions
@@ -58,8 +58,8 @@ def get_punishments(guild):
 
     times = {}
 
-    # TODO IDK IF IT WILL WORK
-    punishments = list_punishments(guild)
+    moderation_repo = ModerationRepo()
+    punishments = moderation_repo.get_punishments(guild.id)
 
     for punishment_id in punishments.keys():
         punishment_details = punishments[punishment_id]
@@ -76,18 +76,13 @@ def get_punishments(guild):
 
 def count_warns(guild, user, _time):
     
-    path = "data/database.db"
-    table = "moderation_cases"
+    database_repo = DatabaseRepository()
+    data = database_repo.select(
+        sql_statement = "select * from moderation_cases where guild = ? and user = ? and type = 'warn' and time + ? >= ?",
+        args = (guild.id, user.id, _time, int(round(time.time())))
+    )
+    return len(data)
 
-    connection = sqlite3.connect(path)
-    connection.row_factory = sqlite3.Row
-    cursor = connection.cursor()
-    cursor.execute(f"select * from {table} where guild = ? and user = ? and type = 'warn' and time + ? >= ?", (guild.id, user.id, _time, int(round(time.time()))))
-    warns = len(cursor.fetchall())
-    connection.close()
-
-    return warns
-    
 
 async def apply_punishments(bot, channel, guild, user):
     

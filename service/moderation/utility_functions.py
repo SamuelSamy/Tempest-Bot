@@ -1,9 +1,9 @@
 import discord
 import time
 import math
-import sqlite3
 
 from domain.enums.general import *
+from repository.database_repo import DatabaseRepository
 from service._general.utils import get_string_from_seconds
 from domain.case import Case
 
@@ -77,16 +77,11 @@ def fetch_logs(guild, user, page):
 
     logs_per_page = 5
 
-    path = "data/database.db"
-    table = "moderation_cases"
-
-    connection = sqlite3.connect(path)
-    connection.row_factory = sqlite3.Row
-    cursor = connection.cursor()
-    cursor.execute(f"select * from {table} where guild = ? and user = ? order by time desc", (guild.id, user.id))
-    data = cursor.fetchall()
-    connection.close()
-
+    database_repo = DatabaseRepository()
+    data = database_repo.select(
+        sql_statement = "select * from moderation_cases where guild = ? and user = ? order by time desc",
+        args = (guild.id, user.id)
+    )
 
     start_page = (page -1) * logs_per_page
     stop_page = min(start_page + logs_per_page, len(data))
@@ -114,16 +109,11 @@ def fetch_warns(guild, user, page):
 
     logs_per_page = 5
 
-    path = "data/database.db"
-    table = "moderation_cases"
-
-    connection = sqlite3.connect(path)
-    connection.row_factory = sqlite3.Row
-    cursor = connection.cursor()
-    cursor.execute(f"select * from {table} where guild = ? and user = ? and type = 'warn' order by time desc", (guild.id, user.id))
-    data = cursor.fetchall()
-    connection.close()
-
+    database_repo = DatabaseRepository()
+    data = database_repo.select(
+        sql_statement = "select * from moderation_cases where guild = ? and user = ? and type = 'warn' order by time desc",
+        args = (guild.id, user.id)
+    )
 
     start_page = (page -1) * logs_per_page
     stop_page = min(start_page + logs_per_page, len(data))
@@ -197,25 +187,24 @@ def generate_modlogs(guild, user, page, warns_only = False):
 
 
 def get_case_by_id(guild, case_id):
-    path = "data/database.db"
-    table = "moderation_cases"
 
-    connection = sqlite3.connect(path)
-    connection.row_factory = sqlite3.Row
-    cursor = connection.cursor()
-    cursor.execute(f"select * from {table} where ID = ? and guild = ?", (case_id, guild.id))
-    data = cursor.fetchall()[0]
-    connection.close()
+    database_repo = DatabaseRepository()
+    data = database_repo.select(
+        sql_statement = "select * from moderation_cases where ID = ? and guild = ?",
+        args = (case_id, guild.id)
+    )
+
+    case = data[0]
 
     return Case(
-        data["ID"],
-        data["guild"],
-        data["user"],
-        data["type"],
-        data["reason"],
-        data["time"],
-        data["moderator"],
-        data["duration"]
+        case["ID"],
+        case["guild"],
+        case["user"],
+        case["type"],
+        case["reason"],
+        case["time"],
+        case["moderator"],
+        case["duration"]
     )
 
 
@@ -245,15 +234,12 @@ async def generate_modstats(guild, user, bot):
         "warn": 0
     }
     
-    path = "data/database.db"
-    table = "moderation_cases"
 
-    connection = sqlite3.connect(path)
-    connection.row_factory = sqlite3.Row
-    cursor = connection.cursor()
-    cursor.execute(f"select * from {table} where guild = ? and moderator = ?", (guild.id, user.id))
-    data = cursor.fetchall()
-    connection.close()
+    database_repo = DatabaseRepository()
+    data = database_repo.select(
+        sql_statement = "select * from moderation_cases where guild = ? and moderator = ?",
+        args = (guild.id, user.id)
+    )
 
     if len(data) != 0:
         for entry in data:
@@ -353,11 +339,9 @@ def get_case_by_entry(entry):
 
 
 def mark_as_expired(case):
-    path = "data/database.db"
-    table = "moderation_cases"
 
-    connection = sqlite3.connect(path)
-    cursor = connection.cursor()
-    cursor.execute(f"update {table} set expired = 1 where ID = ?", (case.case_id,))
-    connection.commit()
-    connection.close()
+    database_repo = DatabaseRepository()
+    database_repo.general_statement(
+        sql_statement = "update moderation_cases set expired = 1 where ID = ?",
+        args = (case.case_id,)
+    )

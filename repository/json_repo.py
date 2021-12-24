@@ -103,13 +103,13 @@ class SettingsRepo(JsonRepository):
     # MUTE FUNCTIONS (get; set;)
     def get_muted_role(self, guild_id):
         guild_id = str(guild_id)
-        guild_data = JsonRepository.get_guild_data(guild_id)
+        guild_data = JsonRepository.get_guild_data(self, guild_id)
         return guild_data[Settings.muted_role]
 
 
     def set_muted_role(self, guild_id, role_id):
         guild_id = str(guild_id)
-        guild_data = JsonRepository.get_guild_data(guild_id)
+        guild_data = JsonRepository.get_guild_data(self, guild_id)
         guild_data[Settings.muted_role] = role_id
         JsonRepository.set_guild_data(self, guild_id, guild_data)
 
@@ -118,27 +118,27 @@ class SettingsRepo(JsonRepository):
 
     def set_welcome_channel(self, guild_id, channel_id):
         guild_id = str(guild_id)
-        guild_data = JsonRepository.get_guild_data(guild_id)
+        guild_data = JsonRepository.get_guild_data(self, guild_id)
         guild_data[Settings.welcome_channel] = channel_id
         JsonRepository.set_guild_data(self, guild_id, guild_data)
 
 
     def get_welcome_channel(self, guild_id):
         guild_id = str(guild_id)
-        guild_data = JsonRepository.get_guild_data(guild_id)
+        guild_data = JsonRepository.get_guild_data(self, guild_id)
         return guild_data[Settings.welcome_channel]
 
 
     def set_welcome_message(self, guild_id, message):
         guild_id = str(guild_id)
-        guild_data = JsonRepository.get_guild_data(guild_id)
+        guild_data = JsonRepository.get_guild_data(self, guild_id)
         guild_data[Settings.welcome_message] = message
         JsonRepository.set_guild_data(self, guild_id, guild_data)
 
 
     def get_welcome_message(self, guild_id):
         guild_id = str(guild_id)
-        guild_data = JsonRepository.get_guild_data(guild_id)
+        guild_data = JsonRepository.get_guild_data(self, guild_id)
         return guild_data[Settings.welcome_message]
         
 
@@ -246,8 +246,9 @@ class LevelingRepo(JsonRepository):
             answer = f"{Emotes.not_found} This {_value.lower()} is not blacklisted!"
         else:
             guild_data[_type].remove(_object_id)
+            JsonRepository.set_guild_data(self, guild_id, guild_data)
             answer = f"{Emotes.green_tick} The {_value.lower()} was successfully removed from the blacklist!"
-
+        
         return answer
 
     
@@ -301,14 +302,14 @@ class ModerationRepo(JsonRepository):
     # STAFF RELATED FUNCTIONS
     def get_staff_permissions(self, guild_id):
         guild_id = str(guild_id)
-        guild_data = JsonRepository.get_guild_data(guild_id)
+        guild_data = JsonRepository.get_guild_data(self, guild_id)
         return guild_data[ModFormat.permissions]
     
 
     def allow_role(self, guild_id, role_id, _type):
         _type = _type.lower()
         guild_id = str(guild_id)
-        guild_data = JsonRepository.get_guild_data(guild_id)
+        guild_data = JsonRepository.get_guild_data(self, guild_id)
         
         if _type not in guild_data[ModFormat.permissions]:
             answer = f"{Emotes.red_tick} That permission does not exist!"
@@ -324,7 +325,7 @@ class ModerationRepo(JsonRepository):
     def remove_role(self, guild_id, role_id, _type):
         _type = _type.lower()
         guild_id = str(guild_id)
-        guild_data = JsonRepository.get_guild_data(guild_id)
+        guild_data = JsonRepository.get_guild_data(self, guild_id)
 
         if _type not in guild_data[ModFormat.permissions]:
             answer = f"{Emotes.red_tick} That permission does not exist!"
@@ -341,14 +342,14 @@ class ModerationRepo(JsonRepository):
     # BANNED WORDS FUNCTIONS
     def add_banned_word(self, guild_id, word_data):
         guild_id = str(guild_id)
-        guild_data = JsonRepository.get_guild_data(guild_id)
+        guild_data = JsonRepository.get_guild_data(self, guild_id)
 
         next_id = guild_data[ModFormat.next_bw_id]
 
         guild_data[ModFormat.next_bw_id] += 1
         guild_data[ModFormat.banned_words][str(next_id)] = word_data
 
-        JsonRepository.set_guild_data(guild_id, guild_data)
+        JsonRepository.set_guild_data(self, guild_id, guild_data)
         
     
     def remove_banned_word(self, guild_id, word_id):
@@ -375,7 +376,7 @@ class ModerationRepo(JsonRepository):
         channel_set = False
 
         guild_id = str(guild_id)
-        guild_data = JsonRepository.get_guild_data(guild_id)
+        guild_data = JsonRepository.get_guild_data(self, guild_id)
 
 
         if word_id in guild_data[ModFormat.banned_words].keys():
@@ -394,7 +395,7 @@ class ModerationRepo(JsonRepository):
         if _object.id not in guild_data[ModFormat.links][_type]:
             guild_data[ModFormat.links][_type].append(_object.id)
 
-        JsonRepository.set_guild_data(guild_id, guild_data)
+        JsonRepository.set_guild_data(self, guild_id, guild_data)
 
 
     def block_link(self, guild_id, _type, _object):
@@ -404,16 +405,16 @@ class ModerationRepo(JsonRepository):
         if _object.id in guild_data[ModFormat.links][_type]:
             guild_data[ModFormat.links][_type].remove(_object.id)
 
-        JsonRepository.set_guild_data(guild_id, guild_data)
+        JsonRepository.set_guild_data(self, guild_id, guild_data)
 
 
     def get_link_protected_channels(self, guild_id):  
-        guild_data = JsonRepository.get_guild_data(guild_id)
+        guild_data = JsonRepository.get_guild_data(self, guild_id)
         return guild_data[ModFormat.links][ExternalLinks.protected_channels]
 
 
     def get_link_protected_roles(self, guild_id):
-        guild_data = JsonRepository.get_guild_data(guild_id)
+        guild_data = JsonRepository.get_guild_data(self, guild_id)
         return guild_data[ModFormat.links][ExternalLinks.protected_roles]
 
 
@@ -457,7 +458,7 @@ class ModerationRepo(JsonRepository):
     
     def get_punishments(self, guild_id):
         guild_id = str(guild_id)
-        guild_data = self.get_guild_data(guild_id)
+        guild_data = self.get_guild_data(self, guild_id)
         return guild_data[ModFormat.a_punish]
 
 

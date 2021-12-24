@@ -1,9 +1,9 @@
 import discord
 import time
 import asyncio
-import sqlite3
 
 from datetime import datetime
+from repository.database_repo import DatabaseRepository
 from repository.json_repo import ModerationRepo
 
 import service.moderation.punish_functions as punish_funcs
@@ -206,15 +206,11 @@ async def handle_slowmode(ctx, channel, slowmode_time):
 
 def deletecase(guild, case_id):
     
-    path = "data/database.db"
-    table = "moderation_cases"
-
-    connection = sqlite3.connect(path)
-    cursor = connection.cursor()
-    cursor.execute(f"delete from {table} where ID = ? and guild = ?", (case_id, guild.id))
-    deleted = cursor.rowcount
-    connection.commit()
-    connection.close()
+    database_repo = DatabaseRepository()
+    deleted = database_repo.delete(
+        sql_statement = "delete from moderation_cases where ID = ? and guild = ?", 
+        args = (case_id, guild.id)
+    )
 
     if deleted == 0:
         raise CustomException(f"{Emotes.wrong} Case with the specified ID not found!")
@@ -246,14 +242,11 @@ async def handle_unmute(guild, user, resaon):
 
     await member.remove_roles(muted_role, reason = resaon)
 
-    path = "data/database.db"
-    table = "moderation_cases"
-
-    connection = sqlite3.connect(path)
-    cursor = connection.cursor()
-    cursor.execute(f"update {table} set expired = 1 where guild = ? and user = ? and type = 'mute'", (guild.id, user.id))
-    connection.commit()
-    connection.close()
+    database_repo = DatabaseRepository()
+    database_repo.general_statement(
+        sql_statement = "update moderation_cases set expired = 1 where guild = ? and user = ? and type = 'mute'", 
+        args = (guild.id, user.id)
+    )
 
 
 async def handle_kick(guild, user, reason):
@@ -279,14 +272,11 @@ async def handle_unban(guild, user, reason):
         raise CustomException(f"{Emotes.wrong} <@{user.id}> is not banned from this server!")
     else:
         
-        path = "data/database.db"
-        table = "moderation_cases"
-
-        connection = sqlite3.connect(path)
-        cursor = connection.cursor()
-        cursor.execute(f"update {table} set expired = 1 where guild = ? and user = ? and type = 'ban'", (guild.id, user.id))
-        connection.commit()
-        connection.close()
+        database_repo = DatabaseRepository()
+        database_repo.general_statement(
+            sql_statement = "update moderation_cases set expired = 1 where guild = ? and user = ? and type = 'ban'", 
+            args = (guild.id, user.id)
+        )
 
 
 async def handle_ban(guild, user, reason):
@@ -303,28 +293,22 @@ async def fix_mute_permissions(guild, muted_role):
 
 def insert_case(case):
     
-    path = "data/database.db"
-    table = "moderation_cases"
-
-    connection = sqlite3.connect(path)
-    cursor = connection.cursor()
-    cursor.execute(f"insert into {table} values (?, ?, ?, ?, ?, ?, ?, ?, ?)", (None, case.guild, case.user, case._type, case.reason, case.time, case.moderator, case.duration, 0))
-    connection.commit()
-    connection.close()
+    database_repo = DatabaseRepository()
+    database_repo.general_statement(
+        sql_statement = "insert into moderation_cases values (?, ?, ?, ?, ?, ?, ?, ?, ?)", 
+        args = (None, case.guild, case.user, case._type, case.reason, case.time, case.moderator, case.duration, 0)
+    )
 
 
 def get_last_id():
     
-    path = "data/database.db"
-    table = "moderation_cases"
+    database_repo = DatabaseRepository()
+    data = database_repo.select(
+        sql_statement = "select ID, max(ID) from moderation_cases"
+    )
 
-    connection = sqlite3.connect(path)
-    cursor = connection.cursor()
-    cursor.execute(f"select ID, max(ID) from {table}")
-    last_id = cursor.fetchall()[0][0]
-    connection.close()
+    return data[0]["ID"] # last_id
 
-    return last_id
 
 
 def has_muted_role(guild, user):
