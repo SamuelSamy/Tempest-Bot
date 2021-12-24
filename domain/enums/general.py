@@ -36,3 +36,5 @@ class Emotes:
     not_found       = "💢"
     reply           = "<:reply:917177348988760095>"
     star            = "⭐"
+    open_lock       = "🔓"
+    closed_lock     = "🔒"

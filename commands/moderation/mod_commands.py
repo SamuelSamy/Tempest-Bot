@@ -244,38 +244,103 @@ class Moderation(commands.Cog):
             await ctx.reply(error)
 
 
-    @commands.group(invoke_without_command = True)
-    async def lockdown(self, ctx):
-        await ctx.reply("greater will eventually add something here")
+    # LOCK
 
-
-    @lockdown.command(
-        name = f"add",
-        usage = f"{get_prefix()}lockdown add [channel])",
+    @commands.command(
+        name = f"lock",
+        usage = f"{get_prefix()}lock (optional channel) (optional reason)",
         description = "Prevents the `@everyone` role to send messages in a channel"
     )
     @commands.guild_only()
     @has_command_permissions(command = Permissions.lock)
-    async def lockdown_add(self, ctx, channel : typing.Optional[discord.TextChannel]):   
-        await ctx.reply("add")
+    async def lock(self, ctx, channel : typing.Optional[discord.TextChannel], *, reason = ""):   
         try:       
-            functions.lock_channel(ctx.guild, channel or ctx.channel)
+            await functions.lock_channel(ctx.guild, ctx, channel or ctx.channel, reason)
+        except CustomException as error:
+            await ctx.reply(error)
+
+    @commands.command(
+        name = f"unlock",
+        usage = f"{get_prefix()}lock (optional channel) (optional reason)",
+        description = "Allows the `@everyone` role to send messages in a channel"
+    )
+    @commands.guild_only()
+    @has_command_permissions(command = Permissions.lock)
+    async def unlock(self, ctx, channel : typing.Optional[discord.TextChannel], *, reason = ""):   
+        try:       
+            await functions.unlock_channel(ctx.guild, ctx, channel or ctx.channel, reason)
+        except CustomException as error:
+            await ctx.reply(error)
+
+
+    # LCOKDOWN
+    @commands.group(
+        invoke_without_command = True,
+        name = f"lockdown",
+        usage = f"{get_prefix()}lockdown (optional reasaon)",
+        description = "Enable the lockdown"
+    )
+    @commands.guild_only()
+    @has_command_permissions(command = Permissions.lock)
+    async def lockdown(self, ctx, *, reason = ""):
+        try:       
+            await functions.start_lockdown(ctx.guild, ctx, reason)
+        except CustomException as error:
+            await ctx.reply(error)
+
+
+    @lockdown.command(
+        name = f"disable",
+        usage = f"{get_prefix()}lockdown disable (optional reason)",
+        description = "Disable the lockdown"
+    )
+    @commands.guild_only()
+    @has_command_permissions(command = Permissions.lock)
+    async def lockdown_disable(self, ctx, *, reason = ""):   
+        try:       
+            await functions.end_lockdown(ctx.guild, ctx, reason)
+        except CustomException as error:
+            await ctx.reply(error)
+
+
+    @lockdown.command(
+        name = f"add",
+        usage = f"{get_prefix()}lockdown add [channel]",
+        description = "Adds a channel to the lockdown list"
+    )
+    @commands.guild_only()
+    @has_command_permissions(command = Permissions.lock)
+    async def lockdown_add(self, ctx, channel : discord.TextChannel):   
+        try:       
+            functions.add_lockdown_channel(ctx.guild, channel)
         except CustomException as error:
             await ctx.reply(error)
 
 
     @lockdown.command(
         name = f"remove",
-        usage = f"{get_prefix()}lock (optioanl channel)",
-        description = "Prevents the @everyone role to send messages in a channel"
+        usage = f"{get_prefix()}lockdown remove [channel]",
+        description = "Removes a channel from the lockdown list"
     )
     @commands.guild_only()
     @has_command_permissions(command = Permissions.lock)
-    async def lockdown_remove(self, ctx, channel : typing.Optional[discord.TextChannel]):   
-        await ctx.reply("remove")
-
+    async def lockdown_remove(self, ctx, channel : discord.TextChannel, *, reason = ""):   
         try:       
-            functions.lock_channel(ctx.guild, channel or ctx.channel)
+            functions.remove_lockdown_channel(ctx.guild, channel or ctx.channel)
         except CustomException as error:
             await ctx.reply(error)
 
+    @lockdown.command(
+        name = f"list",
+        usage = f"{get_prefix()}lockdown remove [channel]",
+        description = "Removes a channel from the lockdown list"
+    )
+    @commands.guild_only()
+    @has_command_permissions(command = Permissions.lock)
+    async def lockdown_list(self, ctx):   
+        try:       
+            embed = functions.lockdown_list(ctx.guild)
+            await ctx.reply(embed = embed)
+        except CustomException as error:
+            await ctx.reply(error)
+    

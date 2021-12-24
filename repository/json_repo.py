@@ -142,6 +142,32 @@ class SettingsRepo(JsonRepository):
         return guild_data[Settings.welcome_message]
         
 
+    # LOCKDOWN CHANNELS
+
+    def get_lockdown_channels(self, guild_id):
+        guild_id = str(guild_id)
+        guild_data = JsonRepository.get_guild_data(self, guild_id)
+        return guild_data[Settings.lockdown_channels]
+
+
+    def add_lockdown_channel(self, guild_id, channel_id):
+        guild_id = str(guild_id)
+        guild_data = JsonRepository.get_guild_data(self, guild_id)
+
+        if channel_id not in guild_data[Settings.lockdown_channels]:
+            guild_data[Settings.lockdown_channels].append(channel_id)
+
+        JsonRepository.set_guild_data(self, guild_id, guild_data)
+
+
+    def remove_lockdown_channel(self, guild_id, channel_id):
+        guild_id = str(guild_id)
+        guild_data = JsonRepository.get_guild_data(self, guild_id)
+
+        if channel_id in guild_data[Settings.lockdown_channels]:
+            guild_data[Settings.lockdown_channels].remove(channel_id)
+
+        JsonRepository.set_guild_data(self, guild_id, guild_data)
 
 
 class LevelingRepo(JsonRepository):
@@ -223,6 +249,7 @@ class LevelingRepo(JsonRepository):
         guild_id = str(guild_id)
         guild_data = JsonRepository.get_guild_data(self, guild_id)
         guild_data[Leveling.notify_channel] = channel_id
+        JsonRepository.set_guild_data(self, guild_id, guild_data)
 
 
     # BLACKLIST
@@ -236,6 +263,7 @@ class LevelingRepo(JsonRepository):
             guild_data[_type].append(_object_id)
             answer = f"{Emotes.green_tick} {_value} successfully blacklisted!"
 
+        JsonRepository.set_guild_data(self, guild_id, guild_data)
         return answer
 
     def remove_no_xp(self, guild_id, _type, _value, _object_id):
@@ -249,6 +277,7 @@ class LevelingRepo(JsonRepository):
             JsonRepository.set_guild_data(self, guild_id, guild_data)
             answer = f"{Emotes.green_tick} The {_value.lower()} was successfully removed from the blacklist!"
         
+        JsonRepository.set_guild_data(self, guild_id, guild_data)
         return answer
 
     

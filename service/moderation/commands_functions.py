@@ -1,8 +1,13 @@
+from typing import ParamSpecArgs
 import discord
 import time
 import asyncio
 
 from datetime import datetime
+from discord import channel
+
+from discord.channel import CategoryChannel
+
 from repository.database_repo import DatabaseRepository
 from repository.json_repo import ModerationRepo
 
@@ -10,8 +15,7 @@ import service.moderation.punish_functions as punish_funcs
 
 from service._general.utils import *
 from domain.exceptions import CustomException
-from domain.enums.moderation import ModFormat
-from domain.enums.general import *
+from domain.enums.general import Emotes
 from service.moderation.utility_functions import *
 from domain.case import Case
 
@@ -393,5 +397,145 @@ async def generate_whois(ctx, user):
     await ctx.reply(embed = embed)
 
 
-def lock_channel(guild, channel):
-    pass
+async def lock_channel(guild, ctx, channel, reason, send_system_message = True):
+    
+    everyone_role = guild.roles[0]
+
+    permissions = channel.overwrites_for(everyone_role)
+
+    if permissions.pair()[1].value & (1 << 11):  # the @everyone role does not have permissions to send messages in this channel
+        if send_system_message:
+            if ctx.channel != channel:
+                await ctx.reply(f"{Emotes.wrong} <#{channel.id}> is already locked!")
+            else:
+                await ctx.reply(f"{Emotes.wrong} This channel is already locked!")
+
+    else:  # @everyone has permissions to send messages in this channel
+        permissions.update(send_messages = False)
+        await channel.set_permissions(everyone_role, overwrite = permissions)
+
+        embed = discord.Embed(
+            title = f"{Emotes.closed_lock} Channel Locked", 
+            color = Colors.red
+        )
+
+        if reason != "":
+            embed.description = reason
+
+        await channel.send(embed = embed)
+
+        if channel != ctx.channel and send_system_message:
+            await ctx.reply(f"{Emotes.green_tick} <#{channel.id}> is now locked!")
+
+
+async def unlock_channel(guild, ctx, channel, reason, send_system_message = True):
+
+    everyone_role = guild.roles[0]
+
+    permissions = channel.overwrites_for(everyone_role)
+
+    if permissions.pair()[1].value & (1 << 11):  # the @everyone role does not have permissions to send messages in this channel
+        permissions.update(send_messages = True)
+        await channel.set_permissions(everyone_role, overwrite = permissions)
+
+        embed = discord.Embed(
+            title = f"{Emotes.open_lock} Channel Unlocked", 
+            color = Colors.green
+        )
+
+        if reason != "":
+            embed.description = reason
+
+        await channel.send(embed = embed)
+
+        if channel != ctx.channel and send_system_message:
+            await ctx.reply(f"{Emotes.green_tick} <#{channel.id}> is no longer locked!")
+        
+           
+    else:  # @everyone has permissions to send messages in this channel
+        if send_system_message:
+            if channel != ctx.channel:
+                await ctx.reply(f"{Emotes.wrong} <#{channel.id}> is not locked!")
+            else:
+                await ctx.reply(f"{Emotes.wrong} This channel is not locked!")
+
+
+async def start_lockdown(guild, ctx, reason):
+
+    settings_repo = SettingsRepo()
+    channels = settings_repo.get_lockdown_channels(guild.id)
+
+    if len(channels):
+        channels_count = 0
+        initial_message = await ctx.reply(f"{Emotes.loading} Locking channels ({channels_count}/{len(channels)})")
+        
+        for channel_id in channels:
+            channel = guild.get_channel(channel_id)
+            await lock_channel(guild, ctx, channel, reason, send_system_message = False)
+            channels_count += 1
+            await initial_message.edit(f"{Emotes.loading} Locking channels ({channels_count}/{len(channels)})")
+        
+        await initial_message.edit(f"{Emotes.green_tick} {channels_count} channels locked!")
+    else:
+        await ctx.reply(f"{Emotes.no_entry} There are no lockdown channels!\nUse `{get_prefix()}lockdown add [channel]` in order to add a channel")
+
+
+async def end_lockdown(guild, ctx, reason):
+    settings_repo = SettingsRepo()
+    channels = settings_repo.get_lockdown_channels(guild.id)
+
+    if len(channels) != 0:
+        channels_count = 0
+        initial_message = await ctx.reply(f"{Emotes.loading} Unlocking channels ({channels_count}/{len(channels)})")
+        
+        for channel_id in channels:
+            channel = guild.get_channel(channel_id)
+
+            await unlock_channel(guild, ctx, channel, reason, send_system_message = False)
+            channels_count += 1
+            await initial_message.edit(f"{Emotes.loading} Unlocking channels ({channels_count}/{len(channels)})")
+        
+        await initial_message.edit(f"{Emotes.green_tick} {channels_count} channels unlocked!")
+    else:
+        await ctx.reply(f"{Emotes.no_entry} There are no lockdown channels!\nUse `{get_prefix()}lockdown add [channel]` in order to add a channel")
+
+
+def add_lockdown_channel(guild, channel):
+    settings_repo = SettingsRepo()
+    settings_repo.add_lockdown_channel(guild.id, channel.id)
+
+
+def remove_lockdown_channel(guild, channel):
+    settings_repo = SettingsRepo()
+    settings_repo.remove_lockdown_channel(guild.id, channel.id)
+
+
+
+def lockdown_list(guild):
+    settings_repo = SettingsRepo()
+    channels = settings_repo.get_lockdown_channels(guild.id)
+    print(channels)
+    embed = discord.Embed(
+        title = "Lockdown channels",
+        color = Colors.blue
+    )
+
+    if len(channels) != 0:
+        description = ""
+        
+        channels_per_line = 3
+        channels_count = 0
+
+
+        for channel_id in channels:
+            description += f"<#{channel_id}> "
+            channels_count += 1
+
+            if channels_count % channels_per_line == 0:
+                description += "\n"
+        
+        embed.description = description
+    else:
+        embed.description = "There are no lockdown channels!\nUse `{get_prefix()}lockdown add [channel]` in order to add a channel"
+
+    return embed
