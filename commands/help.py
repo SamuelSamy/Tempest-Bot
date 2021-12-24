@@ -56,7 +56,10 @@ class CustomHelpCommand(commands.HelpCommand):
             for command in cog.get_commands():
                 
                 if isinstance(command, commands.Group):
-
+                    
+                    if command.usage is not None:
+                        _description += f"`{command.usage}`\n{Emotes.reply}{command.description}\n\n"
+                    
                     for subcommand in command.walk_commands():
                         if subcommand.parents[0] == command and subcommand.usage is not None:
                             _description += f"`{subcommand.usage}`\n{Emotes.reply}{subcommand.description}\n\n"
