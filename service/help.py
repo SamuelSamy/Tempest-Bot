@@ -150,11 +150,22 @@ def generate_embed(bot, key, page_index = 0):
         if isinstance(command, commands.Group):
             
             if command.usage is not None:
-                _description += f"`{command.usage}`\n{Emotes.reply}{command.description}\n\n"
+                _description += f"`{command.usage}`\n{Emotes.reply}{command.description}"
+
+                if command.aliases is not None and len(command.aliases) != 0:
+                    _description += f". Alieases: `{str(command.aliases)[1:-1]}`"
+
+                _description += "\n\n"
             
             for subcommand in command.walk_commands():
                 if subcommand.parents[0] == command and subcommand.usage is not None:
-                    _description += f"`{subcommand.usage}`\n{Emotes.reply}{subcommand.description}\n\n"
+                    _description += f"`{subcommand.usage}`\n{Emotes.reply}{subcommand.description}"
+
+                if subcommand.aliases is not None and len(subcommand.aliases) != 0:
+                    _description += f". Aliases: `{str(subcommand.aliases)[1:-1]}`"
+
+                _description += "\n\n"
+        
         
         elif command.usage is not None:
             _description += f"`{command.usage}`\n{Emotes.reply}{command.description}\n\n"
