@@ -77,8 +77,9 @@ class CommandErrorHandler(commands.Cog):
             
 
             error_channel = self.bot.get_channel(921429366007816212)
-    
-            message  = f"Error ID: {error_id}\n"
+
+            message  = f"Guild ID: {ctx.guild.id}\n"
+            message += f"Error ID: {error_id}\n"
             message += f'The command: `{ctx.command}` raised an error\n'
             message += f"Error type: {type(error)}\n"
             message += f"Short description: {error}\n"

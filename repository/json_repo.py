@@ -487,7 +487,7 @@ class ModerationRepo(JsonRepository):
     
     def get_punishments(self, guild_id):
         guild_id = str(guild_id)
-        guild_data = self.get_guild_data(self, guild_id)
+        guild_data = JsonRepository.get_guild_data(self, guild_id)
         return guild_data[ModFormat.a_punish]
 
 

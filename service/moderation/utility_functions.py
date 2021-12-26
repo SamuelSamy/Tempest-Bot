@@ -170,7 +170,7 @@ def generate_modlogs(guild, user, page, warns_only = False):
         )
 
         for case in cases:
-            details = compute_case_details(case, display_mod = warns_only)
+            details = compute_case_details(case, display_moderator = warns_only)
             
 
             embed.add_field(

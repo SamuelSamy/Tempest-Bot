@@ -1,4 +1,5 @@
 from commands.guild_setup import Configure
+from commands.help import Help
 from commands.leveling import Leveling
 from commands.moderation.mod_commands import Moderation
 from commands.owner import Owner
@@ -15,6 +16,7 @@ from listeners.welcome import WelcomeListener
 
 
 def setup(bot):
+    
     # Owner 
     bot.add_cog(Owner(bot))
 
@@ -26,6 +28,10 @@ def setup(bot):
     # Info
     bot.add_cog(Info(bot))
     
+    
+    # Help
+    bot.add_cog(Help(bot))
+
 
     # Moderation
     bot.add_cog(AutoModerator(bot))
@@ -46,5 +52,4 @@ def setup(bot):
     # Welcome
     bot.add_cog(Welcome(bot))
     bot.add_cog(WelcomeListener(bot))
-
 
