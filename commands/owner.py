@@ -57,4 +57,10 @@ class Owner(commands.Cog):
     async def user(self, ctx, user : typing.Optional[discord.User]):
         await ctx.respond(embed = get_user_data(ctx, user))
 
-        
+
+
+    @commands.command()
+    @commands.is_owner()
+    @commands.guild_only()
+    async def test(self, ctx):
+        raise ValueError("Hello, this is greater!")        
