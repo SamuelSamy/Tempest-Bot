@@ -145,30 +145,20 @@ def generate_embed(bot, key, page_index = 0):
 
 
     for i in range(page_index * MAX_COMMANDS, min(len(cmds), (page_index + 1) * MAX_COMMANDS)):
+
         command = cmds[i]
 
         if isinstance(command, commands.Group):
             
             if command.usage is not None:
-                _description += f"`{command.usage}`\n{Emotes.reply}{command.description}"
-
-                if command.aliases is not None and len(command.aliases) != 0:
-                    _description += f". Alieases: `{str(command.aliases)[1:-1]}`"
-
-                _description += "\n\n"
+               _description += generate_help_command_string(command)
             
             for subcommand in command.walk_commands():
-                if subcommand.parents[0] == command and subcommand.usage is not None:
-                    _description += f"`{subcommand.usage}`\n{Emotes.reply}{subcommand.description}"
-
-                if subcommand.aliases is not None and len(subcommand.aliases) != 0:
-                    _description += f". Aliases: `{str(subcommand.aliases)[1:-1]}`"
-
-                _description += "\n\n"
-        
+               _description += generate_help_command_string(subcommand)
         
         elif command.usage is not None:
-            _description += f"`{command.usage}`\n{Emotes.reply}{command.description}\n\n"
+            _description += generate_help_command_string(command)
+           
 
 
     embed = discord.Embed(
@@ -181,6 +171,18 @@ def generate_embed(bot, key, page_index = 0):
     )
 
     return embed
+
+
+def generate_help_command_string(command):
+
+    text = f"`{command.usage}`\n{Emotes.reply}{command.description}"
+
+    if command.aliases is not None and len(command.aliases) != 0:
+        text += f". Alieases: `{str(command.aliases)[1:-1]}`"
+
+    text += "\n\n"
+
+    return text
 
 
 def handle_command_help(bot, invoker, command):  
@@ -218,9 +220,10 @@ def handle_command_help(bot, invoker, command):
         )
 
     if command.aliases is not None and len(command.aliases) != 0:
+        _value = str(command.aliases)[1:-1].replace("'", "")
         embed.add_field(
             name = "Aliases",
-            value = f"{str(command.aliases)[1:-1]}",
+            value = _value,
             inline = True
         )
 
