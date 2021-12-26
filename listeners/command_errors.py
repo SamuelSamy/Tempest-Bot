@@ -2,10 +2,12 @@ import time
 import discord
 import traceback
 import sys
+import io
 
 from discord.ext import commands
 
 from domain.enums.general import Emotes
+from service._general.utils import get_prefix
 
 # https://gist.github.com/EvieePy/7822af90858ef65012ea500bcecf1612
 
@@ -56,21 +58,15 @@ class CommandErrorHandler(commands.Cog):
         elif isinstance(error, commands.ChannelNotFound):
             await ctx.reply(f"{Emotes.not_found } The specified channel does not exist!")
 
-        elif isinstance(error, commands.MissingRequiredArgument):
-            await ctx.reply(f"{Emotes.not_found} Missing required arguments!")
-
-        elif isinstance(error, commands.BadUnionArgument):
-            await ctx.reply(f"{Emotes.not_found} Invalid arguments!")
+        elif isinstance(error, commands.BadUnionArgument) or isinstance(error, commands.BadArgument) or isinstance(error, commands.MissingRequiredArgument):
+            await ctx.reply(f"{Emotes.not_found} Invalid command usage. Use `{get_prefix()}{ctx.command}` for aditional help")
         
         elif isinstance(error, commands.UserNotFound) or isinstance(error, commands.MemberNotFound):
             await ctx.reply(f"{Emotes.not_found} The specified user is not in this server or does not exist!")
 
 
-        elif isinstance(error, commands.BadArgument):
-            await ctx.reply(f"{Emotes.not_found} Incorect arguments!")
-
         else:
-            # All other Errors not returned come here. And we can just print the default TraceBack.
+            
             error_id = f"{round(time.time())}{ctx.message.id}"
 
             await ctx.reply(f'{Emotes.wrong} Something went wrong.\n*Error ID: {error_id}*')
@@ -80,19 +76,17 @@ class CommandErrorHandler(commands.Cog):
 
             message  = f"Guild ID: {ctx.guild.id}\n"
             message += f"Error ID: {error_id}\n"
-            message += f'The command: `{ctx.command}` raised an error\n'
+            message += f'Command: `{ctx.command}` raised an error\n'
             message += f"Error type: {type(error)}\n"
             message += f"Short description: {error}\n"
-            message += f"Error message:\n"
 
+            error_text =  ""
             lines = traceback.format_exception(type(error), error, error.__traceback__)
             for line in lines:
-                message += line
-
-            message = [message[i: i + 1536] for i in range(0, len(message), 1536)]
-
-            for _message in message:
-                await error_channel.send(f"```\n{_message}\n```")
+                error_text += f"{line}\n"
+            error_text = io.StringIO(error_text)
+            
+            await error_channel.send(f"```\n{message}\n```", file = discord.File(fp = error_text, filename = f"{error_id}.txt"))
 
 
             print('Ignoring exception in command {}:'.format(ctx.command), file=sys.stderr)
