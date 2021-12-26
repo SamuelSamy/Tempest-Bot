@@ -176,11 +176,11 @@ async def handle_purge(ctx, amount_of_messages, user):
             message += "s"
 
         if user is not None:
-            message += f" by {user.mention}"
+            message += f" sent by {user.mention}"
     else:
         message = "No messages found to delete"
 
-    purge_message = await ctx.reply(f"{Emotes.green_tick} {message}")
+    purge_message = await ctx.send(f"{Emotes.green_tick} {message}")
     await asyncio.sleep(5)
     await purge_message.delete()
 
