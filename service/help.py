@@ -178,7 +178,7 @@ def generate_help_command_string(command):
     text = f"`{command.usage}`\n{Emotes.reply}{command.description}"
 
     if command.aliases is not None and len(command.aliases) != 0:
-        text += f". Alieases: `{str(command.aliases)[1:-1]}`"
+        text += f"\n{Emotes.invisible}Alieases: `{str(command.aliases)[1:-1]}`"
 
     text += "\n\n"
 

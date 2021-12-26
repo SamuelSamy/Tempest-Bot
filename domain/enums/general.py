@@ -38,3 +38,4 @@ class Emotes:
     star            = "⭐"
     open_lock       = "🔓"
     closed_lock     = "🔒"
+    invisible       = "<:__:924790143469092914>"
