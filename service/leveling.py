@@ -615,6 +615,10 @@ def set_notify_channel(guild, channel):
 def get_multiplier(guild, user):
 
     leveling_repo = LevelingRepo()
+
+    if user_is_blacklisted(guild, user, leveling_repo.get_no_xp_roles(guild.id)):
+        raise CustomException(f"{Emotes.not_found} This user is does not recieve any XP!")
+
     multipliers = leveling_repo.get_multipliers(guild.id)
 
     multiplier = float(multipliers["0"])
@@ -624,8 +628,11 @@ def get_multiplier(guild, user):
         if int(multiplier_role) != 0:
             role = guild.get_role(int(multiplier_role))
             
-            if role in user.roles:
+            if role in user .roles:
                 multiplier *= float(multipliers[multiplier_role])
+    
+    if multiplier == 0:
+        raise CustomException(f"{Emotes.not_found} This user is does not recieve any XP!")
 
     return multiplier
 
@@ -638,7 +645,8 @@ def set_multiplier(guild, role, value):
     value = int(value * 100) / 100
 
     leveling_repo = LevelingRepo()
-    leveling_repo.set_multiplier(guild.id, role.id, value)
+    role_id = 0 if role == 0 else role.id
+    leveling_repo.set_multiplier(guild.id, role_id, value)
 
     return value
 
