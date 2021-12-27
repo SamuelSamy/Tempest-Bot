@@ -73,7 +73,7 @@ class Configure(commands.Cog):
     @commands.guild_only()
     @has_permissions(administrator = True)
     async def listpermissions(self, ctx):
-        await guild_functions.list_permissions(ctx.guild, ctx)
+        await setup_functions.list_permissions(ctx.guild, ctx)
 
 
     @staff.command(
@@ -85,7 +85,7 @@ class Configure(commands.Cog):
     @commands.guild_only()
     @has_permissions(administrator = True)
     async def modallow(self, ctx, _type, role : discord.Role):
-        answer = guild_functions.change_permissions(ctx.guild, _type, role, True)
+        answer = setup_functions.change_permissions(ctx.guild, _type, role, True)
         await ctx.reply(answer)
 
 
@@ -98,7 +98,7 @@ class Configure(commands.Cog):
     @commands.guild_only()
     @has_permissions(administrator = True)
     async def modblock(self, ctx, _type, role : discord.Role):
-        answer = guild_functions.change_permissions(ctx.guild, _type, role, False)
+        answer = setup_functions.change_permissions(ctx.guild, _type, role, False)
         await ctx.reply(answer)
 
 
