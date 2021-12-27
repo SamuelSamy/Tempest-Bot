@@ -521,7 +521,7 @@ class JsonTemplates:
         "staff-roles": [],
         "welcome_message": "",
         "welcome_channel": 0,
-        "lockdown_channels": []
+        "lockdown-channels": []
     }
 
 
