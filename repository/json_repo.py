@@ -176,9 +176,10 @@ class SettingsRepo(JsonRepository):
         guild_id = str(guild_id)
         guild_data = JsonRepository.get_guild_data(self, guild_id)
 
-        if channel_id not in guild_data[Settings.lockdown_channels]:
-            guild_data[Settings.lockdown_channels].append(channel_id)
+        if channel_id in guild_data[Settings.lockdown_channels]:
+            raise CustomException(f"{Emotes.not_found} This channels is already on the lockdown list")
 
+        guild_data[Settings.lockdown_channels].append(channel_id)
         JsonRepository.set_guild_data(self, guild_id, guild_data)
 
 
@@ -186,9 +187,10 @@ class SettingsRepo(JsonRepository):
         guild_id = str(guild_id)
         guild_data = JsonRepository.get_guild_data(self, guild_id)
 
-        if channel_id in guild_data[Settings.lockdown_channels]:
-            guild_data[Settings.lockdown_channels].remove(channel_id)
+        if channel_id not in guild_data[Settings.lockdown_channels]:
+            raise CustomException(f"{Emotes.not_found} This channel is not on the lockdown list")
 
+        guild_data[Settings.lockdown_channels].remove(channel_id)
         JsonRepository.set_guild_data(self, guild_id, guild_data)
 
 
@@ -335,7 +337,7 @@ class LevelingRepo(JsonRepository):
         if str(role_id) not in guild_data[Leveling.multipliers].keys():
             raise CustomException(f"{Emotes.wrong} This role does not have a multiplier!")
 
-        del guild_data[Leveling.multipliers][role_id]
+        del guild_data[Leveling.multipliers][str(role_id)]
         JsonRepository.set_guild_data(self, guild_id, guild_data)
 
 
@@ -400,7 +402,6 @@ class ModerationRepo(JsonRepository):
 
         guild_data[ModFormat.next_bw_id] += 1
         guild_data[ModFormat.banned_words][str(next_id)] = word_data
-
         JsonRepository.set_guild_data(self, guild_id, guild_data)
         
     
@@ -433,6 +434,22 @@ class ModerationRepo(JsonRepository):
 
         if word_id in guild_data[ModFormat.banned_words].keys():
             guild_data[ModFormat.banned_words][str(word_id)][BannedWord.flags][BannedWord.flag_notify_channel] = channel_id
+            JsonRepository.set_guild_data(self, guild_id, guild_data)
+            channel_set = True
+        
+        return channel_set
+
+
+    def remove_notify_channel(self, guild_id, word_id):
+
+        channel_set = False
+
+        guild_id = str(guild_id)
+        guild_data = JsonRepository.get_guild_data(self, guild_id)
+
+
+        if word_id in guild_data[ModFormat.banned_words].keys():
+            guild_data[ModFormat.banned_words][str(word_id)][BannedWord.flags][BannedWord.flag_notify_channel] = 0
             JsonRepository.set_guild_data(self, guild_id, guild_data)
             channel_set = True
         

@@ -9,7 +9,7 @@ from service._general.utils import get_prefix
 from service._general.commands_checks import has_command_permissions, has_staff_role
 from domain.enums.moderation import Permissions
 from domain.exceptions import CustomException
-from domain.enums.general import Colors
+from domain.enums.general import Colors, Emotes
 
 
 class Moderation(commands.Cog):
@@ -277,7 +277,7 @@ class Moderation(commands.Cog):
 
     @commands.command(
         name = f"unlock",
-        usage = f"{get_prefix()}lock (optional channel) (optional reason)",
+        usage = f"{get_prefix()}unlock (optional channel) (optional reason)",
         description = "Allows the `@everyone` role to send messages in a channel",
         brief = "16"
     )
@@ -292,19 +292,28 @@ class Moderation(commands.Cog):
 
     # LCOKDOWN
     @commands.group(
-        invoke_without_command = True,
-        name = f"lockdown",
-        usage = f"{get_prefix()}lockdown (optional reasaon)",
+        invoke_without_command = True
+    )
+    @commands.guild_only()
+    @has_command_permissions(command = Permissions.lock)
+    async def lockdown(self, ctx):
+        pass
+
+
+    @lockdown.command(
+        name = f"enable",
+        usage = f"{get_prefix()}lockdown enable (optional reason)",
         description = "Enable the lockdown",
         brief = "17"
     )
     @commands.guild_only()
     @has_command_permissions(command = Permissions.lock)
-    async def lockdown(self, ctx, *, reason = ""):
+    async def lockdown_enable(self, ctx, *, reason = ""):   
         try:       
             await functions.start_lockdown(ctx.guild, ctx, reason)
         except CustomException as error:
             await ctx.reply(error)
+
 
 
     @lockdown.command(
@@ -333,6 +342,7 @@ class Moderation(commands.Cog):
     async def lockdown_add(self, ctx, channel : discord.TextChannel):   
         try:       
             functions.add_lockdown_channel(ctx.guild, channel)
+            await ctx.reply(f"{Emotes.green_tick} Successfully added <#{channel.id}> to the lockdown list")
         except CustomException as error:
             await ctx.reply(error)
 
@@ -345,9 +355,10 @@ class Moderation(commands.Cog):
     )
     @commands.guild_only()
     @has_command_permissions(command = Permissions.lock)
-    async def lockdown_remove(self, ctx, channel : discord.TextChannel, *, reason = ""):   
+    async def lockdown_remove(self, ctx, channel : discord.TextChannel):   
         try:       
             functions.remove_lockdown_channel(ctx.guild, channel or ctx.channel)
+            await ctx.reply(f"{Emotes.green_tick} Successfully removed <#{channel.id}> from the lockdown list")
         except CustomException as error:
             await ctx.reply(error)
 

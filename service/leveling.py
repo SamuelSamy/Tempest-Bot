@@ -626,13 +626,13 @@ def get_multiplier(guild, user):
 def set_multiplier(guild, role, value):
 
     if value < 0:
-        raise CustomException(f"{Emotes.wrong} You can not set negative multipliers!")
+        raise CustomException(f"{Emotes.not_found} You can not set negative multipliers!")
 
     if value == 1:
-        raise CustomException(f"{Emotes.wrong} You can not set the multiplier to **1**\n{Emotes.invisible} If you want to remove a role's multiplier use `{get_prefix()}multipliers remove`!")
+        raise CustomException(f"{Emotes.not_found} You can not set the multiplier to **1**\n{Emotes.invisible} If you want to remove a role's multiplier use `{get_prefix()}multipliers remove`!")
     
     if value == 0:
-        raise CustomException(f"{Emotes.wrong} You can not set the multiplier to **1**\n{Emotes.invisible} If you want to blacklist a role from getting xp `{get_prefix()}noxp add`")
+        raise CustomException(f"{Emotes.not_found} You can not set the multiplier to **0**\n{Emotes.invisible} If you want to blacklist a role from getting xp `{get_prefix()}noxp add`")
     
     value = int(value * 100) / 100
 

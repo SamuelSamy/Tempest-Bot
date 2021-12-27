@@ -23,7 +23,7 @@ def add_banned_word(guild, word, _type, duration):
         BannedWord.flags: {
             BannedWord.flag_type: _type,
             BannedWord.flag_duration: compute_seconds(duration),
-            BannedWord.flg_notify_channel: 0
+            BannedWord.flag_notify_channel: 0
         }
     }
 
@@ -48,10 +48,18 @@ def list_banned_words(guild):
     return json_object
 
 
-def notify_channel(guild, word_id, channel):
+def notify_channel_add(guild, word_id, channel):
 
     moderation_repo = ModerationRepo()
     set = moderation_repo.set_notify_channel(guild.id, word_id, channel.id)
+    if not set:
+        raise CustomException(f"{Emotes.wrong} The specified word ID does not exist!")
+
+
+def notify_channel_remove(guild, word_id):
+
+    moderation_repo = ModerationRepo()
+    set = moderation_repo.remove_notify_channel(guild.id, word_id)
     if not set:
         raise CustomException(f"{Emotes.wrong} The specified word ID does not exist!")
 
@@ -75,7 +83,7 @@ def change_link_perms(guild, _object, allow):
         message = f"{Emotes.green_tick} Links {_value} will no longer be deleted!"
     else:  # allow == False
         moderation_repo.block_link(guild.id, _type, _object)
-        message = f"{Emotes.not_found} Links {_value} will now be deleted!"
+        message = f"{Emotes.green_tick} Links {_value} will now be deleted!"
 
 
     return message
@@ -130,7 +138,7 @@ def list_links_permissions(guild):
         index = 0
 
         for channel in allowed_channels:
-            _value += f"<@&{channel}>"
+            _value += f"<#{channel}>"
 
             index += 1
             
@@ -140,9 +148,9 @@ def list_links_permissions(guild):
     else:
         _value = None    
 
-        embed.add_field(
-            name = "Allowed roles",
-            value = _value
-        )
+    embed.add_field(
+        name = "Allowed channels",
+        value = _value
+    )
 
     return embed

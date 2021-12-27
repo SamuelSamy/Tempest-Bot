@@ -71,7 +71,7 @@ def is_staff(guild, user):
     try:
 
         member = guild.get_member(user.id) 
-        
+
         if member.guild_permissions.administrator:
             return True
         

@@ -4,6 +4,7 @@ import io
 from discord.ext import commands
 from discord.ext.commands.core import has_permissions
 from discord.ext.commands.errors import BadArgument
+from domain.enums.general import Emotes
 
 import service.moderation.punish_functions as functions
 
@@ -18,7 +19,7 @@ class AutoPunishments(commands.Cog):
 
 
     @commands.group(
-        invoke_without_command = False,
+        invoke_without_command = True,
         usage = f"{get_prefix()}punishments",
         description = "Displays a list of auto-punishments",
         brief = "0"
@@ -54,7 +55,7 @@ class AutoPunishments(commands.Cog):
                 duration = 0
 
             functions.add_punishment(ctx.guild, warns, time, _type, duration)
-            await ctx.reply("Auto-Punishment added!")
+            await ctx.reply(f"{Emotes.green_tick} Auto-Punishment added!")
         except CustomException as error:
             await ctx.reply(error)
 
@@ -71,7 +72,7 @@ class AutoPunishments(commands.Cog):
         
         try:
             functions.remove_punishment(ctx.guild, punishment_id)
-            await ctx.reply("Auto-Punishment removed!")
+            await ctx.reply(f"{Emotes.green_tick} Auto-Punishment removed!")
         except CustomException as error:
             await ctx.reply(error)
 

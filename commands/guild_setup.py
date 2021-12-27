@@ -3,7 +3,8 @@ import discord
 from discord.ext import commands
 from discord.ext.commands.core import has_permissions
 
-import service.moderation.setup_commands as functions
+import service.moderation.setup_commands as setup_functions
+import service.guild_setup as guild_functions
 
 from domain.enums.general import Emotes
 from service._general.utils import get_prefix
@@ -32,7 +33,7 @@ class Configure(commands.Cog):
     @commands.guild_only()
     @has_permissions(administrator = True)
     async def removestaff(self, ctx, role : discord.Role):
-        answer = functions.modifiy_staff(ctx.guild, role, False)
+        answer = guild_functions.modifiy_staff(ctx.guild, role, False)
         await ctx.reply(answer)
 
     
@@ -45,7 +46,7 @@ class Configure(commands.Cog):
     @commands.guild_only()
     @has_permissions(administrator = True)
     async def addstaff(self, ctx, role : discord.Role):
-        answer = functions.modifiy_staff(ctx.guild, role, True)
+        answer = guild_functions.modifiy_staff(ctx.guild, role, True)
         await ctx.reply(answer)     
 
 
@@ -58,7 +59,7 @@ class Configure(commands.Cog):
     @commands.guild_only()
     @has_permissions(administrator = True)
     async def _liststaff(self, ctx):
-        await functions.list_staff(ctx.guild, ctx)
+        await guild_functions.list_staff(ctx.guild, ctx)
 
 
     # Permissions
@@ -72,7 +73,7 @@ class Configure(commands.Cog):
     @commands.guild_only()
     @has_permissions(administrator = True)
     async def listpermissions(self, ctx):
-        await functions.list_permissions(ctx.guild, ctx)
+        await guild_functions.list_permissions(ctx.guild, ctx)
 
 
     @staff.command(
@@ -84,7 +85,7 @@ class Configure(commands.Cog):
     @commands.guild_only()
     @has_permissions(administrator = True)
     async def modallow(self, ctx, _type, role : discord.Role):
-        answer = functions.change_permissions(ctx.guild, _type, role, True)
+        answer = guild_functions.change_permissions(ctx.guild, _type, role, True)
         await ctx.reply(answer)
 
 
@@ -97,7 +98,7 @@ class Configure(commands.Cog):
     @commands.guild_only()
     @has_permissions(administrator = True)
     async def modblock(self, ctx, _type, role : discord.Role):
-        answer = functions.change_permissions(ctx.guild, _type, role, False)
+        answer = guild_functions.change_permissions(ctx.guild, _type, role, False)
         await ctx.reply(answer)
 
 
@@ -110,7 +111,7 @@ class Configure(commands.Cog):
     @commands.guild_only()
     @has_permissions(administrator = True)
     async def logs(self, ctx, channel : discord.TextChannel):
-        functions.set_mod_channel(ctx.guild, channel)
+        setup_functions.set_mod_channel(ctx.guild, channel)
         await ctx.reply(f"{Emotes.green_tick} Successfully set the specified channel as the moderation log channel!")
 
 
@@ -122,7 +123,7 @@ class Configure(commands.Cog):
     @commands.guild_only()
     @has_permissions(administrator = True)
     async def muterole(self, ctx, role : discord.Role):
-        functions.set_mute_role(ctx.guild, role)
+        setup_functions.set_mute_role(ctx.guild, role)
         await ctx.reply(f"{Emotes.green_tick} Successfully set the `Muted` role!")
 
 

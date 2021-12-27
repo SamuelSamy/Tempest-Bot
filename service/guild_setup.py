@@ -61,7 +61,7 @@ def modifiy_staff(guild, role, append = True):
 async def list_staff(guild, ctx):
     
     settings_repo = SettingsRepo()    
-    roles = settings_repo.get_staff_roles()
+    roles = settings_repo.get_staff_roles(guild.id)
 
     staff_roles = ""
 

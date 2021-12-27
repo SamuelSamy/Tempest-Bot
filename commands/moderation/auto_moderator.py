@@ -4,6 +4,7 @@ import typing
 
 from discord.ext import commands
 from discord.ext.commands.errors import BadArgument
+from domain.enums.general import Emotes
 
 import service.moderation.auto_mod_command_utils as functions
 
@@ -27,7 +28,7 @@ class AutoModerator(commands.Cog):
         
         try:
             functions.add_banned_word(ctx.guild, word, punishment, duration)
-            await ctx.reply(f"Successfully banned the specified word!")
+            await ctx.reply(f"{Emotes.green_tick} Successfully banned the specified word!")
         except CustomException as error:
             await ctx.reply(error)
 
@@ -43,7 +44,7 @@ class AutoModerator(commands.Cog):
 
         try:
             functions.remove_banned_word(ctx.guild, id)
-            await ctx.reply(f"Successfully removed the word!")
+            await ctx.reply(f"{Emotes.green_tick} Successfully removed the word!")
         except CustomException as error:
             await ctx.reply(error)
 
@@ -66,30 +67,54 @@ class AutoModerator(commands.Cog):
             await ctx.reply(error)
 
 
-    @commands.command(
-        usage = f"{get_prefix()}notifychannel [word_id] [channel]",
-        description = "When members use the specified banned word a message will be sent in the mentioned channel",
+    @commands.group(
+        invoke_without_command = True
+    )
+    @commands.guild_only()
+    @commands.has_permissions(administrator = True)
+    async def notifychannel(self, ctx):
+        pass
+
+
+    @notifychannel.command(
+        name = "add",
+        usage = f"{get_prefix()}notifychannel add [word_id] [channel]",
+        description = f"Sets the notift channel for a specific word\n{Emotes.invisible}When members use the specified banned word a message will be sent in the mentioned channel",
         brief = "3"
     )
     @commands.guild_only()
     @commands.has_permissions(administrator = True)
-    async def notifychannel(self, ctx, word_id, channel : discord.TextChannel = None):
+    async def add_notify(self, ctx, word_id, channel : discord.TextChannel = None):
 
         try:
-            functions.notify_channel(ctx.guild, word_id, channel)
-            if channel is not None:
-                await ctx.reply("Channel successfully set as a notify channel for the specified word!")
-            else:
-                await ctx.reply("Successfully removed the notify channel for the specified word!")
+            functions.notify_channel_add(ctx.guild, word_id, channel)
+            await ctx.reply(f"{Emotes.green_tick} Channel successfully set as a notify channel for the specified word!")
+        except CustomException as error:
+            await ctx.reply(error)
+
+
+    @notifychannel.command(
+        name = "remove",
+        usage = f"{get_prefix()}notifychannel remove [word_id]",
+        description = "When members use the specified banned word a message will be sent in the mentioned channel",
+        brief = "4"
+    )
+    @commands.guild_only()
+    @commands.has_permissions(administrator = True)
+    async def remove_notify(self, ctx, word_id):
+
+        try:
+            functions.notify_channel_remove(ctx.guild, word_id)
+            await ctx.reply(f"{Emotes.green_tick} Successfully removed the notify channel for the specified word!")
         except CustomException as error:
             await ctx.reply(error)
 
 
     @commands.group(
-        invoke_without_command = False,
+        invoke_without_command = True,
         usage = f"{get_prefix()}links",
         description = "Displays the roles and channels that will be ignored when sending links",
-        brief = "4"
+        brief = "5"
     )
     @commands.guild_only()
     @commands.has_permissions(administrator = True)
@@ -109,7 +134,7 @@ class AutoModerator(commands.Cog):
         name = "block",
         usage = f"{get_prefix()}links block [channel / role]",
         description = "Removes the specified role / channel from the allowed list",
-        brief = "5"
+        brief = "6"
     )
     @commands.guild_only()
     @commands.has_permissions(administrator = True)
@@ -126,7 +151,7 @@ class AutoModerator(commands.Cog):
         name = "allow",
         usage = f"{get_prefix()}links allow [channel / role]",
         description = "Allows the specified role / channel to send external links",
-        brief = "6"
+        brief = "7"
     )
     @commands.guild_only()
     @commands.has_permissions(administrator = True)

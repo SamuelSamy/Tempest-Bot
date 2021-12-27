@@ -29,7 +29,7 @@ async def handle_case(bot, guild, channel, moderator, user, case_type, reason, d
                 await ctx.reply(f"{Emotes.red_tick} You can not use that command on yourself!")
             else:
                 await channel.send(f"{Emotes.red_tick} You can not use that command on yourself!")
-        elif is_staff(guild, user):
+        elif not is_staff(guild, moderator):
             if ctx is not None:
                 await ctx.reply(f"{Emotes.red_tick} You can not use that command on a staff member!")
             else:
@@ -513,7 +513,7 @@ def remove_lockdown_channel(guild, channel):
 def lockdown_list(guild):
     settings_repo = SettingsRepo()
     channels = settings_repo.get_lockdown_channels(guild.id)
-    print(channels)
+
     embed = discord.Embed(
         title = "Lockdown channels",
         color = Colors.blue
