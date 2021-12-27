@@ -330,10 +330,11 @@ class Moderation(commands.Cog):
         except CustomException as error:
             await ctx.reply(error)
 
+
     @lockdown.command(
         name = f"list",
-        usage = f"{get_prefix()}lockdown remove [channel]",
-        description = "Removes a channel from the lockdown list"
+        usage = f"{get_prefix()}lockdown list",
+        description = "Displays the lockdown channels"
     )
     @commands.guild_only()
     @has_command_permissions(command = Permissions.lock)
