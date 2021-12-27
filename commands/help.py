@@ -11,7 +11,7 @@ class Help(commands.Cog):
 
 
     @commands.command()
-    async def help(self, ctx, command = ""):
+    async def help(self, ctx, *, command = ""):
 
         if command == "":
             embed, view = functions.handle_help(self.bot)

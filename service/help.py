@@ -200,7 +200,7 @@ def handle_command_help(bot, invoker, command):
     command = bot.get_command(command)
 
     if command is None or command.usage is None or (command.cog_name == "Owner" and invoker.id != bot.owner_id):
-        raise CustomException(f"{Emotes.not_found} This command does not exist! Please use `{get_prefix()}help` to view a full list of commands.")
+        raise CustomException(f"{Emotes.not_found} This command does not exist!\n{Emotes.invisible} Use `{get_prefix()}help` to view a full list of commands.")
 
     embed = discord.Embed(
         color = Colors.blue
