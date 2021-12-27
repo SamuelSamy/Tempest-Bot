@@ -40,6 +40,12 @@ def create_setup(guild, restart = False):
     moderation_repo.init_data(guild.id, restart)
 
 
+def reconfig_all(bot):
+    for guild in bot.guilds:
+        create_setup(guild, restart = True)
+    
+
+
 def modifiy_staff(guild, role, append = True):
 
     settings_repo = SettingsRepo()

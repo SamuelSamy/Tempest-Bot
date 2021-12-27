@@ -47,11 +47,33 @@ class JsonRepository:
     
     def init_data(self, guild_id, template, force_init = False):
         
+        def fix_dict(initial_dict, template_dict):
+
+            for key in template_dict.keys():
+                if isinstance(template_dict[key], dict):
+                    
+                    if key not in initial_dict.keys():
+                        initial_dict[key] = {}
+                    
+                    if len(template_dict[key].keys()) != 0:
+                        fix_dict(initial_dict[key], template_dict[key])
+
+                elif key not in initial_dict.keys():
+                    initial_dict[key] = template_dict[key]
+
+
+
         data = self._open_json()
         guild_id = str(guild_id)
-        
-        if guild_id not in data.keys() or force_init:
+
+        if guild_id in data.keys() and force_init:
+            fix_dict(data[guild_id], template)
+
+        elif guild_id not in data.keys():
             data[guild_id] = template
+
+        self._save_json(data)
+        
     
 
 
@@ -177,7 +199,7 @@ class LevelingRepo(JsonRepository):
 
 
     def init_data(self, guild_id, force_init = False):
-        JsonRepository.init_data(self, guild_id, JsonTemplates.settings_template, force_init)
+        JsonRepository.init_data(self, guild_id, JsonTemplates.leveling_tempalte, force_init)
 
 
     def get_no_xp_roles(self, guild_id):
@@ -316,7 +338,6 @@ class LevelingRepo(JsonRepository):
         del guild_data[Leveling.multipliers][role_id]
         JsonRepository.set_guild_data(self, guild_id, guild_data)
 
-        
 
 class ModerationRepo(JsonRepository):
 
@@ -325,7 +346,7 @@ class ModerationRepo(JsonRepository):
 
 
     def init_data(self, guild_id, force_init = False):
-        JsonRepository.init_data(self, guild_id, JsonTemplates.settings_template, force_init)
+        JsonRepository.init_data(self, guild_id, JsonTemplates.moderation_template, force_init)
 
 
     # STAFF RELATED FUNCTIONS
@@ -497,7 +518,8 @@ class JsonTemplates:
         "muted-role": 0,
         "staff-roles": [],
         "welcome_message": "",
-        "welcome_channel": 0
+        "welcome_channel": 0,
+        "lockdown_channels": []
     }
 
 
@@ -529,7 +551,8 @@ class JsonTemplates:
             "slowmode": [],
             "delete-case": [],
             "mod-logs": [],
-            "mod-stats": []
+            "mod-stats": [],
+            "lock": []
         },
         "auto-punishments": {},
         "banned_words": {},

@@ -20,29 +20,39 @@ class Owner(commands.Cog):
     @commands.guild_only()
     async def leave(self, ctx, guild : discord.Guild):
         await guild.leave()
-        await ctx.respond(f"{Emotes.green_tick} Succsefully left `{guild.name}`")
+        await ctx.reply(f"{Emotes.green_tick} Succsefully left `{guild.name}`")
 
 
     @commands.command()
     @commands.is_owner()
     @commands.guild_only()
     async def guilds(self, ctx):
-        await ctx.respond(f"I am currently in **{len(self.bot.guilds)}** guilds!")
+        await ctx.reply(f"I am currently in **{len(self.bot.guilds)}** guilds!")
 
 
     @commands.command()
     @commands.is_owner()
     @commands.guild_only()
-    async def reconfigure(self, ctx, guild : discord.Guild):
+    async def reconfig(self, ctx, guild : discord.Guild):
         create_setup(guild, True)
-        await ctx.respond(f"{Emotes.green_tick} Reconfigured data for the specified guild!")
+        await ctx.reply(f"{Emotes.green_tick} Reconfigured data for the specified guild!")
     
+
+    @commands.command()
+    @commands.is_owner()
+    @commands.guild_only()
+    async def reconfigall(self, ctx):
+        message = await ctx.reply(f"{Emotes.loading} Reconfiguring all guilds...")
+        reconfig_all(self.bot)
+        await message.edit(f"{Emotes.green_tick} All guilds ({len(self.bot.guilds)}) reconfigured!")
+
+
     @commands.command()
     @commands.is_owner()
     @commands.guild_only()
     async def invite(self, ctx, guild : discord.Guild):
         invite = await guild.text_channels[0].create_invite(max_uses = 1, reason = "Invite requested by the bot owner")
-        await ctx.respond(invite.url)
+        await ctx.reply(invite.url)
     
 
     @commands.command()
@@ -55,7 +65,7 @@ class Owner(commands.Cog):
     @commands.is_owner()
     @commands.guild_only()
     async def user(self, ctx, user : typing.Optional[discord.User]):
-        await ctx.respond(embed = get_user_data(ctx, user))
+        await ctx.reply(embed = get_user_data(ctx, user))
 
 
 
