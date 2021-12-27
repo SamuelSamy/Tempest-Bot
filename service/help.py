@@ -131,7 +131,15 @@ def get_max_index_page(bot, key):
     cogs = bot.cogs
     current_cog = cogs[key]
     cmds = current_cog.get_commands()
-    total_commands = len(cmds)
+
+    total_commands = 0
+    for command in cmds:
+        if command.usage is not None:
+            total_commands += 1
+
+        if isinstance(command, commands.Group):
+            total_commands += len(list(command.walk_commands()))
+    
     return total_commands // MAX_COMMANDS - (total_commands % MAX_COMMANDS == 0)
 
 
@@ -140,26 +148,24 @@ def generate_embed(bot, key, page_index = 0):
     cogs = bot.cogs
     current_cog = cogs[key]
     cmds = current_cog.get_commands()
+    actual_commands = []
 
-    _description = ""
-
-
-    for i in range(page_index * MAX_COMMANDS, min(len(cmds), (page_index + 1) * MAX_COMMANDS)):
-
-        command = cmds[i]
+    for command in cmds:
+        
+        if command.usage is not None:
+            actual_commands.append(command)
 
         if isinstance(command, commands.Group):
-            
-            if command.usage is not None:
-               _description += generate_help_command_string(command)
-            
-            for subcommand in command.walk_commands():
-               _description += generate_help_command_string(subcommand)
+            actual_commands += list(command.walk_commands())
         
-        elif command.usage is not None:
-            _description += generate_help_command_string(command)
-           
+    _description = ""
 
+    for i in range(page_index * MAX_COMMANDS, min(len(actual_commands), (page_index + 1) * MAX_COMMANDS)):
+
+        command = actual_commands[i]
+
+        if command.usage is not None:
+            _description += generate_help_command_string(command)
 
     embed = discord.Embed(
         color = Colors.blue,
@@ -175,10 +181,14 @@ def generate_embed(bot, key, page_index = 0):
 
 def generate_help_command_string(command):
 
+    if command is None or command.usage is None:
+        raise CustomException(f"{Emotes.not_found} The specified command does not exist!")
+
     text = f"`{command.usage}`\n{Emotes.reply}{command.description}"
 
     if command.aliases is not None and len(command.aliases) != 0:
-        text += f"\n{Emotes.invisible}Alieases: `{str(command.aliases)[1:-1]}`"
+        aliases = str(command.aliases)[1:-1].replace("'", "")
+        text += f"\n{Emotes.invisible}Aliases: `{aliases}`"
 
     text += "\n\n"
 
@@ -189,7 +199,7 @@ def handle_command_help(bot, invoker, command):
 
     command = bot.get_command(command)
 
-    if command is None or (command.cog_name == "Owner" and invoker.id != bot.owner_id):
+    if command is None or command.usage is None or (command.cog_name == "Owner" and invoker.id != bot.owner_id):
         raise CustomException(f"{Emotes.not_found} This command does not exist! Please use `{get_prefix()}help` to view a full list of commands.")
 
     embed = discord.Embed(
