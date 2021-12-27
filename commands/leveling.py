@@ -1,5 +1,6 @@
 import typing
 import discord
+from discord.ext.commands.errors import BadArgument
 
 import service.leveling as leveling
 
@@ -79,7 +80,11 @@ class Leveling(commands.Cog):
     )
     @commands.guild_only()
     @commands.has_permissions(administrator = True)
-    async def rewards(self, ctx):
+    async def rewards(self, ctx, message = ""):
+
+        if message != "":
+            raise BadArgument()
+
         try:
             await ctx.reply(embed = leveling.get_rewards(ctx.guild))
         except CustomException as error:
@@ -122,7 +127,11 @@ class Leveling(commands.Cog):
     )
     @commands.guild_only()
     @commands.has_permissions(administrator = True)
-    async def noxp(self, ctx):
+    async def noxp(self, ctx, message = ""):
+
+        if message != "":
+            raise BadArgument()
+
         try:
             embed = leveling.get_blacklist(ctx.guild)
             await ctx.reply(embed = embed)
@@ -164,18 +173,18 @@ class Leveling(commands.Cog):
 
     # Level (rank)
     @commands.command(
-        usage = f"{get_prefix()}level (optional user)",
+        usage = f"{get_prefix()}rank (optional user)",
         description = "Get someone's user rank card",
-        aliases = ["rank"]
+        aliases = ["level"]
     )
     @commands.guild_only()
-    async def level(self, ctx, user : typing.Optional[discord.User]):
+    async def rank(self, ctx, user : typing.Optional[discord.User]):
         
         try:
             if user is None:
                 user = ctx.author
-
-            await leveling.generate_level_image(ctx.guild, user, ctx)
+            message = await ctx.send(f"{Emotes.loading} Generating rank card...\n{Emotes.invisible} Please wait")
+            await leveling.generate_level_image(ctx.guild, user, message, ctx.author)
         except CustomException as error:
             await ctx.reply(error)
 
@@ -204,7 +213,11 @@ class Leveling(commands.Cog):
     )
     @commands.guild_only()
     @commands.has_permissions(administrator = True)
-    async def multipliers(self, ctx):
+    async def multipliers(self, ctx, message = ""):
+
+        if message != "":
+            raise BadArgument()
+        
         try:
             multipliers_embed = leveling.list_multipliers(ctx.guild)
             await ctx.reply(embed = multipliers_embed)
@@ -243,6 +256,22 @@ class Leveling(commands.Cog):
 
 
     @multipliers.command(
+        name = "remove",
+        usage = f"{get_prefix()}multipliers remove [role]",
+        description = "Removes the specified role's multiplier"
+    )
+    @commands.guild_only()
+    @commands.has_permissions(administrator = True)
+    async def remove_multiplier(self, ctx, role : discord.Role):
+        try:
+            leveling.remove_multiplier(ctx.guild, role)
+            await ctx.reply(f"{Emotes.green_tick} Succesfully removed the specified role's multiplier!")
+        except CustomException as error:
+            await ctx.reply(error)
+
+
+    @multipliers.command(
+        name = "check",
         usage = f"{get_prefix()}multipliers check [user]",
         description = "Check a user's multiplier"
     )
@@ -256,7 +285,18 @@ class Leveling(commands.Cog):
             await ctx.reply(error)
 
 
-    
-
+    @commands.command(
+        usage = f"{get_prefix()}leaderboard (optional page)",
+        description = "Displays the leveling leaderboard",
+        aliases = ["lb"]
+    )
+    @commands.guild_only()
+    async def leaderboard(self, ctx, page : int = 1):
+        
+        try:
+            message = await ctx.send(f"{Emotes.loading} Generating leaderboard...\n{Emotes.invisible} Please wait")
+            await leveling.generate_leaderboard(self.bot, ctx.guild, message, page)
+        except CustomException as error:
+            await ctx.reply(error)
 
    

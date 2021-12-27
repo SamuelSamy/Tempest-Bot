@@ -384,7 +384,7 @@ def get_user_level_rank_xp(guild, user, author):
             
 
 
-async def generate_level_image(guild, user, ctx):
+async def generate_level_image(guild, user, message, author):
     
     if not user.bot:
 
@@ -432,7 +432,7 @@ async def generate_level_image(guild, user, ctx):
         # initialize the dispaly data
         name = str(user.display_name)
         discriminator = "#" + str(user.discriminator)
-        level, rank, xp = get_user_level_rank_xp(guild, user, ctx)
+        level, rank, xp = get_user_level_rank_xp(guild, user, author)
 
         # initialize the draw object
         draw = ImageDraw.Draw(template)
@@ -545,22 +545,8 @@ async def generate_level_image(guild, user, ctx):
         with BytesIO() as rank_card:
             template.save(rank_card, "PNG")
             rank_card.seek(0)
-            await ctx.reply(file = discord.File(rank_card, f"{guild.id}_{user.id}_level.png"))
+            await message.edit(content = "", file = discord.File(rank_card, f"{guild.id}_{user.id}_level.png"))
 
-
-def create_circle_picture(image, size):
-
-    image = image.resize(size, Image.ANTIALIAS).convert("RGBA")
-
-    bigsize = (size[0] * 3, size[1] * 3)
-    mask = Image.new('L', bigsize, 0)
-    draw = ImageDraw.Draw(mask)
-    draw.ellipse((0, 0) + bigsize, fill = 255)
-    mask = mask.resize(size, Image.ANTIALIAS)
-    mask = ImageChops.darker(mask, image.split()[-1])
-    image.putalpha(mask)
-
-    return image
 
 
 def format_xp(xp):
@@ -617,7 +603,7 @@ def get_multiplier(guild, user):
     leveling_repo = LevelingRepo()
 
     if user_is_blacklisted(guild, user, leveling_repo.get_no_xp_roles(guild.id)):
-        raise CustomException(f"{Emotes.not_found} This user is does not recieve any XP!")
+        raise CustomException(f"{Emotes.not_found} This user does not recieve any XP!")
 
     multipliers = leveling_repo.get_multipliers(guild.id)
 
@@ -642,6 +628,12 @@ def set_multiplier(guild, role, value):
     if value < 0:
         raise CustomException(f"{Emotes.wrong} You can not set negative multipliers!")
 
+    if value == 1:
+        raise CustomException(f"{Emotes.wrong} You can not set the multiplier to **1**\n{Emotes.invisible} If you want to remove a role's multiplier use `{get_prefix()}multipliers remove`!")
+    
+    if value == 0:
+        raise CustomException(f"{Emotes.wrong} You can not set the multiplier to **1**\n{Emotes.invisible} If you want to blacklist a role from getting xp `{get_prefix()}noxp add`")
+    
     value = int(value * 100) / 100
 
     leveling_repo = LevelingRepo()
@@ -680,3 +672,168 @@ def list_multipliers(guild):
     )
 
     return embed
+
+
+
+async def generate_leaderboard(bot, guild, message, page):
+
+    users_per_page = 10
+    data_to_display, total_users_to_dispaly, start_rank = get_data(guild, page, users_per_page)
+
+    user_image_w    = 1024
+    user_image_h    = 100
+    horizontal_gap  = 5
+
+    leaderboard_image_w = 1024
+    leaderboard_image_h = (user_image_h + horizontal_gap) * total_users_to_dispaly - horizontal_gap
+
+    leaderboard = Image.new('RGBA', (leaderboard_image_w, leaderboard_image_h))
+
+    index = 0
+    for row_data in data_to_display:
+        
+        user_id = row_data["user"]
+        user = await bot.fetch_user(user_id)
+        xp = row_data["total_xp"]
+
+        user_card = await create_leaderbaord_entry(user, start_rank + index + 1, xp, user_image_w, user_image_h)
+        
+        leaderboard.paste(user_card, (0, index * (user_image_h + horizontal_gap)), user_card)
+        index += 1
+
+
+    with BytesIO() as leaderboard_image:
+
+        leaderboard.save(leaderboard_image, "PNG")
+        leaderboard_image.seek(0)
+
+        await message.edit(
+            content = f"{Emotes.star} **{guild.name}'s leaderboard**", 
+            file = discord.File(leaderboard_image, f"{guild.id}_leaderboard.png")
+        )
+
+
+async def create_leaderbaord_entry(user, rank, xp, width, height):
+    
+    draw_gap = 10
+
+    image = Image.new('RGBA', (width, height))
+    draw = ImageDraw.Draw(image)
+    rectangle = (0, 0, width, height)
+    draw.rounded_rectangle(rectangle, fill = CustomColors.gray, width = 0, radius = 18)
+    
+    transparent_pixels = save_transparent_pixels(image)
+    
+    profile_picture = user.display_avatar
+    data = BytesIO(await profile_picture.read())
+    profile_picture = Image.open(data).convert("RGBA")
+    profile_picture = create_rectangle_picture(profile_picture, (height, height)) 
+    image.paste(profile_picture, (0, 0), profile_picture)
+
+    restore_transparent_pixels(image, transparent_pixels)
+
+    # initialize the fonts
+    name = user.name
+    if len(name) >= 16:
+        name = name[:16]
+
+    font = ImageFont.truetype("assets/Cambria.ttf", 36)
+    
+
+    text = f"#{rank}"
+    _w, h = font.getsize(text)
+    location = (height + draw_gap, (height - h) / 2)
+    draw.text(location, text, font = font, fill = CustomColors.white)
+
+
+    text = f" • "
+    location = (location[0] + _w + draw_gap, (height - h) / 2)
+    _w, _h = font.getsize(text)
+    draw.text(location, text, font = font, fill = CustomColors.almost_white)
+
+
+    text = f"{name}#{user.discriminator}"
+    location = (location[0] + _w + draw_gap, (height - _h) / 2)
+    _w, _h = font.getsize(text)
+    draw.text(location, text, font = font, fill = CustomColors.white)
+
+
+    text = f" • "
+    location = (location[0] + _w + draw_gap, (height - h) / 2)
+    _w, _h = font.getsize(text)
+    draw.text(location, text, font = font, fill = CustomColors.almost_white)
+
+
+    text = f"Level: {get_level_from_xp(xp)}"
+    location = (location[0] + _w + draw_gap, (height - _h) / 2)
+    _w, _h = font.getsize(text)
+    draw.text(location, text, font = font, fill = CustomColors.white)
+
+    return image
+
+
+
+def get_data(guild, page, users_per_page):
+
+    page -= 1
+
+    if page < 0:
+        raise CustomException(f"{Emotes.not_found} Invalid page. The page must be a positive number!")
+
+    database_repo = DatabaseRepository()
+    data = database_repo.select("select * from levels where guild = ? order by total_xp desc", (guild.id,))
+
+    max_page = len(data) // users_per_page - (len(data) % users_per_page == 0)
+
+    if page > max_page :
+        raise CustomException(f"{Emotes.not_found} Invalid page. The maximum page number is `{max_page + 1}`")
+
+    data_to_display = data[page * users_per_page : min(len(data), (page + 1) * users_per_page)]
+    return data_to_display, len(data_to_display), page * users_per_page 
+
+
+def create_circle_picture(image, size):
+
+    image = image.resize(size, Image.ANTIALIAS).convert("RGBA")
+
+    bigsize = (size[0] * 3, size[1] * 3)
+    mask = Image.new('L', bigsize, 0)
+    draw = ImageDraw.Draw(mask)
+    draw.ellipse((0, 0) + bigsize, fill = 255)
+    mask = mask.resize(size, Image.ANTIALIAS)
+    mask = ImageChops.darker(mask, image.split()[-1])
+    image.putalpha(mask)
+
+    return image
+
+
+def create_rectangle_picture(image, size):
+
+    image = image.resize(size, Image.ANTIALIAS).convert("RGBA")
+
+    bigsize = (size[0] * 3, size[1] * 3)
+    mask = Image.new('L', bigsize, 0)
+    draw = ImageDraw.Draw(mask)
+    draw.rounded_rectangle((0, 0) + bigsize, fill = 255, width = 0, radius = 32)
+    mask = mask.resize(size, Image.ANTIALIAS)
+    mask = ImageChops.darker(mask, image.split()[-1])
+    image.putalpha(mask)
+
+    return image
+
+
+def save_transparent_pixels(image):
+    pixels = []
+
+    for i in range(0, min(image.width, 20)):
+        for j in range(0, image.height):
+            if image.getpixel((i, j)) == (0, 0, 0, 0):
+                pixels.append((i, j))
+
+    return pixels
+
+
+def restore_transparent_pixels(image, pixels):
+
+    for pixel in pixels:
+        image.putpixel(pixel, (0, 0, 0, 0))
