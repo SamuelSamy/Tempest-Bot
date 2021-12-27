@@ -15,30 +15,19 @@ class Configure(commands.Cog):
         self.bot = bot
 
 
-    @commands.command(
-        usage = f"{get_prefix()}liststaff",
-        description = "Displays a list with the current staff roles"
+    @commands.group(
+        invoke_without_command = True
     )
     @commands.guild_only()
-    @has_permissions(administrator = True)
-    async def liststaff(self, ctx):
-        await functions.list_staff(ctx.guild, ctx)
+    async def staff(self, ctx):
+        pass
 
-
-    @commands.command(
-        usage = f"{get_prefix()}addstaff [role]",
-        description = "Adds the specified role as a staff role"
-    )
-    @commands.guild_only()
-    @has_permissions(administrator = True)
-    async def addstaff(self, ctx, role : discord.Role):
-        answer = functions.modifiy_staff(ctx.guild, role, True)
-        await ctx.reply(answer)
-
-
-    @commands.command(
-        usage = f"{get_prefix()}removestaff [role]",
-        description = "Removes the specified role from the staff roles"
+    
+    @staff.command(
+        name = "remove",
+        usage = f"{get_prefix()}staff remove [role]",
+        description = "Removes the specified role from the staff roles",
+        brief = "2"
     )
     @commands.guild_only()
     @has_permissions(administrator = True)
@@ -46,11 +35,39 @@ class Configure(commands.Cog):
         answer = functions.modifiy_staff(ctx.guild, role, False)
         await ctx.reply(answer)
 
+    
+    @staff.command(
+        name = "add",
+        usage = f"{get_prefix()}staff add [role]",
+        description = "Adds the specified role as a staff role",
+        brief = "1"
+    )
+    @commands.guild_only()
+    @has_permissions(administrator = True)
+    async def addstaff(self, ctx, role : discord.Role):
+        answer = functions.modifiy_staff(ctx.guild, role, True)
+        await ctx.reply(answer)     
+
+
+    @staff.command(
+        name = "list",
+        usage = f"{get_prefix()}staff list",
+        description = "Displays a list with the current staff roles",
+        brief = "0"
+    )
+    @commands.guild_only()
+    @has_permissions(administrator = True)
+    async def _liststaff(self, ctx):
+        await functions.list_staff(ctx.guild, ctx)
+
 
     # Permissions
-    @commands.command(
-        usage = f"{get_prefix()}listpermissions",
-        description = "Displays a list with the current permissions configuration"
+    @staff.command(
+        name = "permissions",
+        usage = f"{get_prefix()}staff permissions",
+        description = "Displays a list with the current permissions configuration",
+        aliases = ["perms"],
+        brief = "3"
     )
     @commands.guild_only()
     @has_permissions(administrator = True)
@@ -58,9 +75,11 @@ class Configure(commands.Cog):
         await functions.list_permissions(ctx.guild, ctx)
 
 
-    @commands.command(
-        usage = f"{get_prefix()}modallow [command] [role]",
-        description = "Allows a role to use the specified command"
+    @staff.command(
+        name = "allow",
+        usage = f"{get_prefix()}staff allow [command] [role]",
+        description = "Allows a role to use the specified command",
+        brief = "4"
     )
     @commands.guild_only()
     @has_permissions(administrator = True)
@@ -69,9 +88,11 @@ class Configure(commands.Cog):
         await ctx.reply(answer)
 
 
-    @commands.command(
-        usage = f"{get_prefix()}modblock [command] [role]",
-        description = "Blocks the role from using the specified command"
+    @staff.command(
+        name = "block",
+        usage = f"{get_prefix()}staff block [command] [role]",
+        description = "Blocks the role from using the specified command",
+        brief = "5"
     )
     @commands.guild_only()
     @has_permissions(administrator = True)
@@ -80,9 +101,23 @@ class Configure(commands.Cog):
         await ctx.reply(answer)
 
 
+    @staff.command(
+        name = "logs",
+        usage = f"{get_prefix()}staff logs [channel]",
+        description = "Sets the moderator log channel",
+        brief = "6"
+    )
+    @commands.guild_only()
+    @has_permissions(administrator = True)
+    async def logs(self, ctx, channel : discord.TextChannel):
+        functions.set_mod_channel(ctx.guild, channel)
+        await ctx.reply(f"{Emotes.green_tick} Successfully set the specified channel as the moderation log channel!")
+
+
     @commands.command(
         usage = f"{get_prefix()}muterole [role]",
-        description = "Sets the muted role"
+        description = "Sets the muted role",
+        brief = "7"
     )
     @commands.guild_only()
     @has_permissions(administrator = True)
@@ -92,12 +127,4 @@ class Configure(commands.Cog):
 
 
 
-    @commands.command(
-        usage = f"{get_prefix()}modlogchannel [channel]",
-        description = "Sets the moderator log channel"
-    )
-    @commands.guild_only()
-    @has_permissions(administrator = True)
-    async def modlogchannel(self, ctx, channel : discord.TextChannel):
-        functions.set_mod_channel(ctx.guild, channel)
-        await ctx.reply(f"{Emotes.green_tick} Successfully set the specified channel as the moderation log channel!")
+    

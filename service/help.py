@@ -8,9 +8,11 @@ from domain.exceptions import CustomException
 from service._general.utils import get_prefix
 
 
-bounds = {
+modules = {
     "Configure": "Configuration",
     "Moderation": "Moderator",
+    "AutoModerator": "Auto Moderator",
+    "AutoPunishments": "Auto Punishments",
     "Leveling": "Leveling",
     "Welcome": "Welcome"
 }
@@ -22,29 +24,8 @@ class HelpDropDown(discord.ui.Select):
         
         self.bot = bot
 
-        options = [
-            discord.SelectOption(
-                label = bounds["Configure"],
-                value = "Configure",
-                default = default_key == "Configure"
-            ),
-            discord.SelectOption(
-                label = bounds["Moderation"],
-                value = "Moderation",
-                default = default_key == "Moderation"
-            ),
-            discord.SelectOption(
-                label = bounds["Leveling"],
-                value = "Leveling",
-                default = default_key == "Leveling"
-            ),
-            discord.SelectOption(
-                label = bounds["Welcome"],
-                value = "Welcome",
-                default = default_key == "Welcome"
-            )
-        ]
-
+        options = [ discord.SelectOption(label = modules[x], value = x, default = default_key == x) for x in modules.keys()]
+            
         super().__init__(
             custom_id = "help-dropdown",
             options = options
@@ -159,6 +140,7 @@ def generate_embed(bot, key, page_index = 0):
             actual_commands += list(command.walk_commands())
         
     _description = ""
+    actual_commands.sort(key = lambda command: int(command.brief))
 
     for i in range(page_index * MAX_COMMANDS, min(len(actual_commands), (page_index + 1) * MAX_COMMANDS)):
 
@@ -219,7 +201,7 @@ def handle_command_help(bot, invoker, command):
 
     embed.add_field(
         name = f"Category",
-        value = bounds[command.cog_name]
+        value = modules[command.cog_name]
     )
 
     if command.usage is not None:

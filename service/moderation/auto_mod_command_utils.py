@@ -1,5 +1,6 @@
 import discord
 from commands.moderation.mod_commands import Moderation
+from domain.enums.general import Colors
 from domain.enums.leveling import Leveling
 
 from domain.enums.moderation import *
@@ -78,3 +79,70 @@ def change_link_perms(guild, _object, allow):
 
 
     return message
+
+
+def list_links_permissions(guild):
+
+    embed = discord.Embed(
+        color = Colors.green,
+        description = f"**Links Configuration**"
+    )
+
+    if guild.icon is not None:
+        embed.set_author(
+            name = f"{guild}",
+            icon_url = guild.icon.url
+        )
+    else:
+        embed.set_author(
+            name = f"{guild}"
+        )
+
+    moderation_repo = ModerationRepo()
+    allowed_roles = moderation_repo.get_link_protected_roles(guild.id)
+    allowed_channels = moderation_repo.get_link_protected_channels(guild.id)
+
+    if len(allowed_roles) != 0:
+        _value = ""
+
+        index = 0
+
+        for role in allowed_roles:
+
+            _value += f"<@&{role}>"
+
+            index += 1
+            if index % 3 == 0:
+                _value += "\n"
+
+    else:
+        _value = None
+
+    
+    embed.add_field(
+        name = "Allowed roles",
+        value = _value
+    )
+
+    if len(allowed_channels) != 0:
+        _value = ""
+        
+        index = 0
+
+        for channel in allowed_channels:
+            _value += f"<@&{channel}>"
+
+            index += 1
+            
+            if index % 3 == 0:
+                _value += "\n"
+
+    else:
+        _value = None    
+
+        embed.add_field(
+            name = "Allowed roles",
+            value = _value
+        )
+
+    return embed

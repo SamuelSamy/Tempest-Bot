@@ -21,7 +21,8 @@ class Moderation(commands.Cog):
     # LOGS
     @commands.command(
         usage = f"{get_prefix()}modlogs [user] (optional page)",
-        description = "Displays the moderation logs of a user"
+        description = "Displays the moderation logs of a user",
+        brief = "0"
     )
     @commands.guild_only()
     @has_command_permissions(command = Permissions.mod_logs)
@@ -35,7 +36,8 @@ class Moderation(commands.Cog):
     # Warns
     @commands.command(
         usage = f"{get_prefix()}warns [user] (optional page)",
-        description = "Displays a user's warnings"
+        description = "Displays a user's warnings",
+        brief = "1"
     )
     @commands.guild_only()
     @has_command_permissions(command = Permissions.mod_logs)
@@ -49,7 +51,8 @@ class Moderation(commands.Cog):
     # STATS
     @commands.command(
         usage = f"{get_prefix()}modstats [user]",
-        description = "Displays a moderator stats"
+        description = "Displays a moderator stats",
+        brief = "2"
     )
     @commands.guild_only()
     @has_command_permissions(command = Permissions.mod_stats)
@@ -63,7 +66,8 @@ class Moderation(commands.Cog):
     # DELETE CASE
     @commands.command(
         usage = f"{get_prefix()}deletecase [case id]",
-        description = "Deltes the specified case"
+        description = "Deltes the specified case",
+        brief = "3"
     )
     @commands.guild_only()
     @commands.has_permissions(administrator = True)
@@ -84,7 +88,8 @@ class Moderation(commands.Cog):
     # WARN
     @commands.command(
         usage = f"{get_prefix()}warn [user] (optional reason)",
-        description = "Warns the specified user"
+        description = "Warns the specified user",
+        brief = "4"
     )
     @commands.guild_only()
     @has_command_permissions(command = Permissions.warn)
@@ -98,7 +103,8 @@ class Moderation(commands.Cog):
     # KICK
     @commands.command(
         usage = f"{get_prefix()}kick [user] (optional reason)",
-        description = "Kicks the specified user"
+        description = "Kicks the specified user",
+        brief = "5"
     )
     @commands.guild_only()
     @has_command_permissions(command = Permissions.kick)
@@ -113,7 +119,8 @@ class Moderation(commands.Cog):
     # BAN       
     @commands.command(
         usage = f"{get_prefix()}ban [user] (optioanl reason)",
-        description = "Bans the specified user"
+        description = "Bans the specified user",
+        brief = "6"
     )
     @commands.guild_only()
     @has_command_permissions(command = Permissions.ban)
@@ -127,7 +134,8 @@ class Moderation(commands.Cog):
 
     @commands.command(
         usage = f"{get_prefix()}tempban [user] [duration] (optioanl reason)",
-        description = "Temporarily bans the specified user"
+        description = "Temporarily bans the specified user",
+        brief = "7"
     )
     @commands.guild_only()
     @has_command_permissions(command = Permissions.ban)
@@ -142,7 +150,8 @@ class Moderation(commands.Cog):
 
     @commands.command(
         usage = f"{get_prefix()}unban [user] (optioanl reason)",
-        description = "Removes the ban for specified user"
+        description = "Removes the ban for specified user",
+        brief = "8"
     )
     @commands.guild_only()
     @has_command_permissions(command = Permissions.ban)
@@ -157,7 +166,8 @@ class Moderation(commands.Cog):
     # MUTE
     @commands.command(
         usage = f"{get_prefix()}mute [user] (optioanl reason)",
-        description = "Mutes the specified user"
+        description = "Mutes the specified user",
+        brief = "9"
     )
     @commands.guild_only()
     @has_command_permissions(command = Permissions.mute)
@@ -172,7 +182,8 @@ class Moderation(commands.Cog):
 
     @commands.command(
         usage = f"{get_prefix()}tempmute [user] [duration] (optioanl reason)",
-        description = "Temporarily mutes the specified user"
+        description = "Temporarily mutes the specified user",
+        brief = "10"
     )
     @commands.guild_only()
     @has_command_permissions(command = Permissions.mute)
@@ -187,7 +198,8 @@ class Moderation(commands.Cog):
 
     @commands.command(
         usage = f"{get_prefix()}unmute [user] (optioanl reason)",
-        description = "Unmutes the specified user"
+        description = "Unmutes the specified user",
+        brief = "11"
     )
     @commands.guild_only()
     @has_command_permissions(command = Permissions.mute)
@@ -201,8 +213,9 @@ class Moderation(commands.Cog):
 
     # WHOIS
     @commands.command(
-         usage = f"{get_prefix()}whois (user)",
-        description = "Get information about a user"
+        usage = f"{get_prefix()}whois (user)",
+        description = "Get information about a user",
+        brief = "12"
     )
     @commands.guild_only()
     @has_staff_role()
@@ -217,7 +230,8 @@ class Moderation(commands.Cog):
     # SLOWMODE
     @commands.command(
          usage = f"{get_prefix()}slowmode (channel) [slowmode]",
-        description = "Sets the slowmode of the specified channel. If no channel is specified the current channel will be affected"
+        description = "Sets the slowmode of the specified channel. If no channel is specified the current channel will be affected",
+        brief = "13"
     )
     @commands.guild_only()
     @has_command_permissions(command = Permissions.slowmode)
@@ -232,7 +246,8 @@ class Moderation(commands.Cog):
     # PURGE
     @commands.command(
         usage = f"{get_prefix()}purge [amount of messages] (optioanl user)",
-        description = "Deletes the messages in the current channel"
+        description = "Deletes the messages in the current channel",
+        brief = "14"
     )
     @commands.guild_only()
     @has_command_permissions(command = Permissions.purge)
@@ -249,7 +264,8 @@ class Moderation(commands.Cog):
     @commands.command(
         name = f"lock",
         usage = f"{get_prefix()}lock (optional channel) (optional reason)",
-        description = "Prevents the `@everyone` role to send messages in a channel"
+        description = "Prevents the `@everyone` role to send messages in a channel",
+        brief = "15"
     )
     @commands.guild_only()
     @has_command_permissions(command = Permissions.lock)
@@ -262,7 +278,8 @@ class Moderation(commands.Cog):
     @commands.command(
         name = f"unlock",
         usage = f"{get_prefix()}lock (optional channel) (optional reason)",
-        description = "Allows the `@everyone` role to send messages in a channel"
+        description = "Allows the `@everyone` role to send messages in a channel",
+        brief = "16"
     )
     @commands.guild_only()
     @has_command_permissions(command = Permissions.lock)
@@ -278,7 +295,8 @@ class Moderation(commands.Cog):
         invoke_without_command = True,
         name = f"lockdown",
         usage = f"{get_prefix()}lockdown (optional reasaon)",
-        description = "Enable the lockdown"
+        description = "Enable the lockdown",
+        brief = "17"
     )
     @commands.guild_only()
     @has_command_permissions(command = Permissions.lock)
@@ -292,7 +310,8 @@ class Moderation(commands.Cog):
     @lockdown.command(
         name = f"disable",
         usage = f"{get_prefix()}lockdown disable (optional reason)",
-        description = "Disable the lockdown"
+        description = "Disable the lockdown",
+        brief = "18"
     )
     @commands.guild_only()
     @has_command_permissions(command = Permissions.lock)
@@ -306,7 +325,8 @@ class Moderation(commands.Cog):
     @lockdown.command(
         name = f"add",
         usage = f"{get_prefix()}lockdown add [channel]",
-        description = "Adds a channel to the lockdown list"
+        description = "Adds a channel to the lockdown list",
+        brief = "19"
     )
     @commands.guild_only()
     @has_command_permissions(command = Permissions.lock)
@@ -320,7 +340,8 @@ class Moderation(commands.Cog):
     @lockdown.command(
         name = f"remove",
         usage = f"{get_prefix()}lockdown remove [channel]",
-        description = "Removes a channel from the lockdown list"
+        description = "Removes a channel from the lockdown list",
+        brief = "20"
     )
     @commands.guild_only()
     @has_command_permissions(command = Permissions.lock)
@@ -334,7 +355,8 @@ class Moderation(commands.Cog):
     @lockdown.command(
         name = f"list",
         usage = f"{get_prefix()}lockdown list",
-        description = "Displays the lockdown channels"
+        description = "Displays the lockdown channels",
+        brief = "21"
     )
     @commands.guild_only()
     @has_command_permissions(command = Permissions.lock)

@@ -20,7 +20,8 @@ class Leveling(commands.Cog):
     # Set Level
     @commands.command(
         usage = f"{get_prefix()}setlevel [user] [level]",
-        description = "Sets the specified user's level"
+        description = "Sets the specified user's level",
+        brief = "6"
     )
     @commands.guild_only()
     @commands.has_permissions(administrator = True)
@@ -45,7 +46,8 @@ class Leveling(commands.Cog):
     @xp.command(
         name = "add",
         usage = f"{get_prefix()}xp add [user] [xp]",
-        description = "Adds xp to the specified user"
+        description = "Adds xp to the specified user",
+        brief = "7"
     )
     @commands.guild_only()
     @commands.has_permissions(administrator = True)
@@ -59,7 +61,8 @@ class Leveling(commands.Cog):
     @xp.command(
         name = "remove",
         usage = f"{get_prefix()}xp remove [user] [xp]",
-        description = "Removes xp from the specified user"
+        description = "Removes xp from the specified user",
+        brief = "8"
     )
     @commands.guild_only()
     @commands.has_permissions(administrator = True)
@@ -76,7 +79,8 @@ class Leveling(commands.Cog):
     @commands.group(
         invoke_without_command = True,
         usage = f"{get_prefix()}rewards",
-        description = "Displays all rewards"
+        description = "Displays all rewards",
+        brief = "3"
     )
     @commands.guild_only()
     @commands.has_permissions(administrator = True)
@@ -93,7 +97,8 @@ class Leveling(commands.Cog):
     @rewards.command(
         name = "add",
         usage = f"{get_prefix()}rewards add [level] [role]",
-        description = "Adds a new reward"
+        description = "Adds a new reward",
+        brief = "4"
     )
     @commands.guild_only()
     @commands.has_permissions(administrator = True)
@@ -107,7 +112,8 @@ class Leveling(commands.Cog):
     @rewards.command(
         name = "remove",
         usage = f"{get_prefix()}rewards remove [level]",
-        description = "Removes a reward"
+        description = "Removes a reward",
+        brief = "5"
     )
     @commands.guild_only()
     @commands.has_permissions(administrator = True)
@@ -123,7 +129,8 @@ class Leveling(commands.Cog):
     @commands.group(
         invoke_without_command = True,
         usage = f"{get_prefix()}noxp",
-        description = "Displays a list containing the noxp roles and channels"
+        description = "Displays a list containing the noxp roles and channels",
+        brief = "9"
     )
     @commands.guild_only()
     @commands.has_permissions(administrator = True)
@@ -142,7 +149,8 @@ class Leveling(commands.Cog):
     @noxp.command(
         name = "add",
         usage = f"{get_prefix()}noxp add [Channel or Role]",
-        description = "Blacklists the specified channel / role from leveling"
+        description = "Blacklists the specified channel / role from leveling",
+        brief = "10"
     )
     @commands.guild_only()
     @commands.has_permissions(administrator = True)
@@ -157,7 +165,8 @@ class Leveling(commands.Cog):
     @noxp.command(
         name = "remove",
         usage = f"{get_prefix()}noxp remove [Channel or Role]",
-        description = "Removes the specified channel / role from leveling blacklist"
+        description = "Removes the specified channel / role from leveling blacklist",
+        brief = "11"
     )
     @commands.guild_only()
     @commands.has_permissions(administrator = True)
@@ -169,13 +178,12 @@ class Leveling(commands.Cog):
             await ctx.reply(error)
 
 
-   
-
     # Level (rank)
     @commands.command(
         usage = f"{get_prefix()}rank (optional user)",
         description = "Get someone's user rank card",
-        aliases = ["level"]
+        aliases = ["level"],
+        brief = "0"
     )
     @commands.guild_only()
     async def rank(self, ctx, user : typing.Optional[discord.User]):
@@ -192,7 +200,8 @@ class Leveling(commands.Cog):
     # Levelups
     @commands.command(
         usage = f"{get_prefix()}levelups [channel]",
-        description = "The level up messages will be send in the specified channel"
+        description = "The level up messages will be send in the specified channel",
+        brief = "12"
     )
     @commands.guild_only()
     @commands.has_permissions(administrator = True)
@@ -209,7 +218,8 @@ class Leveling(commands.Cog):
     @commands.group(
         invoke_without_command = True,
         usage = f"{get_prefix()}multipliers",
-        description = "Displays all active multipliers"
+        description = "Displays all active multipliers",
+        brief = "13"
     )
     @commands.guild_only()
     @commands.has_permissions(administrator = True)
@@ -228,7 +238,8 @@ class Leveling(commands.Cog):
     @multipliers.command(
         name = "default",
         usage = f"{get_prefix()}multipliers default [number]",
-        description = "Sets the server's default multiplier"
+        description = "Sets the server's default multiplier",
+        brief = "14"
     )
     @commands.guild_only()
     @commands.has_permissions(administrator = True)
@@ -243,7 +254,8 @@ class Leveling(commands.Cog):
     @multipliers.command(
         name = "set",
         usage = f"{get_prefix()}multipliers set [role] [number]",
-        description = "Sets a multiplier for the specified role"
+        description = "Sets a multiplier for the specified role",
+        brief = "15"
     )
     @commands.guild_only()
     @commands.has_permissions(administrator = True)
@@ -258,7 +270,8 @@ class Leveling(commands.Cog):
     @multipliers.command(
         name = "remove",
         usage = f"{get_prefix()}multipliers remove [role]",
-        description = "Removes the specified role's multiplier"
+        description = "Removes the specified role's multiplier",
+        brief = "17"
     )
     @commands.guild_only()
     @commands.has_permissions(administrator = True)
@@ -273,7 +286,8 @@ class Leveling(commands.Cog):
     @multipliers.command(
         name = "check",
         usage = f"{get_prefix()}multipliers check [user]",
-        description = "Check a user's multiplier"
+        description = "Check a user's multiplier",
+        brief = "2"
     )
     @commands.guild_only()
     @commands.has_permissions(administrator = True)
@@ -288,7 +302,8 @@ class Leveling(commands.Cog):
     @commands.command(
         usage = f"{get_prefix()}leaderboard (optional page)",
         description = "Displays the leveling leaderboard",
-        aliases = ["lb"]
+        aliases = ["lb"],
+        brief = "1"
     )
     @commands.guild_only()
     async def leaderboard(self, ctx, page : int = 1):

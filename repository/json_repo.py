@@ -366,6 +366,7 @@ class ModerationRepo(JsonRepository):
         else:
             if role_id not in guild_data[ModFormat.permissions][_type]:
                 guild_data[ModFormat.permissions][_type].append(role_id)
+                JsonRepository.set_guild_data(self, guild_id, guild_data)
                 answer = f"{Emotes.green_tick} Successfully added permission!"
             else:
                 answer = f"{Emotes.red_tick} This role already has the specified permission!"
@@ -382,6 +383,7 @@ class ModerationRepo(JsonRepository):
         else:
             if role_id in guild_data[ModFormat.permissions][_type]:
                 guild_data[ModFormat.permissions][_type].remove(role_id)
+                JsonRepository.set_guild_data(self, guild_id, guild_data)
                 answer = f"{Emotes.green_tick} Successfully removed permission!"
             else:
                 answer = f"{Emotes.red_tick} This role does not have the specified permission!"

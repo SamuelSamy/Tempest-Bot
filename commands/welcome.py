@@ -1,6 +1,7 @@
 import discord
 
 from discord.ext import commands
+from discord.ext.commands.errors import BadArgument
 
 import service.welcome as welcome
 
@@ -15,9 +16,19 @@ class Welcome(commands.Cog):
         self.bot = bot
 
 
-    @commands.command(
-        usage = f"{get_prefix()}welcomemessage [message]",
-        description = "Sets the default welcome message"
+    @commands.group(
+        invoke_without_command = True
+    )
+    @commands.has_permissions(administrator = True)
+    async def welcome(self, ctx):
+        pass
+
+        
+    @welcome.command(
+        name = "message",
+        usage = f"{get_prefix()}welcome message [message]",
+        description = "Sets the default welcome message",
+        brief = "0"
     )
     @commands.has_permissions(administrator = True)
     async def welcomemessage(self, ctx, *, message):
@@ -28,9 +39,11 @@ class Welcome(commands.Cog):
             await ctx.reply(error)
 
 
-    @commands.command(
-        usage = f"{get_prefix()}welcomechannel [channel]",
-        description = "Sets the welcome channael"
+    @welcome.command(
+        name = "channel",
+        usage = f"{get_prefix()}welcome channel [channel]",
+        description = "Sets the welcome channael",
+        brief = "1"
     )
     @commands.has_permissions(administrator = True)
     async def welcomechannel(self, ctx, channel : discord.TextChannel):

@@ -15,7 +15,9 @@ class Owner(commands.Cog):
         self.bot = bot
 
 
-    @commands.command()
+    @commands.command(
+        brief = "0"
+    )
     @commands.is_owner()
     @commands.guild_only()
     async def leave(self, ctx, guild : discord.Guild):
@@ -23,14 +25,18 @@ class Owner(commands.Cog):
         await ctx.reply(f"{Emotes.green_tick} Succsefully left `{guild.name}`")
 
 
-    @commands.command()
+    @commands.command(
+        brief = "0"
+    )
     @commands.is_owner()
     @commands.guild_only()
     async def guilds(self, ctx):
         await ctx.reply(f"I am currently in **{len(self.bot.guilds)}** guilds!")
 
 
-    @commands.command()
+    @commands.command(
+        brief = "0"
+    )
     @commands.is_owner()
     @commands.guild_only()
     async def reconfig(self, ctx, guild : discord.Guild):
@@ -38,7 +44,9 @@ class Owner(commands.Cog):
         await ctx.reply(f"{Emotes.green_tick} Reconfigured data for the specified guild!")
     
 
-    @commands.command()
+    @commands.command(
+        brief = "0"
+    )
     @commands.is_owner()
     @commands.guild_only()
     async def reconfigall(self, ctx):
@@ -47,7 +55,9 @@ class Owner(commands.Cog):
         await message.edit(f"{Emotes.green_tick} All guilds ({len(self.bot.guilds)}) reconfigured!")
 
 
-    @commands.command()
+    @commands.command(
+        brief = "0"
+    )
     @commands.is_owner()
     @commands.guild_only()
     async def invite(self, ctx, guild : discord.Guild):
@@ -55,21 +65,27 @@ class Owner(commands.Cog):
         await ctx.reply(invite.url)
     
 
-    @commands.command()
+    @commands.command(
+        brief = "0"
+    )
     @commands.is_owner()
     @commands.guild_only()
     async def status(self, ctx):
         await ctx.reply("I am alive!")
 
-    @commands.command()
+
+    @commands.command(
+        brief = "0"
+    )
     @commands.is_owner()
     @commands.guild_only()
     async def user(self, ctx, user : typing.Optional[discord.User]):
         await ctx.reply(embed = get_user_data(ctx, user))
 
 
-
-    @commands.command()
+    @commands.command(
+        brief = "0"
+    )
     @commands.is_owner()
     @commands.guild_only()
     async def test(self, ctx):

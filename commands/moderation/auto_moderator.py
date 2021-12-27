@@ -3,6 +3,7 @@ import io
 import typing
 
 from discord.ext import commands
+from discord.ext.commands.errors import BadArgument
 
 import service.moderation.auto_mod_command_utils as functions
 
@@ -17,7 +18,8 @@ class AutoModerator(commands.Cog):
 
     @commands.command(
         usage = f"{get_prefix()}banword [word] [warn/kick/ban] (optional time)",
-        description = "Bans the specified word and sets a punishment when members use the word. *The time must be a number ending in 's'/'m'/'h'/'d'*"
+        description = "Bans the specified word and sets a punishment when members use the word. *The time must be a number ending in 's'/'m'/'h'/'d'*",
+        brief = "1"
     )
     @commands.guild_only()
     @commands.has_permissions(administrator = True)
@@ -32,7 +34,8 @@ class AutoModerator(commands.Cog):
 
     @commands.command(
         usage = f"{get_prefix()}unbanword [word_id]",
-        description = "Removes the ban word entry with the specified ID"
+        description = "Removes the ban word entry with the specified ID",
+        brief = "2"
     )
     @commands.guild_only()
     @commands.has_permissions(administrator = True)
@@ -47,7 +50,8 @@ class AutoModerator(commands.Cog):
 
     @commands.command(
         usage = f"{get_prefix()}bannedwords",
-        description = "Displays a list of banned words and their punishments"
+        description = "Displays a list of banned words and their punishments",
+        brief = "0"
     )
     @commands.guild_only()
     @commands.has_permissions(administrator = True)
@@ -64,7 +68,8 @@ class AutoModerator(commands.Cog):
 
     @commands.command(
         usage = f"{get_prefix()}notifychannel [word_id] [channel]",
-        description = "When members use the specified banned word a message will be sent in the mentioned channel"
+        description = "When members use the specified banned word a message will be sent in the mentioned channel",
+        brief = "3"
     )
     @commands.guild_only()
     @commands.has_permissions(administrator = True)
@@ -80,14 +85,35 @@ class AutoModerator(commands.Cog):
             await ctx.reply(error)
 
 
-
-    @commands.command(
-        usage = f"{get_prefix()}linkblock [channel / role]",
-        description = "Removes the specified role / channel from the blacklist"
+    @commands.group(
+        invoke_without_command = False,
+        usage = f"{get_prefix()}links",
+        description = "Displays the roles and channels that will be ignored when sending links",
+        brief = "4"
     )
     @commands.guild_only()
     @commands.has_permissions(administrator = True)
-    async def linkblock(self, ctx, _object : typing.Union[discord.TextChannel, discord.Role]):
+    async def links(self, ctx, message = ""):
+
+        if message != "":
+            raise BadArgument()
+
+        try:
+            embed = functions.list_links_permissions(ctx.guild)
+            await ctx.reply(embed = embed)
+        except CustomException as error:
+            await ctx.reply(error)
+
+
+    @links.command(
+        name = "block",
+        usage = f"{get_prefix()}links block [channel / role]",
+        description = "Removes the specified role / channel from the allowed list",
+        brief = "5"
+    )
+    @commands.guild_only()
+    @commands.has_permissions(administrator = True)
+    async def link_block(self, ctx, _object : typing.Union[discord.TextChannel, discord.Role]):
 
         try:
             message = functions.change_link_perms(ctx.guild, _object, False)
@@ -96,13 +122,15 @@ class AutoModerator(commands.Cog):
             await ctx.reply(error)
 
 
-    @commands.command(
-        usage = f"{get_prefix()}linkallow [channel / role]",
-        description = "Allows the specified role / channel to send external links"
+    @links.command(
+        name = "allow",
+        usage = f"{get_prefix()}links allow [channel / role]",
+        description = "Allows the specified role / channel to send external links",
+        brief = "6"
     )
     @commands.guild_only()
     @commands.has_permissions(administrator = True)
-    async def linkallow(self, ctx, _object : typing.Union[discord.TextChannel, discord.Role]):
+    async def link_allow(self, ctx, _object : typing.Union[discord.TextChannel, discord.Role]):
 
         try:
             message = functions.change_link_perms(ctx.guild, _object, True)
