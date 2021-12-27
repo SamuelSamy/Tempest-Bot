@@ -740,10 +740,20 @@ async def create_leaderbaord_entry(user, rank, xp, width, height):
     font = ImageFont.truetype("assets/Cambria.ttf", 36)
     
 
+    if rank == 1:
+        rank_color = CustomColors.gold
+    elif rank == 2:
+        rank_color = CustomColors.silver
+    elif rank == 3:
+        rank_color = CustomColors.bronze
+    else:
+        rank_color = CustomColors.white
+
+
     text = f"#{rank}"
     _w, h = font.getsize(text)
     location = (height + draw_gap, (height - h) / 2)
-    draw.text(location, text, font = font, fill = CustomColors.white)
+    draw.text(location, text, font = font, fill = rank_color)
 
 
     text = f" • "
