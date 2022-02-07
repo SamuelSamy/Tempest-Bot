@@ -1,6 +1,6 @@
 class Case:
     
-    def __init__(self, case_id, guild, user, _type, reason, time, moderator, duration):
+    def __init__(self, case_id, guild, user, _type, reason, time, moderator, duration, weight = 1):
         self.case_id     = case_id
         self.guild       = guild
         self.user        = user
@@ -10,6 +10,7 @@ class Case:
         self.moderator   = moderator
         self.duration    = duration
         self.expired     = False
+        self.weight      = weight
 
 
     def __str__(self):

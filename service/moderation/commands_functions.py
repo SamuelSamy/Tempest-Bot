@@ -20,7 +20,7 @@ from domain.case import Case
 
 # General
 
-async def handle_case(bot, guild, channel, moderator, user, case_type, reason, duration = 0, message = None, ctx = None):
+async def handle_case(bot, guild, channel, moderator, user, case_type, reason, duration = 0, message = None, ctx = None, weight = 1):
 
     if user_in_guild(guild, user) or case_type == 'unban':
 
@@ -57,24 +57,25 @@ async def handle_case(bot, guild, channel, moderator, user, case_type, reason, d
                 reason,
                 round(time.time()),
                 moderator_id,
-                duration
+                duration,
+                weight
             )
 
             insert_case(case)
             case.case_id = get_last_id()
             
             if ctx is not None:
-                await ctx.reply(embed = create_message(guild, case_type, reason, duration, user, message))
+                await ctx.reply(embed = create_message(guild, case_type, reason, duration, user, message, weight = weight))
             else:
                 if channel is not None:
-                    await channel.send(embed = create_message(guild, case_type, reason, duration, user, message))
+                    await channel.send(embed = create_message(guild, case_type, reason, duration, user, message, weight = weight))
 
             await send_to_logs(bot, case, message)
             
             if case_type != 'unban':
 
                 try:
-                    await user.send(embed = create_message(guild, case_type, reason, duration, _message = message))
+                    await user.send(embed = create_message(guild, case_type, reason, duration, _message = message, weight = weight))
                 except:
                     pass
 
@@ -117,9 +118,10 @@ async def send_to_logs(bot, case, message = None):
         )
 
         _type = case._type[0].upper() + case._type[1:]
+        w = str(case.weight) + "x  " if case.weight != 1 and _type == "Warn" else ""
 
         embed.set_author(
-            name = f"[{_type}]  {user}",
+            name = f"[{w}{_type}]  {user}",
             icon_url = user.display_avatar
         )
 
@@ -298,8 +300,8 @@ def insert_case(case):
     
     database_repo = DatabaseRepository()
     database_repo.general_statement(
-        sql_statement = "insert into moderation_cases values (?, ?, ?, ?, ?, ?, ?, ?, ?)", 
-        args = (None, case.guild, case.user, case._type, case.reason, case.time, case.moderator, case.duration, 0)
+        sql_statement = "insert into moderation_cases values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", 
+        args = (None, case.guild, case.user, case._type, case.reason, case.time, case.moderator, case.duration, 0, case.weight)
     )
 
 

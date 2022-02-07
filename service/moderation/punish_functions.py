@@ -1,3 +1,4 @@
+from functools import total_ordering
 import time
 from repository.database_repo import DatabaseRepository
 from repository.json_repo import ModerationRepo
@@ -81,7 +82,11 @@ def count_warns(guild, user, _time):
         sql_statement = "select * from moderation_cases where guild = ? and user = ? and type = 'warn' and time + ? >= ?",
         args = (guild.id, user.id, _time, int(round(time.time())))
     )
-    return len(data)
+    total_warns = 0
+    for warn in data:
+        total_warns += warn["weight"]
+
+    return total_warns
 
 
 async def apply_punishments(bot, channel, guild, user):

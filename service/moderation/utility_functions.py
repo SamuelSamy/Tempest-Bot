@@ -8,7 +8,7 @@ from service._general.utils import get_string_from_seconds
 from domain.case import Case
 
 
-def create_message(guild, case_type, reason, duration, user = None, _message = None):
+def create_message(guild, case_type, reason, duration, user = None, _message = None, weight = 1):
 
     _color = Colors.red
     message = f"You have been **"
@@ -19,7 +19,12 @@ def create_message(guild, case_type, reason, duration, user = None, _message = N
 
     if case_type == "warn":
         message += f"warned"
+
+        if weight != 1:
+            message += f" {weight} times"
+
         _color = Colors.yellow
+        
     elif case_type == "ban":
         message += f"banned"
     elif case_type == "mute":
@@ -98,7 +103,8 @@ def fetch_logs(guild, user, page):
                 data[i]["reason"],
                 data[i]["time"],
                 data[i]["moderator"],
-                data[i]["duration"]
+                data[i]["duration"],
+                data[i]["weight"]
             )
         )
 
@@ -130,7 +136,8 @@ def fetch_warns(guild, user, page):
                 data[i]["reason"],
                 data[i]["time"],
                 data[i]["moderator"],
-                data[i]["duration"]
+                data[i]["duration"],
+                data[i]["weight"]
             )
         )
 
@@ -204,7 +211,8 @@ def get_case_by_id(guild, case_id):
         case["reason"],
         case["time"],
         case["moderator"],
-        case["duration"]
+        case["duration"],
+        case["weight"]
     )
 
 
@@ -311,6 +319,9 @@ def compute_case_details(case, display_moderator):
 
     message += f"**Type:** {_type}"
 
+    if _type == "Warn" and case.weight != 1:
+        message += f" ({case.weight}x times)"
+
     if case.reason != "":
         message += f"\n**Reason:** {case.reason}"
 
@@ -319,6 +330,7 @@ def compute_case_details(case, display_moderator):
 
     if display_moderator:
         message += f"\n**Moderator:** <@{(case.moderator)}>"
+    
     
     message += f"\n**Time:** <t:{(case.time)}> (<t:{(case.time)}:R>)"
 
@@ -334,7 +346,8 @@ def get_case_by_entry(entry):
         entry["reason"],
         entry["time"],
         entry["moderator"],
-        entry["duration"]
+        entry["duration"],
+        entry["weight"]
     )
 
 
