@@ -9,7 +9,6 @@ from discord.ext import commands
 from domain.enums.general import Emotes
 from service._general.utils import get_prefix
 
-# https://gist.github.com/EvieePy/7822af90858ef65012ea500bcecf1612
 
 class CommandErrorHandler(commands.Cog):
 

@@ -19,7 +19,6 @@ from service.moderation.utility_functions import *
 from domain.case import Case
 
 # General
-
 async def handle_case(bot, guild, channel, moderator, user, case_type, reason, duration = 0, message = None, ctx = None, weight = 1):
 
     if user_in_guild(guild, user) or case_type == 'unban':

@@ -1,4 +1,3 @@
-from tkinter.tix import INTEGER
 import typing
 import discord
 
@@ -88,34 +87,26 @@ class Moderation(commands.Cog):
 
     # WARN
     @commands.command(
-        usage = f"{get_prefix()}warn [user] (optional reason)",
-        description = "Warns the specified user",
+        usage = f"{get_prefix()}warn (times) [user] (optional reason)",
+        description = "Warns the specified user\n(times) must be a positive numver, if not specified times will be 1",
         brief = "4"
     )
     @commands.guild_only()
     @has_command_permissions(command = Permissions.warn)
-    async def warn(self, ctx, user : discord.User, *, reason = ""):
+    async def warn(self, ctx, times: typing.Optional[int], user : discord.User, *, reason = ""):
 
-        try:
-            await functions.handle_case(self.bot, ctx.guild, ctx.channel, ctx.author, user, 'warn', reason, 0, ctx = ctx)
-        except CustomException as error:
-            await ctx.reply(error)
-    
-    @commands.command(
-        usage = f"{get_prefix()}multiwarn [times] [user] (optional reason)",
-        description = "Warns the specified user multiple times",
-        brief = "5"
-    )
-    @commands.guild_only()
-    @has_command_permissions(command = Permissions.warn)
-    async def multiwarn(self, ctx, times : int, user : discord.User, *, reason: str= ""):
+        if times is None:
+            times = 1
 
-        try:
-            await functions.handle_case(self.bot, ctx.guild, ctx.channel, ctx.author, user, 'warn', reason, 0, ctx = ctx, weight = times)
-        except CustomException as error:
-            await ctx.reply(error)
-
-
+        if times < 0:
+            raise commands.BadArgument
+        
+        else:
+            try:
+                await functions.handle_case(self.bot, ctx.guild, ctx.channel, ctx.author, user, 'warn', reason, 0, ctx = ctx, weight = times)
+            except CustomException as error:
+                await ctx.reply(error)
+        
     # KICK
     @commands.command(
         usage = f"{get_prefix()}kick [user] (optional reason)",
