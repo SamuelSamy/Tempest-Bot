@@ -58,7 +58,7 @@ class CommandErrorHandler(commands.Cog):
             await ctx.reply(f"{Emotes.not_found } The specified channel does not exist!")
 
         elif isinstance(error, commands.BadUnionArgument) or isinstance(error, commands.BadArgument) or isinstance(error, commands.MissingRequiredArgument):
-            await ctx.reply(f"{Emotes.not_found} Invalid command usage\n{Emotes.invisible} Use `{get_prefix()}help {ctx.command}` for aditional help")
+            await ctx.reply(f"{Emotes.not_found} Invalid command usage\n{Emotes.invisible} Use `{get_prefix()}help {ctx.command}` for additional help")
         
         elif isinstance(error, commands.UserNotFound) or isinstance(error, commands.MemberNotFound):
             await ctx.reply(f"{Emotes.not_found} The specified user is not in this server or does not exist!")

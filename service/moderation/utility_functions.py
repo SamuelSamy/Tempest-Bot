@@ -145,7 +145,7 @@ def fetch_warns(guild, user, page):
 
 
 
-def generate_modlogs(guild, user, page, warns_only = False):
+def generate_modlogs(guild, user, page, warns_only = False, show_moderator = False):
     
     total_pages = 0
     total_logs = 0
@@ -177,11 +177,11 @@ def generate_modlogs(guild, user, page, warns_only = False):
         )
 
         for case in cases:
-            details = compute_case_details(case, display_moderator = warns_only)
+            details = compute_case_details(case, display_moderator = show_moderator)
             
 
             embed.add_field(
-                name = f"**Case {case.case_id}**",
+                name = f"**Case ID: {case.case_id}**",
                 value = details,
                 inline = False
             )
