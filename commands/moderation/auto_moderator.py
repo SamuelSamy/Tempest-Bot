@@ -5,6 +5,7 @@ import typing
 from discord.ext import commands
 from discord.ext.commands.errors import BadArgument
 from domain.enums.general import Emotes
+from service._general.commands_checks import is_admin
 
 import service.moderation.auto_mod_command_utils as functions
 
@@ -23,7 +24,7 @@ class AutoModerator(commands.Cog):
         brief = "1"
     )
     @commands.guild_only()
-    @commands.has_permissions(administrator = True)
+    @is_admin()
     async def banword(self, ctx, word,  punishment, duration = ""):
         
         try:
@@ -39,7 +40,7 @@ class AutoModerator(commands.Cog):
         brief = "2"
     )
     @commands.guild_only()
-    @commands.has_permissions(administrator = True)
+    @is_admin()
     async def unbanword(self, ctx, id):
 
         try:
@@ -55,7 +56,7 @@ class AutoModerator(commands.Cog):
         brief = "0"
     )
     @commands.guild_only()
-    @commands.has_permissions(administrator = True)
+    @is_admin()
     async def bannedwords(self, ctx):
 
         try:
@@ -71,7 +72,7 @@ class AutoModerator(commands.Cog):
         invoke_without_command = True
     )
     @commands.guild_only()
-    @commands.has_permissions(administrator = True)
+    @is_admin()
     async def notifychannel(self, ctx):
         pass
 
@@ -83,7 +84,7 @@ class AutoModerator(commands.Cog):
         brief = "3"
     )
     @commands.guild_only()
-    @commands.has_permissions(administrator = True)
+    @is_admin()
     async def add_notify(self, ctx, word_id, channel : discord.TextChannel = None):
 
         try:
@@ -100,7 +101,7 @@ class AutoModerator(commands.Cog):
         brief = "4"
     )
     @commands.guild_only()
-    @commands.has_permissions(administrator = True)
+    @is_admin()
     async def remove_notify(self, ctx, word_id):
 
         try:
@@ -117,7 +118,7 @@ class AutoModerator(commands.Cog):
         brief = "5"
     )
     @commands.guild_only()
-    @commands.has_permissions(administrator = True)
+    @is_admin()
     async def links(self, ctx, message = ""):
 
         if message != "":
@@ -132,12 +133,12 @@ class AutoModerator(commands.Cog):
 
     @links.command(
         name = "block",
-        usage = f"{get_prefix()}links block [channel / role]",
+        usage = f"{get_prefix()}links block [role / channel]",
         description = "Removes the specified role / channel from the allowed list",
         brief = "6"
     )
     @commands.guild_only()
-    @commands.has_permissions(administrator = True)
+    @is_admin()
     async def link_block(self, ctx, _object : typing.Union[discord.TextChannel, discord.Role]):
 
         try:
@@ -154,7 +155,7 @@ class AutoModerator(commands.Cog):
         brief = "7"
     )
     @commands.guild_only()
-    @commands.has_permissions(administrator = True)
+    @is_admin()
     async def link_allow(self, ctx, _object : typing.Union[discord.TextChannel, discord.Role]):
 
         try:

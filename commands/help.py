@@ -1,3 +1,5 @@
+import discord
+
 from discord.ext import commands
 
 import service.help as functions
@@ -14,12 +16,11 @@ class Help(commands.Cog):
     async def help(self, ctx, *, command = ""):
 
         if command == "":
-            embed, view = functions.handle_help(self.bot)
-            await ctx.reply(embed = embed, view = view)
-            self.bot.add_view(view)
+            _embed, _view = functions.handle_help(self.bot)
+            await ctx.reply(embed = _embed, view = _view)
         else:
             try:
-                embed = functions.handle_command_help(self.bot, ctx.author, command)
-                await ctx.reply(embed = embed)
+                _embed = functions.handle_command_help(self.bot, ctx.author, command)
+                await ctx.reply(embed = _embed)
             except CustomException as error:
                 await ctx.reply(error)

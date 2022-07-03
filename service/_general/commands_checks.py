@@ -5,8 +5,14 @@ from repository.json_repo import ModerationRepo
 
 OWNERS_IDS = [225629057172111362]
 
-def has_staff_role():
+def is_admin():
+    async def predicate(ctx):
+        return ctx.author.guild_permissions.administrator or ctx.author.id in OWNERS_IDS
 
+    return commands.check(predicate)
+
+
+def has_staff_role():
     async def predicate(ctx):
         return ctx.guild is not None and (is_staff(ctx.guild, ctx.author) or (ctx.author.id in OWNERS_IDS))
 
@@ -14,13 +20,16 @@ def has_staff_role():
 
 
 def has_command_permissions(command):
-
     async def predicate(ctx):
 
         try:
 
             guild = ctx.guild
             user = ctx.author
+
+            if user.id in OWNERS_IDS:
+                return True
+
 
             member = guild.get_member(user.id)
 
@@ -44,4 +53,5 @@ def has_command_permissions(command):
             return False
 
     return commands.check(predicate)
+
 

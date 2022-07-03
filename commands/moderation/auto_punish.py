@@ -5,6 +5,7 @@ from discord.ext import commands
 from discord.ext.commands.core import has_permissions
 from discord.ext.commands.errors import BadArgument
 from domain.enums.general import Emotes
+from service._general.commands_checks import is_admin
 
 import service.moderation.punish_functions as functions
 
@@ -25,7 +26,7 @@ class AutoPunishments(commands.Cog):
         brief = "0"
     )
     @commands.guild_only()
-    @has_permissions(administrator = True)
+    @is_admin()
     async def punishments(self, ctx, message = ""):
         
         if message != "":
@@ -47,7 +48,7 @@ class AutoPunishments(commands.Cog):
         brief = "1"
     )
     @commands.guild_only()
-    @has_permissions(administrator = True)
+    @is_admin()
     async def add_punishment(self, ctx, warns,  time, _type, duration = ""):
         
         try:
@@ -67,7 +68,7 @@ class AutoPunishments(commands.Cog):
         brief = "2"
     )
     @commands.guild_only()
-    @has_permissions(administrator = True)
+    @is_admin()
     async def remove_punishment(self, ctx, punishment_id):
         
         try:

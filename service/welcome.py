@@ -4,8 +4,6 @@ import time
 
 from domain.enums.general import Colors
 from repository.json_repo import SettingsRepo
-# from modules.normal.package.enums import Colors, Settings
-# from modules.normal.package.utils import open_json, save_json
 
 
 def set_welcome_message(guild, message):

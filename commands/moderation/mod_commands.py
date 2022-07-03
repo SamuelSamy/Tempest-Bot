@@ -6,7 +6,7 @@ from discord.ext import commands
 import service.moderation.commands_functions as functions
 
 from service._general.utils import get_prefix
-from service._general.commands_checks import has_command_permissions, has_staff_role
+from service._general.commands_checks import has_command_permissions, has_staff_role, is_admin
 from domain.enums.moderation import Permissions
 from domain.exceptions import CustomException
 from domain.enums.general import Colors, Emotes
@@ -84,7 +84,7 @@ class Moderation(commands.Cog):
         brief = "30"
     )
     @commands.guild_only()
-    @commands.has_permissions(administrator = True)
+    @is_admin()
     async def deletecase(self, ctx, case_id : int):
         
         try:
@@ -102,7 +102,7 @@ class Moderation(commands.Cog):
     # WARN
     @commands.command(
         usage = f"{get_prefix()}warn (times) [user] (optional reason)",
-        description = "Warns the specified user\n> *(times) must be a positive number, if not specified times will be 1*",
+        description = "Warns the specified user\n> (times) must be a positive number or 0 (verbal warn).\n> If not specified times will be 1*",
         brief = "40"
     )
     @commands.guild_only()

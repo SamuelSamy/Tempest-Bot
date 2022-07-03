@@ -18,9 +18,13 @@ def create_message(guild, case_type, reason, duration, user = None, _message = N
 
 
     if case_type == "warn":
+
+        if weight == 0:
+            message += f"verbally "
+
         message += f"warned"
 
-        if weight != 1:
+        if weight > 1:
             message += f" {weight} times"
 
         _color = Colors.yellow

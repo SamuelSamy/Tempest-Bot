@@ -1,12 +1,13 @@
 import discord
 
 from discord.ext import commands
-from discord.ui import View, Button
 
 from domain.enums.general import Colors, Emotes
 from domain.exceptions import CustomException
 from service._general.utils import get_prefix
 
+MAX_COMMANDS = 8
+TIMEOUT_TIME = 60 * 4
 
 modules = {
     "Configure": "Configuration",
@@ -14,8 +15,19 @@ modules = {
     "AutoModerator": "Auto Moderator",
     "AutoPunishments": "Auto Punishments",
     "Leveling": "Leveling",
-    "Welcome": "Welcome"
+    "Welcome": "Welcome",
+    "Starboard": "Starboard"
 }
+
+
+class HelpDropDownView(discord.ui.View):
+
+    def __init__(self, bot, key):
+        super().__init__(
+            timeout = TIMEOUT_TIME
+        )
+        self.add_item(HelpDropDown(bot, key))
+
 
 
 class HelpDropDown(discord.ui.Select):
@@ -38,6 +50,8 @@ class HelpDropDown(discord.ui.Select):
             embed = generate_embed(self.bot, key),
             view = generate_view(self.bot, key)
         )
+        await interaction.response.defer()
+
 
 
 class HelpButton(discord.ui.Button):
@@ -59,8 +73,9 @@ class HelpButton(discord.ui.Button):
             custom_id = custom_id,
             label = label,
             style = style,
-            disabled = disabled
+            disabled = disabled,
         )
+
 
     async def callback(self, interaction: discord.Interaction):
 
@@ -85,23 +100,20 @@ class HelpButton(discord.ui.Button):
             view = generate_view(self.bot, key, page_index)
         )
 
+        await interaction.response.defer()
 
-
-MAX_COMMANDS = 8
 
 def handle_help(bot):
     return generate_embed(bot, "Configure"), generate_view(bot, "Configure")
 
 
 def generate_view(bot, key, page_index = 0):
-    view = View(timeout = None)    
+    view = HelpDropDownView(bot, key)    
     generate_buttons(bot, view, page_index, get_max_index_page(bot, key), key)
-    view.add_item(HelpDropDown(bot, key))
     return view
 
 
 def generate_buttons(bot, view, page_index, max_page, key):
-
     view.add_item(HelpButton(page_index, max_page, f"{key}-dleft", "<<", bot = bot))
     view.add_item(HelpButton(page_index, max_page, f"{key}-left", "<", bot = bot))
     view.add_item(HelpButton(page_index, max_page, f"{key}-right", ">", bot = bot))
@@ -125,7 +137,6 @@ def get_max_index_page(bot, key):
 
 
 def generate_embed(bot, key, page_index = 0):
-
     cogs = bot.cogs
     current_cog = cogs[key]
     cmds = current_cog.get_commands()

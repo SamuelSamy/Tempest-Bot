@@ -36,60 +36,69 @@ class CommandErrorHandler(commands.Cog):
         if isinstance(error, ignored):
             return
 
+
         if isinstance(error, commands.DisabledCommand):
             await ctx.reply(f'{Emotes.no_entry} {ctx.command} has been disabled.')
+            return
 
-        elif isinstance(error, commands.NoPrivateMessage):
 
+        if isinstance(error, commands.NoPrivateMessage):
             try:
                 await ctx.author.send(f'{ctx.command} can not be used in Private Messages.')
             except discord.HTTPException:
                 pass
-        
-        elif isinstance(error, commands.MissingPermissions) or isinstance(error, commands.CheckFailure):
-            
+            return
+
+
+        if isinstance(error, commands.MissingPermissions) or isinstance(error, commands.CheckFailure):
             if str(error) != "You do not own this bot.":
                 await ctx.reply(f'{Emotes.no_entry}You can not use that command!')
-        
-        elif isinstance(error, commands.RoleNotFound):
+            return
+
+
+        if isinstance(error, commands.RoleNotFound):
             await ctx.reply(f"{Emotes.not_found } The specified role does not exist!")
+            return
 
-        elif isinstance(error, commands.ChannelNotFound):
+
+        if isinstance(error, commands.ChannelNotFound):
             await ctx.reply(f"{Emotes.not_found } The specified channel does not exist!")
+            return
 
-        elif isinstance(error, commands.BadUnionArgument) or isinstance(error, commands.BadArgument) or isinstance(error, commands.MissingRequiredArgument):
+
+        if isinstance(error, commands.BadUnionArgument) or isinstance(error, commands.BadArgument) or isinstance(error, commands.MissingRequiredArgument):
             await ctx.reply(f"{Emotes.not_found} Invalid command usage\n{Emotes.invisible} Use `{get_prefix()}help {ctx.command}` for additional help")
-        
-        elif isinstance(error, commands.UserNotFound) or isinstance(error, commands.MemberNotFound):
+            return
+
+
+        if isinstance(error, commands.UserNotFound) or isinstance(error, commands.MemberNotFound):
             await ctx.reply(f"{Emotes.not_found} The specified user is not in this server or does not exist!")
+            return
+
+ 
+        error_id = f"{round(time.time())}{ctx.message.id}"
+
+        await ctx.reply(f'{Emotes.wrong} Something went wrong.\n*Error ID: {error_id}*')
+
+        error_channel = self.bot.get_channel(921429366007816212)
+
+        message  = f"Guild ID: {ctx.guild.id}\n"
+        message += f"Error ID: {error_id}\n"
+        message += f'Command: `{ctx.command}` raised an error\n'
+        message += f"Error type: {type(error)}\n"
+        message += f"Short description: {error}\n"
+
+        error_text =  ""
+        lines = traceback.format_exception(type(error), error, error.__traceback__)
+        for line in lines:
+            error_text += f"{line}\n"
+        error_text = io.StringIO(error_text)
+        
+        await error_channel.send(f"```\n{message}\n```", file = discord.File(fp = error_text, filename = f"{error_id}.txt"))
 
 
-        else:
-            
-            error_id = f"{round(time.time())}{ctx.message.id}"
-
-            await ctx.reply(f'{Emotes.wrong} Something went wrong.\n*Error ID: {error_id}*')
-            
-
-            error_channel = self.bot.get_channel(921429366007816212)
-
-            message  = f"Guild ID: {ctx.guild.id}\n"
-            message += f"Error ID: {error_id}\n"
-            message += f'Command: `{ctx.command}` raised an error\n'
-            message += f"Error type: {type(error)}\n"
-            message += f"Short description: {error}\n"
-
-            error_text =  ""
-            lines = traceback.format_exception(type(error), error, error.__traceback__)
-            for line in lines:
-                error_text += f"{line}\n"
-            error_text = io.StringIO(error_text)
-            
-            await error_channel.send(f"```\n{message}\n```", file = discord.File(fp = error_text, filename = f"{error_id}.txt"))
-
-
-            print('Ignoring exception in command {}:'.format(ctx.command), file=sys.stderr)
-            traceback.print_exception(type(error), error, error.__traceback__, file=sys.stderr)
+        print('Ignoring exception in command {}:'.format(ctx.command), file=sys.stderr)
+        traceback.print_exception(type(error), error, error.__traceback__, file=sys.stderr)
 
 
 

@@ -14,6 +14,9 @@ class Settings:
     welcome_message      = "welcome_message"
     welcome_channel      = "welcome_channel"
 
+    chat_logs            = "chat-logs"
+    chat_logs_ignored    = "chat_logs_ignored"
+
 
 class Colors:
 
@@ -39,3 +42,5 @@ class Emotes:
     open_lock       = "🔓"
     closed_lock     = "🔒"
     invisible       = "<:__:924790143469092914>"
+    sparkles        = "✨"
+    star            = "⭐"

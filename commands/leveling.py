@@ -1,11 +1,11 @@
 import typing
 import discord
 from discord.ext.commands.errors import BadArgument
+from service._general.commands_checks import is_admin
 
 import service.leveling as leveling
 
 from discord.ext import commands
-from discord.commands import slash_command
 
 from service._general.utils import get_prefix
 from domain.exceptions import CustomException
@@ -24,7 +24,7 @@ class Leveling(commands.Cog):
         brief = "6"
     )
     @commands.guild_only()
-    @commands.has_permissions(administrator = True)
+    @is_admin()
     async def setlevel(self, ctx, user : discord.Member, level : int):
         try:
             await leveling.set_level(ctx.guild, user, level)
@@ -38,7 +38,7 @@ class Leveling(commands.Cog):
         invoke_without_command = True
     )
     @commands.guild_only()
-    @commands.has_permissions(administrator = True)
+    @is_admin()
     async def xp(self, ctx):
         pass
 
@@ -50,7 +50,7 @@ class Leveling(commands.Cog):
         brief = "7"
     )
     @commands.guild_only()
-    @commands.has_permissions(administrator = True)
+    @is_admin()
     async def add_xp(self, ctx, user : discord.Member, xp : int):
         try:
             await leveling.add_xp(ctx.guild, user, xp, ctx)
@@ -65,7 +65,7 @@ class Leveling(commands.Cog):
         brief = "8"
     )
     @commands.guild_only()
-    @commands.has_permissions(administrator = True)
+    @is_admin()
     async def remove_xp(self, ctx, user : discord.Member, xp : int):
         try:
             await leveling.remove_xp(ctx.guild, user, xp, ctx)
@@ -83,7 +83,7 @@ class Leveling(commands.Cog):
         brief = "3"
     )
     @commands.guild_only()
-    @commands.has_permissions(administrator = True)
+    @is_admin()
     async def rewards(self, ctx, message = ""):
 
         if message != "":
@@ -101,13 +101,14 @@ class Leveling(commands.Cog):
         brief = "4"
     )
     @commands.guild_only()
-    @commands.has_permissions(administrator = True)
+    @is_admin()
     async def add_reward(self, ctx, level : int, role : discord.Role):
         try:
             leveling.add_reward(ctx.guild, level, role)
             await ctx.reply(f"{Emotes.green_tick} Successfully added the role reward!")
         except CustomException as error:
             await ctx.reply(error)
+
 
     @rewards.command(
         name = "remove",
@@ -116,7 +117,7 @@ class Leveling(commands.Cog):
         brief = "5"
     )
     @commands.guild_only()
-    @commands.has_permissions(administrator = True)
+    @is_admin()
     async def remove_reward(self, ctx, level : int):
         try:
             leveling.remove_reward(ctx.guild, level)
@@ -133,7 +134,7 @@ class Leveling(commands.Cog):
         brief = "9"
     )
     @commands.guild_only()
-    @commands.has_permissions(administrator = True)
+    @is_admin()
     async def noxp(self, ctx, message = ""):
 
         if message != "":
@@ -153,7 +154,7 @@ class Leveling(commands.Cog):
         brief = "10"
     )
     @commands.guild_only()
-    @commands.has_permissions(administrator = True)
+    @is_admin()
     async def add_noxp(self, ctx, _object : typing.Union[discord.TextChannel, discord.Role]):
         try:
             message = leveling.change_no_xp(ctx.guild, _object, True)
@@ -169,7 +170,7 @@ class Leveling(commands.Cog):
         brief = "11"
     )
     @commands.guild_only()
-    @commands.has_permissions(administrator = True)
+    @is_admin()
     async def remove_noxp(self, ctx, _object : typing.Union[discord.TextChannel, discord.Role]):
         try:
             message = leveling.change_no_xp(ctx.guild, _object, False)
@@ -204,7 +205,7 @@ class Leveling(commands.Cog):
         brief = "12"
     )
     @commands.guild_only()
-    @commands.has_permissions(administrator = True)
+    @is_admin()
     async def levelups(self, ctx, channel : discord.TextChannel):
         try:
             leveling.set_notify_channel(ctx.guild, channel)
@@ -222,7 +223,7 @@ class Leveling(commands.Cog):
         brief = "13"
     )
     @commands.guild_only()
-    @commands.has_permissions(administrator = True)
+    @is_admin()
     async def multipliers(self, ctx, message = ""):
 
         if message != "":
@@ -242,10 +243,10 @@ class Leveling(commands.Cog):
         brief = "14"
     )
     @commands.guild_only()
-    @commands.has_permissions(administrator = True)
+    @is_admin()
     async def default_multiplier(self, ctx, value : float):
         try:
-            value = leveling.set_multiplier(ctx.guild, 0, value)
+            value = leveling.set_multiplier(ctx.guild, 0, value, can_be_1 = True)
             await ctx.reply(f"{Emotes.green_tick} Server's default multiplier is now **{value}x**")
         except CustomException as error:
             await ctx.reply(error)
@@ -258,7 +259,7 @@ class Leveling(commands.Cog):
         brief = "15"
     )
     @commands.guild_only()
-    @commands.has_permissions(administrator = True)
+    @is_admin()
     async def set_multiplier(self, ctx, role : discord.Role, value : float):
         try:
             value = leveling.set_multiplier(ctx.guild, role, value)
@@ -274,7 +275,7 @@ class Leveling(commands.Cog):
         brief = "17"
     )
     @commands.guild_only()
-    @commands.has_permissions(administrator = True)
+    @is_admin()
     async def remove_multiplier(self, ctx, role : discord.Role):
         try:
             leveling.remove_multiplier(ctx.guild, role)
@@ -290,7 +291,7 @@ class Leveling(commands.Cog):
         brief = "2"
     )
     @commands.guild_only()
-    @commands.has_permissions(administrator = True)
+    @is_admin()
     async def check_multiplier(self, ctx, user : discord.Member):
         try:
             value = leveling.get_multiplier(ctx.guild, user)

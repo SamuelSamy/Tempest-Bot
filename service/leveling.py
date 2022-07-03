@@ -15,7 +15,7 @@ from repository.json_repo import LevelingRepo
 from service._general.utils import get_prefix
 
 MAX_LEVEL = int(1e3)
-IS_TESTING = True
+IS_TESTING = False
 
 
 # def get_level_from_xp(xp):
@@ -150,7 +150,7 @@ async def check_for_level_change(guild, user, old_xp, new_xp, last_channel):
     if new_level != old_level:
         await check_for_new_rewards(guild, user, new_level)
 
-    if new_level > old_level:
+    if new_level > old_level and new_level > 0:
         await send_level_up_message(guild, user, new_level, last_channel)
 
 
@@ -252,20 +252,17 @@ async def remove_xp(guild, user, xp_to_remove, ctx):
 
     
 def add_reward(guild, level, role):
-
     leveling_repo = LevelingRepo()
     leveling_repo.add_reward(guild.id, level, role.id)
 
 
 def remove_reward(guild, level):
-    
     leveling_repo = LevelingRepo()
     leveling_repo.remove_reward(guild.id, level)
     
 
 
 def get_rewards(guild):
-
     leveling_repo = LevelingRepo()
     rewards = leveling_repo.get_rewards(guild.id)
 
@@ -300,7 +297,6 @@ def get_rewards(guild):
 
 
 def change_no_xp(guild, _object, allow):
-
     if type(_object) is discord.Role:
         _value = "Role"
         _type = Leveling.no_xp_roles
@@ -321,14 +317,13 @@ def change_no_xp(guild, _object, allow):
 
 
 def get_blacklist(guild):
-
     leveling_repo = LevelingRepo()    
     no_xp_channels = leveling_repo.get_no_xp_channels(guild.id)
     no_xp_roles = leveling_repo.get_no_xp_roles(guild.id)
 
     if len(no_xp_channels) == 0 and len(no_xp_roles) == 0:
         _title = "There are no blacklisted roles or channels!"
-        _desc  = f"{Emotes.reply} Use `{get_prefix()}addnoxp` in order to blacklist roles / channels!"
+        _desc  = f"{Emotes.reply} Use `{get_prefix()}noxp add` in order to blacklist roles / channels!"
         _color = Colors.red
     else:
         _title = "Leveling Blacklist\n"
@@ -358,7 +353,6 @@ def get_blacklist(guild):
 
 
 def get_user_level_rank_xp(guild, user, author):
-    
 
     database_repo = DatabaseRepository()
     
@@ -384,7 +378,7 @@ def get_user_level_rank_xp(guild, user, author):
             
 
 
-async def generate_level_image(guild, user, message, author):
+async def generate_level_image(guild, user, message: discord.Message, author):
     
     if not user.bot:
 
@@ -545,7 +539,13 @@ async def generate_level_image(guild, user, message, author):
         with BytesIO() as rank_card:
             template.save(rank_card, "PNG")
             rank_card.seek(0)
-            await message.edit(content = "", file = discord.File(rank_card, f"{guild.id}_{user.id}_level.png"))
+            
+            await message.edit(
+                content = "", 
+                attachments = [
+                    discord.File(rank_card, f"{guild.id}_{user.id}_level.png")
+                ]
+            )
 
 
 
@@ -623,12 +623,12 @@ def get_multiplier(guild, user):
     return multiplier
 
 
-def set_multiplier(guild, role, value):
+def set_multiplier(guild, role, value, can_be_1 = False):
 
     if value < 0:
         raise CustomException(f"{Emotes.not_found} You can not set negative multipliers!")
 
-    if value == 1:
+    if not can_be_1 and value == 1:
         raise CustomException(f"{Emotes.not_found} You can not set the multiplier to **1**\n{Emotes.invisible} If you want to remove a role's multiplier use `{get_prefix()}multipliers remove`!")
     
     if value == 0:
@@ -709,7 +709,9 @@ async def generate_leaderboard(bot, guild, message, page):
 
         await message.edit(
             content = f"{Emotes.star} **{guild.name}'s leaderboard**", 
-            file = discord.File(leaderboard_image, f"{guild.id}_leaderboard.png")
+            attachments  = [
+                discord.File(leaderboard_image, f"{guild.id}_leaderboard.png")
+            ]
         )
 
 

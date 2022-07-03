@@ -117,7 +117,7 @@ def list_links_permissions(guild):
 
         for role in allowed_roles:
 
-            _value += f"<@&{role}>"
+            _value += f"<@&{role}> "
 
             index += 1
             if index % 3 == 0:
@@ -138,7 +138,7 @@ def list_links_permissions(guild):
         index = 0
 
         for channel in allowed_channels:
-            _value += f"<#{channel}>"
+            _value += f"<#{channel}> "
 
             index += 1
             

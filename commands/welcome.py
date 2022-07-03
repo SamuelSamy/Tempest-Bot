@@ -2,6 +2,7 @@ import discord
 
 from discord.ext import commands
 from discord.ext.commands.errors import BadArgument
+from service._general.commands_checks import is_admin
 
 import service.welcome as welcome
 
@@ -19,7 +20,7 @@ class Welcome(commands.Cog):
     @commands.group(
         invoke_without_command = True
     )
-    @commands.has_permissions(administrator = True)
+    @is_admin()
     async def welcome(self, ctx):
         pass
 
@@ -30,7 +31,7 @@ class Welcome(commands.Cog):
         description = "Sets the default welcome message",
         brief = "0"
     )
-    @commands.has_permissions(administrator = True)
+    @is_admin()
     async def welcomemessage(self, ctx, *, message):
         try:
             welcome.set_welcome_message(ctx.guild, message)
@@ -45,7 +46,7 @@ class Welcome(commands.Cog):
         description = "Sets the welcome channael",
         brief = "1"
     )
-    @commands.has_permissions(administrator = True)
+    @is_admin()
     async def welcomechannel(self, ctx, channel : discord.TextChannel):
         try:
             welcome.set_welcome_channel(ctx.guild, channel)

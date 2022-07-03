@@ -7,8 +7,8 @@ from re import S
 from domain.enums.general import Settings, Emotes
 from domain.enums.leveling import Leveling
 from domain.enums.moderation import BannedWord, ExternalLinks, ModFormat
+from domain.enums.starboard import StarboardFormat, SubStarboard
 from domain.exceptions import CustomException
-
 
 class JsonRepository:
 
@@ -30,11 +30,10 @@ class JsonRepository:
 
     def get_guild_data(self, guild_id):
         data = self._open_json()
-
         if str(guild_id) in data.keys():
             return data[str(guild_id)]
         
-        return None
+        return {}
 
 
     def set_guild_data(self, guild_id, new_data):
@@ -194,6 +193,59 @@ class SettingsRepo(JsonRepository):
         JsonRepository.set_guild_data(self, guild_id, guild_data)
 
 
+    # LOGS FUNCTIONS (get; set;)
+    def get_logs_channel(self, guild_id):
+        guild_id = str(guild_id)
+        guild_data = JsonRepository.get_guild_data(self, guild_id)
+        return guild_data[Settings.chat_logs]
+
+
+    def set_logs_channel(self, guild_id, channel_id):
+        guild_id = str(guild_id)
+        guild_data = JsonRepository.get_guild_data(self, guild_id)
+        guild_data[Settings.chat_logs] = channel_id
+        JsonRepository.set_guild_data(self, guild_id, guild_data)
+
+
+    def chatlogs_ignore(self, guild_id, _type, _object):
+        guild_id = str(guild_id)
+        guild_data = JsonRepository.get_guild_data(self, guild_id)
+
+        if _object.id not in guild_data[Settings.chat_logs_ignored][_type]:
+            guild_data[Settings.chat_logs_ignored][_type].append(_object.id)
+
+        JsonRepository.set_guild_data(self, guild_id, guild_data)
+
+
+    def chatlogs_unignore(self, guild_id, _type, _object):
+        guild_id = str(guild_id)
+        guild_data = JsonRepository.get_guild_data(self, guild_id)
+
+        if _object.id in guild_data[Settings.chat_logs_ignored][_type]:
+            guild_data[Settings.chat_logs_ignored][_type].remove(_object.id)
+
+        JsonRepository.set_guild_data(self, guild_id, guild_data)    
+
+
+    def chatlogs_is_ignored(self, guild_id, _id):
+        guild_id = str(guild_id)
+        guild_data = JsonRepository.get_guild_data(self, guild_id)
+        return _id in guild_data[Settings.chat_logs_ignored]["channels"] or _id in guild_data[Settings.chat_logs_ignored]["roles"]
+          
+
+    def get_ignored_roles(self, guild_id):
+        guild_id = str(guild_id)
+        guild_data = JsonRepository.get_guild_data(self, guild_id)
+        return guild_data[Settings.chat_logs_ignored]["roles"]
+
+
+    def get_ignored_channels(self, guild_id):
+        guild_id = str(guild_id)
+        guild_data = JsonRepository.get_guild_data(self, guild_id)
+        return guild_data[Settings.chat_logs_ignored]["channels"]
+
+
+
 class LevelingRepo(JsonRepository):
 
     def __init__(self):
@@ -243,6 +295,8 @@ class LevelingRepo(JsonRepository):
     def add_reward(self, guild_id, level, role_id):
         guild_id = str(guild_id)
         guild_data = JsonRepository.get_guild_data(self, guild_id)
+        
+        max_rewards_checker(guild_id, guild_data[Leveling.rewards])
 
         if str(level) in guild_data[Leveling.rewards].keys():
             raise CustomException(f"{Emotes.wrong} This level already has a reward set!")
@@ -531,6 +585,76 @@ class ModerationRepo(JsonRepository):
         return guild_data[ModFormat.a_punish]
 
 
+class StarboardRepo(JsonRepository):
+
+    def __init__(self):
+        JsonRepository.__init__(self, "data/starboards.json")
+
+
+    def init_data(self, guild_id, force_init = False):
+        JsonRepository.init_data(self, guild_id, JsonTemplates.starboards_template, force_init)
+
+    def add_starboard(self, guild_id, suggestions_id, spotlight_id, stars):
+
+        guild_id = str(guild_id)
+        suggestions_id = str(suggestions_id)
+        spotlight_id = str(spotlight_id)
+        guild_data = JsonRepository.get_guild_data(self, guild_id)
+
+        max_starboards_checker(guild_data[StarboardFormat.starboards])
+
+        if not dict_has_key(guild_data[StarboardFormat.starboards], suggestions_id):
+            guild_data[StarboardFormat.starboards][suggestions_id] = {
+                SubStarboard.id: guild_data[StarboardFormat.next_id],
+                SubStarboard.spotlight: spotlight_id,
+                SubStarboard.required: stars
+            }
+
+            guild_data[StarboardFormat.next_id] += 1
+
+            answer = f"{Emotes.green_tick} Successfully created the starboard!"
+        else:
+            answer = f"{Emotes.red_tick} This channel already has a starboard linked to it!"
+
+        JsonRepository.set_guild_data(self, guild_id, guild_data)
+        return answer
+
+
+    def remove_starboard(self, guild_id, starboard_id):
+
+        data = self.get_starboards(guild_id)
+        
+        def get_channel_by_id(id):
+            for entry in data:
+                if data[entry][SubStarboard.id] == id:
+                    return str(entry)
+
+            return None
+
+
+        guild_id = str(guild_id)
+        guild_data = JsonRepository.get_guild_data(self, guild_id)
+        
+        suggestions = get_channel_by_id(starboard_id)
+
+        if suggestions is not None:
+            del guild_data[StarboardFormat.starboards][suggestions]
+            answer = f"{Emotes.green_tick} Successfully removed the specifed starboard!"
+        else:
+            answer = f"{Emotes.red_tick} No starboard found with the given ID!"
+
+        JsonRepository.set_guild_data(self, guild_id, guild_data)
+        return answer
+
+
+    def get_starboards(self, guild_id):
+        guild_id = str(guild_id)
+        guild_data = JsonRepository.get_guild_data(self, guild_id)
+        return guild_data[StarboardFormat.starboards]
+
+
+
+
 class JsonTemplates:
 
     settings_template = {
@@ -538,7 +662,12 @@ class JsonTemplates:
         "staff-roles": [],
         "welcome_message": "",
         "welcome_channel": 0,
-        "lockdown-channels": []
+        "lockdown-channels": [],
+        "chat-logs": 0,
+        "chat_logs_ignored": {
+            "roles": [],
+            "channels": []
+        }
     }
 
 
@@ -580,3 +709,25 @@ class JsonTemplates:
             "protected_channels": []
         }
     }
+
+    starboards_template = {
+        "next-starboard-id": 0,
+        "starboards": {}
+    }
+
+def max_rewards_checker(guild_id, rewards):
+    if len(rewards) > 9:
+        raise CustomException(f"{Emotes.no_entry} You have reached the maximum amount of rewards (10)!")
+
+
+def max_starboards_checker(starboards):
+    if len(starboards) > 4:
+        raise CustomException(f"{Emotes.no_entry} You have reached the maximum amount of starboards (5)!")
+
+
+def dict_has_key(dict, key):
+    try:
+        dict[key]
+        return True
+    except:
+        return False

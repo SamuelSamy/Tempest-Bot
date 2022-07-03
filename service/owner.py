@@ -9,7 +9,7 @@ def get_user_data(ctx, user):
     if user is None:
         user = ctx.author
 
-    created = round((user.created_at - datetime(1970, 1, 1)).total_seconds())
+    created = round((user.created_at.replace(tzinfo = None) - datetime(1970, 1, 1)).total_seconds())
 
     embed = discord.Embed(
         color = Colors.blue,

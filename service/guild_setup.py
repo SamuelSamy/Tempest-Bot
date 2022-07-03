@@ -34,10 +34,12 @@ def create_setup(guild, restart = False):
     settings_repo = SettingsRepo()
     leveling_repo = LevelingRepo()
     moderation_repo = ModerationRepo()
+    starboard_repo = StarboardRepo()
 
     settings_repo.init_data(guild.id, restart)
     leveling_repo.init_data(guild.id, restart)
     moderation_repo.init_data(guild.id, restart)
+    starboard_repo.init_data(guild.id, restart)
 
 
 def reconfig_all(bot):

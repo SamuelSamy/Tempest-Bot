@@ -39,9 +39,11 @@ class Owner(commands.Cog):
     )
     @commands.is_owner()
     @commands.guild_only()
-    async def reconfig(self, ctx, guild : discord.Guild):
+    async def reconfig(self, ctx, guild : typing.Optional[discord.Guild]):
+        if guild is None:
+            guild = ctx.guild
         create_setup(guild, True)
-        await ctx.reply(f"{Emotes.green_tick} Reconfigured data for the specified guild!")
+        await ctx.reply(f"{Emotes.green_tick} Reconfigured the data for **{guild}** `{guild.id}`")
     
 
     @commands.command(
@@ -52,7 +54,9 @@ class Owner(commands.Cog):
     async def reconfigall(self, ctx):
         message = await ctx.reply(f"{Emotes.loading} Reconfiguring all guilds...")
         reconfig_all(self.bot)
-        await message.edit(f"{Emotes.green_tick} All guilds ({len(self.bot.guilds)}) reconfigured!")
+        await message.edit(
+            content = f"{Emotes.green_tick} All {len(self.bot.guilds)} guilds reconfigured!"
+        )
 
 
     @commands.command(

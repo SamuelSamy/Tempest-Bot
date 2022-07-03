@@ -95,7 +95,7 @@ async def handle_case(bot, guild, channel, moderator, user, case_type, reason, d
         raise CustomException(f"{Emotes.wrong} The specified user is not in this guild")
 
 
-async def send_to_logs(bot, case, message = None):
+async def send_to_logs(bot, case: Case, message = None):
     
     moderation_repo = ModerationRepo()
     channel_id = moderation_repo.get_mod_logs_channel(case.guild)
@@ -117,6 +117,7 @@ async def send_to_logs(bot, case, message = None):
         )
 
         _type = case._type[0].upper() + case._type[1:]
+        
         w = str(case.weight) + "x  " if case.weight != 1 and _type == "Warn" else ""
 
         embed.set_author(
@@ -330,7 +331,6 @@ def has_muted_role(guild, user):
 
 async def generate_whois(ctx, user):
     
-    
     if user is None:
         user = ctx.author
 
@@ -385,11 +385,11 @@ async def generate_whois(ctx, user):
     
 
     if member.premium_since is not None:
-        boosting = round((member.premium_since - datetime(1970, 1, 1)).total_seconds())
+        boosting = round((member.premium_since.replace(tzinfo = None) - datetime(1970, 1, 1)).total_seconds())
 
         embed.add_field(
             name = "Nitro Booster since", 
-            value = f"<t:{boosting}>",
+            value = f"<t:{boosting}> (<t:{boosting}:R>)",
             inline = False
         )
     

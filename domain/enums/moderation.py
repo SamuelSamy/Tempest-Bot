@@ -1,6 +1,3 @@
-from discord.partial_emoji import PE
-
-
 class ModFormat:
     mod_channel     = "logs-channel"
     a_punish        = "auto-punishments"
