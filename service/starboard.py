@@ -165,8 +165,8 @@ async def send_message_to_spotlight(spotlight: discord.TextChannel, message: dis
 
     repo = DatabaseRepository()
     repo.general_statement(
-        sql_statement = "insert into starboards values (?, ?, ?, ?)",
-        args = (message.guild.id, starboard_id, message.id, spotlight_message.id)
+        sql_statement = "insert into starboards values (?, ?, ?, ?, ?)",
+        args = (None, message.guild.id, starboard_id, message.id, spotlight_message.id)
     )
     
    
